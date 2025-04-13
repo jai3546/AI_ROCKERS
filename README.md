@@ -7,7 +7,7 @@ Problem Statement- “VidyAI++ – Multilingual AI Tutoring & Mentorship Platfor
 
 Use Case         - How can we provide personalized, multilingual, and AI-driven academic support to BPL students in government schools—especially those in low-connectivity regions—with minimal digital literacy?
 ***************
-Abstract
+ABSTRACT
 
 VidyAI++ is an AI-powered, multilingual tutoring and mentorship platform developed to support Below Poverty Line (BPL) students in Indian government schools. Aligned with the National Education Policy (NEP), it aims to make learning inclusive, accessible, and personalized through real-time AI adaptation, emotion-aware teaching, and multilingual content generation.
 
@@ -17,7 +17,7 @@ To cater to diverse learning needs, VidyAI++ classifies learners into visual, au
 
 The system is built as an offline-first PWA using TensorFlow Lite and browser-based storage, ensuring seamless learning in low or no-internet zones. Its voice-based, icon-driven interface also breaks down literacy barriers, making it usable for students and parents with limited reading skills.
 *****************
-Tech Stack Used
+TECH STACK USED
 
 Frontend: React, Tailwind CSS
 
