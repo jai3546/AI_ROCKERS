@@ -1,0 +1,58 @@
+[
+  {
+    "id": "M001",
+    "expertise": ["math", "science"],
+    "available_time": ["morning", "afternoon"],
+    "region": ["telangana", "andhra_pradesh"],
+    "language": ["telugu", "english"]
+  },
+  {
+    "id": "M002",
+    "expertise": ["science", "english"],
+    "available_time": ["evening", "night"],
+    "region": ["tamil_nadu", "kerala"],
+    "language": ["tamil", "malayalam", "english"]
+  },
+  {
+    "id": "M003",
+    "expertise": ["history", "english"],
+    "available_time": ["afternoon", "evening"],
+    "region": ["karnataka", "maharashtra"],
+    "language": ["kannada", "marathi", "english"]
+  },
+  {
+    "id": "M004",
+    "expertise": ["math", "science", "history"],
+    "available_time": ["morning", "evening", "night"],
+    "region": ["telangana", "andhra_pradesh", "karnataka"],
+    "language": ["telugu", "kannada", "english", "hindi"]
+  },
+  {
+    "id": "M005",
+    "expertise": ["english", "history"],
+    "available_time": ["morning", "afternoon", "evening"],
+    "region": ["gujarat", "maharashtra"],
+    "language": ["gujarati", "marathi", "hindi"]
+  },
+  {
+    "id": "M006",
+    "expertise": ["math", "science", "english"],
+    "available_time": ["afternoon", "evening", "night"],
+    "region": ["kerala", "tamil_nadu"],
+    "language": ["malayalam", "tamil", "english"]
+  },
+  {
+    "id": "M007",
+    "expertise": ["math", "history"],
+    "available_time": ["morning", "night"],
+    "region": ["telangana", "andhra_pradesh", "tamil_nadu"],
+    "language": ["telugu", "tamil", "english"]
+  },
+  {
+    "id": "M008",
+    "expertise": ["science", "history", "english"],
+    "available_time": ["morning", "afternoon", "evening", "night"],
+    "region": ["karnataka", "kerala", "maharashtra"],
+    "language": ["kannada", "malayalam", "marathi", "english"]
+  }
+]

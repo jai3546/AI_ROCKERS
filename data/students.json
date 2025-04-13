@@ -1,0 +1,66 @@
+[
+  {
+    "id": "S001",
+    "emotional_state": "happy",
+    "subject_need": "math",
+    "available_time": "morning",
+    "region": "telangana",
+    "language": "telugu"
+  },
+  {
+    "id": "S002",
+    "emotional_state": "stressed",
+    "subject_need": "science",
+    "available_time": "evening",
+    "region": "tamil_nadu",
+    "language": "tamil"
+  },
+  {
+    "id": "S003",
+    "emotional_state": "neutral",
+    "subject_need": "history",
+    "available_time": "afternoon",
+    "region": "karnataka",
+    "language": "kannada"
+  },
+  {
+    "id": "S004",
+    "emotional_state": "stressed",
+    "subject_need": "english",
+    "available_time": "night",
+    "region": "andhra_pradesh",
+    "language": "telugu"
+  },
+  {
+    "id": "S005",
+    "emotional_state": "happy",
+    "subject_need": "math",
+    "available_time": "evening",
+    "region": "kerala",
+    "language": "malayalam"
+  },
+  {
+    "id": "S006",
+    "emotional_state": "stressed",
+    "subject_need": "science",
+    "available_time": "morning",
+    "region": "telangana",
+    "language": "hindi"
+  },
+  {
+    "id": "S007",
+    "emotional_state": "neutral",
+    "subject_need": "english",
+    "available_time": "afternoon",
+    "region": "maharashtra",
+    "language": "marathi"
+  },
+  {
+    "id": "S008",
+    "emotional_state": "happy",
+    "subject_need": "history",
+    "available_time": "night",
+    "region": "gujarat",
+    "language": "gujarati"
+  }
+]
