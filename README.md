@@ -16,6 +16,8 @@ The platform supports dynamic lesson delivery using generative AI (Gemini API) t
 To cater to diverse learning needs, VidyAI++ classifies learners into visual, auditory and adapts the teaching format accordingly. It also uses an ML-based mentor-matching engine to connect students with human mentors based on academic requirements, regional compatibility, and emotional states.
 
 The system is built as an offline-first PWA using TensorFlow Lite and browser-based storage, ensuring seamless learning in low or no-internet zones. Its voice-based, icon-driven interface also breaks down literacy barriers, making it usable for students and parents with limited reading skills.
+
+We have implemented voice based navigation in the website
 *****************
 TECH STACK USED
 
@@ -28,3 +30,32 @@ AI/ML: Gemini API, DeepFace, OpenCV, TensorFlow Lite
 Offline Support: Progressive Web App (PWA), IndexedDB, TensorFlow Lite
 
 Voice Interface: Web Speech API (STT & TTS)
+*******************************************
+![Screenshot 2025-04-14 083756](https://github.com/user-attachments/assets/d4c56d11-178f-45fd-8219-0c35b192151a)
+![Screenshot 2025-04-14 083804](https://github.com/user-attachments/assets/72b0ef0a-ccf0-45fe-be19-fde12a402b79)
+![Screenshot 2025-04-14 083808](https://github.com/user-attachments/assets/8ecd1dfa-9b7f-4f08-ab85-adc103eccc0a)
+![Screenshot 2025-04-14 083816](https://github.com/user-attachments/assets/fe9262e1-e932-4b74-9513-d28378071ae0)
+![Screenshot 2025-04-14 083850](https://github.com/user-attachments/assets/2dc14baf-e42e-47e4-9d81-eb362bf4144d)
+![Screenshot 2025-04-14 083859](https://github.com/user-attachments/assets/95c318c6-719f-405c-9dab-d3143ce339ef)
+![Screenshot 2025-04-14 083906](https://github.com/user-attachments/assets/82161f88-50cb-470e-9525-5a86372b2506)
+![Screenshot 2025-04-14 083917](https://github.com/user-attachments/assets/b94c7481-f8bd-47d5-ba50-e42917a6a440)
+![Screenshot 2025-04-14 084043](https://github.com/user-attachments/assets/7c43e99a-d873-4eb4-8778-f141f4bcdf64)
+![Screenshot 2025-04-14 084345](https://github.com/user-attachments/assets/0ba78dcc-7eed-44a8-ae62-f5d9f3a8d8cf)
+![Screenshot 2025-04-14 084405](https://github.com/user-attachments/assets/b4b0f60c-6517-4349-bc4e-2a2a14088a16)
+![Screenshot 2025-04-14 084421](https://github.com/user-attachments/assets/ca8c5ea4-e698-4a75-859f-b5e82757b5bf)
+![Screenshot 2025-04-14 084430](https://github.com/user-attachments/assets/73ed91f7-4802-4ffe-9077-29c66dadb9a3)
+![Screenshot 2025-04-14 084507](https://github.com/user-attachments/assets/37726054-32a8-4eec-bab2-771bd8dba5d1)
+![Screenshot 2025-04-14 084514](https://github.com/user-attachments/assets/e04e7faf-1792-459b-a6eb-cdadc85ba5f4)
+![Screenshot 2025-04-14 084601](https://github.com/user-attachments/assets/ae4a7f09-cf97-40cb-8ea9-9fe843c459b4)
+*****************************************
+![Screenshot 2025-04-14 084613](https://github.com/user-attachments/assets/c4a17e6c-f8f0-4287-9c2f-13375e8904d5)
+![Screenshot 2025-04-14 084624](https://github.com/user-attachments/assets/219e678c-d35e-4a98-9a3b-eab292865603)
+![Screenshot 2025-04-14 084634](https://github.com/user-attachments/assets/94942648-3dec-48a0-97c0-943d35c48176)
+![Screenshot 2025-04-14 084638](https://github.com/user-attachments/assets/1939943c-f63d-441c-a5de-896c6c436d64)
+![Screenshot 2025-04-14 084642](https://github.com/user-attachments/assets/9edfd2d5-8e1a-40ca-8df0-cbf79ef895b4)
+![Screenshot 2025-04-14 084703](https://github.com/user-attachments/assets/fd438828-41d8-4e6c-9501-ca0258fc5281)
+![Screenshot 2025-04-14 084655](https://github.com/user-attachments/assets/b1a87070-cb15-4fe8-a702-8dc4a2f0824a)
+![Screenshot 2025-04-14 084728](https://github.com/user-attachments/assets/97b34106-c0e1-4cd0-98af-64c3640006b3)
+![Screenshot 2025-04-14 084741](https://github.com/user-attachments/assets/ec6991c6-6a7c-418e-94b5-46d6eb68658e)
+![Screenshot 2025-04-14 084805](https://github.com/user-attachments/assets/89da95c2-a853-4e61-9e07-826372e7fb83)
+![Screenshot 2025-04-14 084812](https://github.com/user-attachments/assets/6d6ed12a-f009-4726-a351-8a4b87613e0a)
