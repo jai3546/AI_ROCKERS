@@ -33,6 +33,10 @@ Voice Interface: Web Speech API (STT & TTS)
 *******************************************
 ![Screenshot 2025-04-14 083756](https://github.com/user-attachments/assets/d4c56d11-178f-45fd-8219-0c35b192151a)
 **************************************
+![image](https://github.com/user-attachments/assets/ae70e9ee-f0a7-4c90-896b-ef132a46c35f)
+**************************************
+![image](https://github.com/user-attachments/assets/e9dae4c3-0a8e-494b-92f6-3319428b2f54)
+**************************************
 ![Screenshot 2025-04-14 083804](https://github.com/user-attachments/assets/72b0ef0a-ccf0-45fe-be19-fde12a402b79)
 **************************************
 ![Screenshot 2025-04-14 083808](https://github.com/user-attachments/assets/8ecd1dfa-9b7f-4f08-ab85-adc103eccc0a)
@@ -84,3 +88,11 @@ Voice Interface: Web Speech API (STT & TTS)
 ![Screenshot 2025-04-14 084805](https://github.com/user-attachments/assets/89da95c2-a853-4e61-9e07-826372e7fb83)
 **************************************
 ![Screenshot 2025-04-14 084812](https://github.com/user-attachments/assets/6d6ed12a-f009-4726-a351-8a4b87613e0a)
+
+![image](https://github.com/user-attachments/assets/ca2a52ec-303a-4f09-be4f-d5a57ba23dbc)
+
+![image](https://github.com/user-attachments/assets/8cb136cf-30f6-4df2-8dd5-06a04a7471eb)
+
+![image](https://github.com/user-attachments/assets/6f01351d-7ebf-465d-acae-20b5301da9de)
+
+
