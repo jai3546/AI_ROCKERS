@@ -88,11 +88,18 @@ Voice Interface: Web Speech API (STT & TTS)
 ![Screenshot 2025-04-14 084805](https://github.com/user-attachments/assets/89da95c2-a853-4e61-9e07-826372e7fb83)
 **************************************
 ![Screenshot 2025-04-14 084812](https://github.com/user-attachments/assets/6d6ed12a-f009-4726-a351-8a4b87613e0a)
-
+**************************************
 ![image](https://github.com/user-attachments/assets/ca2a52ec-303a-4f09-be4f-d5a57ba23dbc)
-
+**************************************
 ![image](https://github.com/user-attachments/assets/8cb136cf-30f6-4df2-8dd5-06a04a7471eb)
-
+**************************************
 ![image](https://github.com/user-attachments/assets/6f01351d-7ebf-465d-acae-20b5301da9de)
-
-
+**************************************
+![Screenshot 2025-04-15 123029](https://github.com/user-attachments/assets/a66c0e6a-40e0-4f50-bed3-39b87464163b)
+**************************************
+![Screenshot 2025-04-15 123057](https://github.com/user-attachments/assets/f9c3ea6f-f4a5-4719-945b-1fb00ca846a1)
+*************************************
+![Screenshot 2025-04-15 123125](https://github.com/user-attachments/assets/18a9b7ed-d1db-40c1-b66b-1fa3d488c90f)
+*************************************
+![Screenshot 2025-04-15 123307](https://github.com/user-attachments/assets/ad1dc177-9cce-442c-9f2a-77cef6a7604d)
+*************************************
