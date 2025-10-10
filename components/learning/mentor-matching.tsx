@@ -57,7 +57,7 @@ interface MatchResult {
 
 interface MentorMatchingProps {
   studentId: string
-  language?: "en" | "hi" | "te"
+  language?: "en" | "hi" | "pa"
   onSelectMentor?: (mentorId: string) => void
 }
 
@@ -75,212 +75,212 @@ export function MentorMatching({
     title: {
       en: "AI Mentor Matching",
       hi: "AI मेंटर मैचिंग",
-      te: "AI మెంటార్ మ్యాచింగ్",
+      pa: "AI ਮੈਂਟਰ ਮੈਚਿੰਗ",
     },
     description: {
       en: "Find the perfect mentor based on your needs and preferences",
       hi: "आपकी जरूरतों और प्राथमिकताओं के आधार पर सही मेंटर खोजें",
-      te: "మీ అవసరాలు మరియు ప్రాధాన్యతల ఆధారంగా సరైన మెంటార్‌ను కనుగొనండి",
+      pa: "ਆਪਣੀਆਂ ਲੋੜਾਂ ਅਤੇ ਤਰਜੀਹਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਸਹੀ ਮੈਂਟਰ ਲੱਭੋ",
     },
     loading: {
       en: "Finding your perfect mentor match...",
       hi: "आपके लिए सही मेंटर खोज रहे हैं...",
-      te: "మీకు సరైన మెంటార్‌ను కనుగొంటున్నాము...",
+      pa: "ਤੁਹਾਡੇ ਲਈ ਸਹੀ ਮੈਂਟਰ ਲੱਭ ਰਹੇ ਹਾਂ...",
     },
     error: {
       en: "Error finding mentor matches",
       hi: "मेंटर मैच खोजने में त्रुटि",
-      te: "మెంటార్ మ్యాచ్‌లను కనుగొనడంలో లోపం",
+      pa: "ਮੈਂਟਰ ਮੈਚ ਲੱਭਣ ਵਿੱਚ ਗਲਤੀ",
     },
     retry: {
       en: "Retry",
       hi: "पुनः प्रयास करें",
-      te: "మళ్ళీ ప్రయత్నించండి",
+      pa: "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
     },
     bestMatch: {
       en: "Best Match",
       hi: "सर्वोत्तम मैच",
-      te: "ఉత్తమ మ్యాచ్",
+      pa: "ਸਭ ਤੋਂ ਵਧੀਆ ਮੈਚ",
     },
     alternatives: {
       en: "Alternatives",
       hi: "विकल्प",
-      te: "ప్రత్యామ్నాయాలు",
+      pa: "ਵਿਕਲਪ",
     },
     expertise: {
       en: "Expertise",
       hi: "विशेषज्ञता",
-      te: "నైపుణ్యం",
+      pa: "ਮੁਹਾਰਤ",
     },
     availability: {
       en: "Availability",
       hi: "उपलब्धता",
-      te: "అందుబాటు",
+      pa: "ਉਪਲਬਧਤਾ",
     },
     regions: {
       en: "Regions",
       hi: "क्षेत्र",
-      te: "ప్రాంతాలు",
+      pa: "ਖੇਤਰ",
     },
     languages: {
       en: "Languages",
       hi: "भाषाएँ",
-      te: "భాషలు",
+      pa: "ਭਾਸ਼ਾਵਾਂ",
     },
     selectMentor: {
       en: "Select Mentor",
       hi: "मेंटर चुनें",
-      te: "మెంటార్‌ను ఎంచుకోండి",
+      pa: "ਮੈਂਟਰ ਚੁਣੋ",
     },
     yourNeeds: {
       en: "Your Needs",
       hi: "आपकी जरूरतें",
-      te: "మీ అవసరాలు",
+      pa: "ਤੁਹਾਡੀਆਂ ਲੋੜਾਂ",
     },
     subject: {
       en: "Subject",
       hi: "विषय",
-      te: "విషయం",
+      pa: "ਵਿਸ਼ਾ",
     },
     time: {
       en: "Time",
       hi: "समय",
-      te: "సమయం",
+      pa: "ਸਮਾਂ",
     },
     region: {
       en: "Region",
       hi: "क्षेत्र",
-      te: "ప్రాంతం",
+      pa: "ਖੇਤਰ",
     },
     emotionalState: {
       en: "Emotional State",
       hi: "भावनात्मक स्थिति",
-      te: "భావోద్వేగ స్థితి",
+      pa: "ਭਾਵਨਾਤਮਕ ਸਥਿਤੀ",
     },
     morning: {
       en: "Morning",
       hi: "सुबह",
-      te: "ఉదయం",
+      pa: "ਸਵੇਰ",
     },
     afternoon: {
       en: "Afternoon",
       hi: "दोपहर",
-      te: "మధ్యాహ్నం",
+      pa: "ਦੁਪਹਿਰ",
     },
     evening: {
       en: "Evening",
       hi: "शाम",
-      te: "సాయంత్రం",
+      pa: "ਸ਼ਾਮ",
     },
     night: {
       en: "Night",
       hi: "रात",
-      te: "రాత్రి",
+      pa: "ਰਾਤ",
     },
     happy: {
       en: "Happy",
       hi: "खुश",
-      te: "సంతోషంగా",
+      pa: "ਖੁਸ਼",
     },
     neutral: {
       en: "Neutral",
       hi: "तटस्थ",
-      te: "తటస్థంగా",
+      pa: "ਨਿਰਪੱਖ",
     },
     stressed: {
       en: "Stressed",
       hi: "तनावग्रस्त",
-      te: "ఒత్తిడిలో",
+      pa: "ਤਣਾਅ ਵਿੱਚ",
     },
     math: {
       en: "Mathematics",
       hi: "गणित",
-      te: "గణితం",
+      pa: "ਗਣਿਤ",
     },
     science: {
       en: "Science",
       hi: "विज्ञान",
-      te: "విజ్ఞానశాస్త్రం",
+      pa: "ਵਿਗਿਆਨ",
     },
     history: {
       en: "History",
       hi: "इतिहास",
-      te: "చరిత్ర",
+      pa: "ਇਤਿਹਾਸ",
     },
     english: {
       en: "English",
       hi: "अंग्रेजी",
-      te: "ఆంగ్లం",
+      pa: "ਅੰਗਰੇਜ਼ੀ",
     },
-    telangana: {
-      en: "Telangana",
-      hi: "तेलंगाना",
-      te: "తెలంగాణ",
+    punjab: {
+      en: "Punjab",
+      hi: "पंजाब",
+      pa: "ਪੰਜਾਬ",
     },
-    andhra_pradesh: {
-      en: "Andhra Pradesh",
-      hi: "आंध्र प्रदेश",
-      te: "ఆంధ్ర ప్రదేశ్",
+    haryana: {
+      en: "Haryana",
+      hi: "हरियाणा",
+      pa: "ਹਰਿਆਣਾ",
     },
     tamil_nadu: {
       en: "Tamil Nadu",
       hi: "तमिलनाडु",
-      te: "తమిళనాడు",
+      pa: "ਤਾਮਿਲਨਾਡੂ",
     },
     karnataka: {
       en: "Karnataka",
       hi: "कर्नाटक",
-      te: "కర్ణాటక",
+      pa: "ਕਰਨਾਟਕ",
     },
     kerala: {
       en: "Kerala",
       hi: "केरल",
-      te: "కేరళ",
+      pa: "ਕੇਰਲ",
     },
     maharashtra: {
       en: "Maharashtra",
       hi: "महाराष्ट्र",
-      te: "మహారాష్ట్ర",
+      pa: "ਮਹਾਰਾਸ਼ਟਰ",
     },
     gujarat: {
       en: "Gujarat",
       hi: "गुजरात",
-      te: "గుజరాత్",
+      pa: "ਗੁਜਰਾਤ",
     },
-    telugu: {
-      en: "Telugu",
-      hi: "तेलुगु",
-      te: "తెలుగు",
+    punjabi: {
+      en: "Punjabi",
+      hi: "पंजाबी",
+      pa: "ਪੰਜਾਬੀ",
     },
     tamil: {
       en: "Tamil",
       hi: "तमिल",
-      te: "తమిళం",
+      pa: "ਤਾਮਿਲ",
     },
     kannada: {
       en: "Kannada",
       hi: "कन्नड़",
-      te: "కన్నడ",
+      pa: "ਕੰਨੜ",
     },
     malayalam: {
       en: "Malayalam",
       hi: "मलयालम",
-      te: "మలయాళం",
+      pa: "ਮਲਿਆਲਮ",
     },
     hindi: {
       en: "Hindi",
       hi: "हिंदी",
-      te: "హిందీ",
+      pa: "ਹਿੰਦੀ",
     },
     marathi: {
       en: "Marathi",
       hi: "मराठी",
-      te: "మరాఠీ",
+      pa: "ਮਰਾਠੀ",
     },
     gujarati: {
       en: "Gujarati",
       hi: "गुजराती",
-      te: "గుజరాతీ",
+      pa: "ਗੁਜਰਾਤੀ",
     }
   }
 
@@ -314,8 +314,8 @@ export function MentorMatching({
           emotional_state: "stressed",
           subject_need: "math",
           available_time: "morning",
-          region: "telangana",
-          language: "telugu",
+          region: "punjab",
+          language: "punjabi",
           performance_level: "high",
           behavior: "excellent",
           learning_style: "visual",
@@ -328,8 +328,8 @@ export function MentorMatching({
           expertise: ["math", "science"],
           specialization: ["algebra", "calculus", "physics"],
           available_time: ["morning", "afternoon"],
-          region: ["telangana", "andhra_pradesh"],
-          language: ["telugu", "english"],
+          region: ["punjab", "haryana"],
+          language: ["punjabi", "english"],
           experience_years: 15,
           teaching_style: "structured",
           student_performance_focus: "high",
@@ -344,8 +344,8 @@ export function MentorMatching({
             expertise: ["math", "science", "history"],
             specialization: ["geometry", "physics", "ancient history"],
             available_time: ["morning", "evening", "night"],
-            region: ["telangana", "andhra_pradesh", "karnataka"],
-            language: ["telugu", "kannada", "english", "hindi"],
+            region: ["punjab", "haryana", "karnataka"],
+            language: ["punjabi", "kannada", "english", "hindi"],
             experience_years: 20,
             teaching_style: "analytical",
             student_performance_focus: "high",
@@ -590,7 +590,7 @@ interface MentorCardProps {
   mentor: Mentor
   isSelected: boolean
   onSelect: () => void
-  language: "en" | "hi" | "te"
+  language: "en" | "hi" | "pa"
   translations: any
 }
 

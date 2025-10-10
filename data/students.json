@@ -4,8 +4,8 @@
     "emotional_state": "happy",
     "subject_need": "math",
     "available_time": "morning",
-    "region": "telangana",
-    "language": "telugu"
+    "region": "punjab",
+    "language": "punjabi"
   },
   {
     "id": "S002",
@@ -28,8 +28,8 @@
     "emotional_state": "stressed",
     "subject_need": "english",
     "available_time": "night",
-    "region": "andhra_pradesh",
-    "language": "telugu"
+    "region": "punjab",
+    "language": "punjabi"
   },
   {
     "id": "S005",

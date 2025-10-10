@@ -3,8 +3,8 @@
     "id": "M001",
     "expertise": ["math", "science"],
     "available_time": ["morning", "afternoon"],
-    "region": ["telangana", "andhra_pradesh"],
-    "language": ["telugu", "english"]
+    "region": ["punjab", "haryana"],
+    "language": ["punjabi", "english"]
   },
   {
     "id": "M002",
@@ -24,8 +24,8 @@
     "id": "M004",
     "expertise": ["math", "science", "history"],
     "available_time": ["morning", "evening", "night"],
-    "region": ["telangana", "andhra_pradesh", "karnataka"],
-    "language": ["telugu", "kannada", "english", "hindi"]
+    "region": ["punjab", "haryana", "karnataka"],
+    "language": ["punjabi", "kannada", "english", "hindi"]
   },
   {
     "id": "M005",
@@ -45,8 +45,8 @@
     "id": "M007",
     "expertise": ["math", "history"],
     "available_time": ["morning", "night"],
-    "region": ["telangana", "andhra_pradesh", "tamil_nadu"],
-    "language": ["telugu", "tamil", "english"]
+    "region": ["punjab", "haryana", "tamil_nadu"],
+    "language": ["punjabi", "tamil", "english"]
   },
   {
     "id": "M008",
