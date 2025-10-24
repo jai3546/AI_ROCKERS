@@ -5,14 +5,14 @@ import { motion } from "framer-motion"
 import { Globe } from "lucide-react"
 
 interface LanguageSelectorProps {
-  onLanguageChange: (language: "en" | "hi" | "pa") => void
-  initialLanguage?: "en" | "hi" | "pa"
+  onLanguageChange: (language: "en" | "hi" | "te") => void
+  initialLanguage?: "en" | "hi" | "te"
 }
 
 export function LanguageSelector({ onLanguageChange, initialLanguage = "en" }: LanguageSelectorProps) {
-  const [language, setLanguage] = useState<"en" | "hi" | "pa">(initialLanguage)
+  const [language, setLanguage] = useState<"en" | "hi" | "te">(initialLanguage)
 
-  const handleLanguageChange = (newLanguage: "en" | "hi" | "pa") => {
+  const handleLanguageChange = (newLanguage: "en" | "hi" | "te") => {
     setLanguage(newLanguage)
     onLanguageChange(newLanguage)
 
@@ -25,7 +25,7 @@ export function LanguageSelector({ onLanguageChange, initialLanguage = "en" }: L
   const languages = [
     { code: "en", name: "English" },
     { code: "hi", name: "हिंदी" },
-    { code: "pa", name: "ਪੰਜਾਬੀ" },
+    { code: "te", name: "తెలుగు" },
   ]
 
   return (
@@ -41,7 +41,7 @@ export function LanguageSelector({ onLanguageChange, initialLanguage = "en" }: L
             key={lang.code}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => handleLanguageChange(lang.code as "en" | "hi" | "pa")}
+            onClick={() => handleLanguageChange(lang.code as "en" | "hi" | "te")}
             className={`language-button ${
               language === lang.code ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
             }`}
