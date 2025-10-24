@@ -57,7 +57,7 @@ interface MatchResult {
 
 interface MentorMatchingProps {
   studentId: string
-  language?: "en" | "hi" | "pa"
+  language?: "en" | "hi" | "te"
   onSelectMentor?: (mentorId: string) => void
 }
 
@@ -73,215 +73,216 @@ export function MentorMatching({
 
   const translations = {
     title: {
-      en: "AI Mentor Matching",
-      hi: "AI मेंटर मैचिंग",
-      pa: "AI ਮੈਂਟਰ ਮੈਚਿੰਗ",
-    },
-    description: {
-      en: "Find the perfect mentor based on your needs and preferences",
-      hi: "आपकी जरूरतों और प्राथमिकताओं के आधार पर सही मेंटर खोजें",
-      pa: "ਆਪਣੀਆਂ ਲੋੜਾਂ ਅਤੇ ਤਰਜੀਹਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਸਹੀ ਮੈਂਟਰ ਲੱਭੋ",
-    },
-    loading: {
-      en: "Finding your perfect mentor match...",
-      hi: "आपके लिए सही मेंटर खोज रहे हैं...",
-      pa: "ਤੁਹਾਡੇ ਲਈ ਸਹੀ ਮੈਂਟਰ ਲੱਭ ਰਹੇ ਹਾਂ...",
-    },
-    error: {
-      en: "Error finding mentor matches",
-      hi: "मेंटर मैच खोजने में त्रुटि",
-      pa: "ਮੈਂਟਰ ਮੈਚ ਲੱਭਣ ਵਿੱਚ ਗਲਤੀ",
-    },
-    retry: {
-      en: "Retry",
-      hi: "पुनः प्रयास करें",
-      pa: "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
-    },
-    bestMatch: {
-      en: "Best Match",
-      hi: "सर्वोत्तम मैच",
-      pa: "ਸਭ ਤੋਂ ਵਧੀਆ ਮੈਚ",
-    },
-    alternatives: {
-      en: "Alternatives",
-      hi: "विकल्प",
-      pa: "ਵਿਕਲਪ",
-    },
-    expertise: {
-      en: "Expertise",
-      hi: "विशेषज्ञता",
-      pa: "ਮੁਹਾਰਤ",
-    },
-    availability: {
-      en: "Availability",
-      hi: "उपलब्धता",
-      pa: "ਉਪਲਬਧਤਾ",
-    },
-    regions: {
-      en: "Regions",
-      hi: "क्षेत्र",
-      pa: "ਖੇਤਰ",
-    },
-    languages: {
-      en: "Languages",
-      hi: "भाषाएँ",
-      pa: "ਭਾਸ਼ਾਵਾਂ",
-    },
-    selectMentor: {
-      en: "Select Mentor",
-      hi: "मेंटर चुनें",
-      pa: "ਮੈਂਟਰ ਚੁਣੋ",
-    },
-    yourNeeds: {
-      en: "Your Needs",
-      hi: "आपकी जरूरतें",
-      pa: "ਤੁਹਾਡੀਆਂ ਲੋੜਾਂ",
-    },
-    subject: {
-      en: "Subject",
-      hi: "विषय",
-      pa: "ਵਿਸ਼ਾ",
-    },
-    time: {
-      en: "Time",
-      hi: "समय",
-      pa: "ਸਮਾਂ",
-    },
-    region: {
-      en: "Region",
-      hi: "क्षेत्र",
-      pa: "ਖੇਤਰ",
-    },
-    emotionalState: {
-      en: "Emotional State",
-      hi: "भावनात्मक स्थिति",
-      pa: "ਭਾਵਨਾਤਮਕ ਸਥਿਤੀ",
-    },
-    morning: {
-      en: "Morning",
-      hi: "सुबह",
-      pa: "ਸਵੇਰ",
-    },
-    afternoon: {
-      en: "Afternoon",
-      hi: "दोपहर",
-      pa: "ਦੁਪਹਿਰ",
-    },
-    evening: {
-      en: "Evening",
-      hi: "शाम",
-      pa: "ਸ਼ਾਮ",
-    },
-    night: {
-      en: "Night",
-      hi: "रात",
-      pa: "ਰਾਤ",
-    },
-    happy: {
-      en: "Happy",
-      hi: "खुश",
-      pa: "ਖੁਸ਼",
-    },
-    neutral: {
-      en: "Neutral",
-      hi: "तटस्थ",
-      pa: "ਨਿਰਪੱਖ",
-    },
-    stressed: {
-      en: "Stressed",
-      hi: "तनावग्रस्त",
-      pa: "ਤਣਾਅ ਵਿੱਚ",
-    },
-    math: {
-      en: "Mathematics",
-      hi: "गणित",
-      pa: "ਗਣਿਤ",
-    },
-    science: {
-      en: "Science",
-      hi: "विज्ञान",
-      pa: "ਵਿਗਿਆਨ",
-    },
-    history: {
-      en: "History",
-      hi: "इतिहास",
-      pa: "ਇਤਿਹਾਸ",
-    },
-    english: {
-      en: "English",
-      hi: "अंग्रेजी",
-      pa: "ਅੰਗਰੇਜ਼ੀ",
-    },
-    punjab: {
-      en: "Punjab",
-      hi: "पंजाब",
-      pa: "ਪੰਜਾਬ",
-    },
-    haryana: {
-      en: "Haryana",
-      hi: "हरियाणा",
-      pa: "ਹਰਿਆਣਾ",
-    },
-    tamil_nadu: {
-      en: "Tamil Nadu",
-      hi: "तमिलनाडु",
-      pa: "ਤਾਮਿਲਨਾਡੂ",
-    },
-    karnataka: {
-      en: "Karnataka",
-      hi: "कर्नाटक",
-      pa: "ਕਰਨਾਟਕ",
-    },
-    kerala: {
-      en: "Kerala",
-      hi: "केरल",
-      pa: "ਕੇਰਲ",
-    },
-    maharashtra: {
-      en: "Maharashtra",
-      hi: "महाराष्ट्र",
-      pa: "ਮਹਾਰਾਸ਼ਟਰ",
-    },
-    gujarat: {
-      en: "Gujarat",
-      hi: "गुजरात",
-      pa: "ਗੁਜਰਾਤ",
-    },
-    punjabi: {
-      en: "Punjabi",
-      hi: "पंजाबी",
-      pa: "ਪੰਜਾਬੀ",
-    },
-    tamil: {
-      en: "Tamil",
-      hi: "तमिल",
-      pa: "ਤਾਮਿਲ",
-    },
-    kannada: {
-      en: "Kannada",
-      hi: "कन्नड़",
-      pa: "ਕੰਨੜ",
-    },
-    malayalam: {
-      en: "Malayalam",
-      hi: "मलयालम",
-      pa: "ਮਲਿਆਲਮ",
-    },
-    hindi: {
-      en: "Hindi",
-      hi: "हिंदी",
-      pa: "ਹਿੰਦੀ",
-    },
-    marathi: {
-      en: "Marathi",
-      hi: "मराठी",
-      pa: "ਮਰਾਠੀ",
-    },
-    gujarati: {
-      en: "Gujarati",
-      hi: "गुजराती",
-      pa: "ਗੁਜਰਾਤੀ",
-    }
+  en: "AI Mentor Matching",
+  hi: "AI मेंटर मैचिंग",
+  te: "AI మెంటార్ మాచింగ్",
+},
+description: {
+  en: "Find the perfect mentor based on your needs and preferences",
+  hi: "आपकी जरूरतों और प्राथमिकताओं के आधार पर सही मेंटर खोजें",
+  te: "మీ అవసరాలు మరియు ప్రాధాన్యతల ప్రకారం సరైన మెంటార్ను కనుగొనండి",
+},
+loading: {
+  en: "Finding your perfect mentor match...",
+  hi: "आपके लिए सही मेंटर खोज रहे हैं...",
+  te: "మీ కోసం సరైన మెంటార్ మ్యాచ్‌ను కనుగొంటుంది...",
+},
+error: {
+  en: "Error finding mentor matches",
+  hi: "मेंटर मैच खोजने में त्रुटि",
+  te: "మెంటార్ మ్యాచ్‌లను కనుగొనడంలో పొరపాటు",
+},
+retry: {
+  en: "Retry",
+  hi: "पुनः प्रयास करें",
+  te: "మళ్ళీ ప్రయత్నించండి",
+},
+bestMatch: {
+  en: "Best Match",
+  hi: "सर्वोत्तम मैच",
+  te: "ఉత్తమ మ్యాచ్",
+},
+alternatives: {
+  en: "Alternatives",
+  hi: "विकल्प",
+  te: "పరిష్కారాలు",
+},
+expertise: {
+  en: "Expertise",
+  hi: "विशेषज्ञता",
+  te: "నైపుణ్యం",
+},
+availability: {
+  en: "Availability",
+  hi: "उपलब्धता",
+  te: "అందుబాటులో ఉండటం",
+},
+regions: {
+  en: "Regions",
+  hi: "क्षेत्र",
+  te: "ప్రాంతాలు",
+},
+languages: {
+  en: "Languages",
+  hi: "भाषाएँ",
+  te: "భాషలు",
+},
+selectMentor: {
+  en: "Select Mentor",
+  hi: "मेंटर चुनें",
+  te: "మెంటార్ ఎంచుకోండి",
+},
+yourNeeds: {
+  en: "Your Needs",
+  hi: "आपकी जरूरतें",
+  te: "మీ అవసరాలు",
+},
+subject: {
+  en: "Subject",
+  hi: "विषय",
+  te: "విషయం",
+},
+time: {
+  en: "Time",
+  hi: "समय",
+  te: "సమయం",
+},
+region: {
+  en: "Region",
+  hi: "क्षेत्र",
+  te: "ప్రాంతం",
+},
+emotionalState: {
+  en: "Emotional State",
+  hi: "भावनात्मक स्थिति",
+  te: "భావోద్వేగ స్థితి",
+},
+morning: {
+  en: "Morning",
+  hi: "सुबह",
+  te: "ఉదయం",
+},
+afternoon: {
+  en: "Afternoon",
+  hi: "दोपहर",
+  te: "మధ్యాహ్నం",
+},
+evening: {
+  en: "Evening",
+  hi: "शाम",
+  te: "సాయంత్రం",
+},
+night: {
+  en: "Night",
+  hi: "रात",
+  te: "రాత్రి",
+},
+happy: {
+  en: "Happy",
+  hi: "खुश",
+  te: "సంతోషం",
+},
+neutral: {
+  en: "Neutral",
+  hi: "तटस्थ",
+  te: "నిష్ప్రభ",
+},
+stressed: {
+  en: "Stressed",
+  hi: "तनावग्रस्त",
+  te: " ఒత్తిడి",
+},
+math: {
+  en: "Mathematics",
+  hi: "गणित",
+  te: "గణితం",
+},
+science: {
+  en: "Science",
+  hi: "विज्ञान",
+  te: "శాస్త్రం",
+},
+history: {
+  en: "History",
+  hi: "इतिहास",
+  te: "చరిత్ర",
+},
+english: {
+  en: "English",
+  hi: "अंग्रेजी",
+  te: "ఆంగ్లం",
+},
+punjab: {
+  en: "Punjab",
+  hi: "पंजाब",
+  te: "పంజాబ్",
+},
+haryana: {
+  en: "Haryana",
+  hi: "हरियाणा",
+  te: "హర్యానా",
+},
+tamil_nadu: {
+  en: "Tamil Nadu",
+  hi: "तमिलनाडु",
+  te: "తమిళనాడు",
+},
+karnataka: {
+  en: "Karnataka",
+  hi: "कर्नाटक",
+  te: "కర్ణాటక",
+},
+kerala: {
+  en: "Kerala",
+  hi: "केरल",
+  te: "కెరల",
+},
+maharashtra: {
+  en: "Maharashtra",
+  hi: "महाराष्ट्र",
+  te: "మహారాష్ట్ర",
+},
+gujarat: {
+  en: "Gujarat",
+  hi: "गुजरात",
+  te: "గుజరాత్",
+},
+telugu: {
+  en: "Telugu",
+  hi: "तेलुगु",
+  te: "తెలుగు",
+},
+tamil: {
+  en: "Tamil",
+  hi: "तमिल",
+  te: "తమిళం",
+},
+kannada: {
+  en: "Kannada",
+  hi: "कन्नड़",
+  te: "కన్నడ",
+},
+malayalam: {
+  en: "Malayalam",
+  hi: "मलयालम",
+  te: "మలయాళం",
+},
+hindi: {
+  en: "Hindi",
+  hi: "हिंदी",
+  te: "హిందీ",
+},
+marathi: {
+  en: "Marathi",
+  hi: "मराठी",
+  te: "మరాఠీ",
+},
+gujarati: {
+  en: "Gujarati",
+  hi: "गुजराती",
+  te: "గుజరాతి",
+}
+
   }
 
   // Function to fetch mentor matches
