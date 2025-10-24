@@ -136,7 +136,20 @@ const students: Student[] = [
     behavior: "excellent",
     learning_style: "auditory",
     class: "7A"
-  }
+  },
+  {
+  id: "S009",
+  name: "Sanjay Reddy",
+  emotional_state: "neutral",
+  subject_need: "science",
+  available_time: "morning",
+  region: "andhra_pradesh",
+  language: "telugu",
+  performance_level: "medium",
+  behavior: "good",
+  learning_style: "auditory",
+  class: "8B"
+}
 ];
 
 // Mock mentor data
@@ -215,7 +228,23 @@ const mentors: Mentor[] = [
     student_performance_focus: "medium",
     behavior_management: "balanced",
     bio: "Vikram uses discussion-based learning to help students develop critical thinking skills. He's particularly good with students who have behavioral challenges."
-  }
+  },
+  {
+  id: "M006",
+  name: "Dr. Lakshmi Narayan",
+  avatar: "LN",
+  expertise: ["science", "math"],
+  specialization: ["physics", "chemistry", "algebra"],
+  available_time: ["morning", "afternoon"],
+  region: ["andhra_pradesh", "telangana"],
+  language: ["telugu", "english"],
+  experience_years: 14,
+  teaching_style: "interactive",
+  student_performance_focus: "medium",
+  behavior_management: "balanced",
+  bio: "Dr. Narayan is a dedicated mentor experienced in science and math, focusing on interactive teaching and improving student engagement."
+}
+
 ];
 
 // Calculate match score between student and mentor
