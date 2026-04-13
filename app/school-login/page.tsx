@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowLeft, Info, School } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,14 +15,14 @@ export default function SchoolLoginPage() {
   const router = useRouter()
   const [schoolCode, setSchoolCode] = useState("")
   const [adminPin, setAdminPin] = useState("")
-  const [language, setLanguage] = useState<"en" | "hi" | "te">(() => {
-    // Check if we're in the browser and get stored language or default to "en"
-    if (typeof window !== "undefined") {
-      const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
-      return storedLanguage || "en"
+  const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
+    if (storedLanguage) {
+      setLanguage(storedLanguage)
     }
-    return "en"
-  })
+  }, [])
 
   const translations = {
     title: {

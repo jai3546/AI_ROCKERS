@@ -37,7 +37,7 @@ import { VoiceCommand } from "@/components/voice-command"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 import { LevelProgress } from "@/components/gamification/level-progress"
 import { DailyChallenge } from "@/components/gamification/daily-challenge"
 import { AchievementCard } from "@/components/gamification/achievement-card"
@@ -89,14 +89,7 @@ function ThemeToggle() {
 
 export default function StudentDashboardPage() {
   const router = useRouter()
-  const [language, setLanguage] = useState<"en" | "hi" | "te">(() => {
-    // Check if we're in the browser and get stored language or default to "en"
-    if (typeof window !== "undefined") {
-      const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
-      return storedLanguage || "en"
-    }
-    return "en"
-  })
+  const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [showAiTutor, setShowAiTutor] = useState(false)
   const [showQuiz, setShowQuiz] = useState(false)
   const [showFlashcards, setShowFlashcards] = useState(false)
@@ -127,6 +120,13 @@ export default function StudentDashboardPage() {
   const [showOutOfFrameWarning, setShowOutOfFrameWarning] = useState(false)
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
   const [showStudentDetails, setShowStudentDetails] = useState(false)
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
+    if (storedLanguage) {
+      setLanguage(storedLanguage)
+    }
+  }, [])
 
   // Auto-start emotion tracking immediately
   useEffect(() => {

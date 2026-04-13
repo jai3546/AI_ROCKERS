@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
+import { useTheme } from "@/components/theme-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   BarChart3,
@@ -48,14 +48,7 @@ function ThemeToggle() {
 
 export default function AdminDashboardPage() {
   const router = useRouter()
-  const [language, setLanguage] = useState<"en" | "hi" | "te">(() => {
-    // Check if we're in the browser and get stored language or default to "en"
-    if (typeof window !== "undefined") {
-      const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
-      return storedLanguage || "en"
-    }
-    return "en"
-  })
+  const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [isExporting, setIsExporting] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [detailsType, setDetailsType] = useState<"emotional" | "quiz">("emotional")
@@ -65,6 +58,13 @@ export default function AdminDashboardPage() {
     name: "",
     class: ""
   })
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
+    if (storedLanguage) {
+      setLanguage(storedLanguage)
+    }
+  }, [])
 
   const translations = {
     welcome: {

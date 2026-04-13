@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowLeft, BookOpen, GraduationCap, Info, Loader2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -50,19 +50,19 @@ export default function StudentLoginPage() {
   const router = useRouter()
   const [schoolCode, setSchoolCode] = useState("")
   const [studentId, setStudentId] = useState("")
-  const [language, setLanguage] = useState<"en" | "hi" | "te">(() => {
-    // Check if we're in the browser and get stored language or default to "en"
-    if (typeof window !== "undefined") {
-      const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
-      return storedLanguage || "en"
-    }
-    return "en"
-  })
+  const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [activeTab, setActiveTab] = useState<"login" | "demo">("login")
   const [selectedClass, setSelectedClass] = useState<string>("")
   const [selectedUser, setSelectedUser] = useState<string>("")
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
+    if (storedLanguage) {
+      setLanguage(storedLanguage)
+    }
+  }, [])
 
   const translations = {
     title: {

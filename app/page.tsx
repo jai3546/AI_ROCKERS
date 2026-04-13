@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, BookOpen, GraduationCap, School, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/theme-provider"
 import { ReviewsSection } from "@/components/reviews/reviews-section"
 import { Button } from "@/components/ui/button"
 import { LanguageSelector } from "@/components/language-selector"
@@ -13,18 +13,16 @@ import Link from "next/link"
 export default function LandingPage() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [language, setLanguage] = useState<"en" | "hi" | "te">(() => {
-    // Check if we're in the browser and get stored language or default to "en"
-    if (typeof window !== "undefined") {
-      const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
-      return storedLanguage || "en"
-    }
-    return "en"
-  })
+  const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true)
+
+    const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
+    if (storedLanguage) {
+      setLanguage(storedLanguage)
+    }
   }, [])
 
   const handleLanguageChange = (newLanguage: "en" | "hi" | "te") => {
@@ -100,7 +98,10 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-accent/20 via-background to-highlight/20">
+    <main
+      suppressHydrationWarning
+      className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-accent/20 via-background to-highlight/20"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
