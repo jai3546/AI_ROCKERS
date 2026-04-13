@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import {
   BookOpen,
+  Check,
   Clock,
   Globe,
   Languages,
@@ -66,6 +67,8 @@ export function MentorMatching({
   language = "en",
   onSelectMentor
 }: MentorMatchingProps) {
+  const matchStorageKey = `mentor-match:${studentId}`
+  const statusStorageKey = `mentor-match-status:${studentId}`
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [matchResult, setMatchResult] = useState<MatchResult | null>(null)
@@ -285,108 +288,81 @@ gujarati: {
 
   }
 
-  // Function to fetch mentor matches
-  const fetchMentorMatches = async () => {
+  // Handle mentor lookup for demo mode and persist result in localStorage.
+  const handleFindMentor = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      // Try to fetch from the API if it's available
-      try {
-        const response = await fetch(`/api/match-mentor/${studentId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setMatchResult(data)
-          setSelectedMentor(data.best_match)
-          return
-        }
-      } catch (apiError) {
-        console.log("API not available, using mock data")
+      if (!studentId?.trim()) {
+        throw new Error("Student ID is missing")
       }
 
-      // Simulate API call with mock data
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const endpoint = `/api/match-mentor?studentId=${encodeURIComponent(studentId)}`
+      console.log("[MentorMatching] Fetching mentor matches", { studentId, endpoint })
 
-      // Mock data based on student ID
-      const mockData: MatchResult = {
-        student: {
-          id: studentId,
-          name: "Rahul Singh",
-          emotional_state: "stressed",
-          subject_need: "math",
-          available_time: "morning",
-          region: "punjab",
-          language: "punjabi",
-          performance_level: "high",
-          behavior: "excellent",
-          learning_style: "visual",
-          class: "8A"
-        },
-        best_match: {
-          id: "M001",
-          name: "Dr. Rajesh Kumar",
-          avatar: "RK",
-          expertise: ["math", "science"],
-          specialization: ["algebra", "calculus", "physics"],
-          available_time: ["morning", "afternoon"],
-          region: ["punjab", "haryana"],
-          language: ["punjabi", "english"],
-          experience_years: 15,
-          teaching_style: "structured",
-          student_performance_focus: "high",
-          behavior_management: "strict",
-          bio: "Dr. Kumar is a former university professor with a PhD in Mathematics. He specializes in helping high-performing students excel in competitive exams and advanced topics."
-        },
-        alternatives: [
-          {
-            id: "M004",
-            name: "Dr. Meera Patel",
-            avatar: "MP",
-            expertise: ["math", "science", "history"],
-            specialization: ["geometry", "physics", "ancient history"],
-            available_time: ["morning", "evening", "night"],
-            region: ["punjab", "haryana", "karnataka"],
-            language: ["punjabi", "kannada", "english", "hindi"],
-            experience_years: 20,
-            teaching_style: "analytical",
-            student_performance_focus: "high",
-            behavior_management: "strict",
-            bio: "Dr. Patel has extensive experience preparing students for competitive exams. She demands excellence and has a proven track record with high-performing students."
-          },
-          {
-            id: "M002",
-            name: "Priya Venkatesh",
-            avatar: "PV",
-            expertise: ["science", "english"],
-            specialization: ["biology", "chemistry", "literature"],
-            available_time: ["evening", "night"],
-            region: ["tamil_nadu", "kerala"],
-            language: ["tamil", "malayalam", "english"],
-            experience_years: 8,
-            teaching_style: "interactive",
-            student_performance_focus: "medium",
-            behavior_management: "balanced",
-            bio: "Priya is a patient and encouraging mentor who excels at helping average students improve their grades through interactive learning methods."
+      const response = await fetch(endpoint)
+
+      if (!response.ok) {
+        let errorMessage = `Failed to fetch mentor matches (${response.status})`
+        try {
+          const errorPayload = await response.json()
+          if (errorPayload?.error) {
+            errorMessage = errorPayload.error
           }
-        ]
+        } catch {
+          // Keep generic message when response body is not JSON.
+        }
+        throw new Error(errorMessage)
       }
 
-      setMatchResult(mockData)
-      setSelectedMentor(mockData.best_match)
+      const data: MatchResult = await response.json()
+      console.log("[MentorMatching] API response", data)
+      setMatchResult(data)
+      setSelectedMentor(data.best_match)
+      localStorage.setItem(matchStorageKey, JSON.stringify(data))
+      localStorage.setItem(statusStorageKey, "matched")
     } catch (err) {
+      console.error("[MentorMatching] Failed to load mentor matches", err)
       setError(err instanceof Error ? err.message : "An unknown error occurred")
+      setMatchResult(null)
+      setSelectedMentor(null)
+      localStorage.removeItem(matchStorageKey)
+      localStorage.removeItem(statusStorageKey)
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Fetch mentor matches on component mount
+  // Backward-compatible alias for existing retry button handler.
+  const fetchMentorMatches = handleFindMentor
+
   useEffect(() => {
-    if (studentId) {
-      fetchMentorMatches()
+    if (!studentId?.trim()) {
+      return
     }
+
+    const savedStatus = localStorage.getItem(statusStorageKey)
+    const savedMatch = localStorage.getItem(matchStorageKey)
+
+    if (savedStatus === "matched" && savedMatch) {
+      try {
+        const parsed = JSON.parse(savedMatch) as MatchResult
+        setMatchResult(parsed)
+        setSelectedMentor(parsed.best_match)
+        setError(null)
+        console.log("[MentorMatching] Restored match from localStorage", { studentId })
+        return
+      } catch {
+        localStorage.removeItem(matchStorageKey)
+        localStorage.removeItem(statusStorageKey)
+      }
+    }
+
+    void handleFindMentor()
   }, [studentId])
 
+  // Fetch mentor matches on component mount
   // Handle mentor selection
   const handleSelectMentor = (mentor: Mentor) => {
     setSelectedMentor(mentor)
@@ -466,117 +442,122 @@ gujarati: {
             {translations.description[language]}
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
-          {/* Student needs summary */}
-          <div className="mb-6 p-4 bg-muted/50 rounded-lg dark:bg-muted/20">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium">{translations.yourNeeds[language]}</h3>
-              <div className="text-sm font-medium">
-                {student.name} - {student.class}
-              </div>
-            </div>
+        <CardContent className="p-0">
+          {/* Scrollable content container */}
+          <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
+            <div className="p-4">
+              {/* Student needs summary */}
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg dark:bg-muted/20">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium">{translations.yourNeeds[language]}</h3>
+                  <div className="text-sm font-medium">
+                    {student.name} - {student.class}
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">{translations.subject[language]}</span>
-                <span className="font-medium flex items-center gap-1">
-                  <BookOpen size={14} />
-                  {translateValue('subject', student.subject_need)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">{translations.time[language]}</span>
-                <span className="font-medium flex items-center gap-1">
-                  <Clock size={14} />
-                  {translateValue('time', student.available_time)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">{translations.region[language]}</span>
-                <span className="font-medium flex items-center gap-1">
-                  <Globe size={14} />
-                  {translateValue('region', student.region)}
-                </span>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">{translations.subject[language]}</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <BookOpen size={14} />
+                      {translateValue('subject', student.subject_need)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">{translations.time[language]}</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <Clock size={14} />
+                      {translateValue('time', student.available_time)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">{translations.region[language]}</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <Globe size={14} />
+                      {translateValue('region', student.region)}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Performance:</span>
-                <Badge
-                  variant="outline"
-                  className={`
-                    ${student.performance_level === 'high' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
-                    ${student.performance_level === 'medium' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
-                    ${student.performance_level === 'low' ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800' : ''}
-                  `}
-                >
-                  {student.performance_level.charAt(0).toUpperCase() + student.performance_level.slice(1)}
-                </Badge>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Performance:</span>
+                    <Badge
+                      variant="outline"
+                      className={`
+                        ${student.performance_level === 'high' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
+                        ${student.performance_level === 'medium' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
+                        ${student.performance_level === 'low' ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800' : ''}
+                      `}
+                    >
+                      {student.performance_level.charAt(0).toUpperCase() + student.performance_level.slice(1)}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Behavior:</span>
+                    <Badge
+                      variant="outline"
+                      className={`
+                        ${student.behavior === 'excellent' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
+                        ${student.behavior === 'good' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
+                        ${student.behavior === 'challenging' ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : ''}
+                      `}
+                    >
+                      {student.behavior.charAt(0).toUpperCase() + student.behavior.slice(1)}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{translations.emotionalState[language]}:</span>
+                    <Badge
+                      variant="outline"
+                      className={`
+                        ${student.emotional_state === 'happy' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
+                        ${student.emotional_state === 'neutral' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
+                        ${student.emotional_state === 'stressed' ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : ''}
+                      `}
+                    >
+                      {translateValue('emotional', student.emotional_state)}
+                    </Badge>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Behavior:</span>
-                <Badge
-                  variant="outline"
-                  className={`
-                    ${student.behavior === 'excellent' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
-                    ${student.behavior === 'good' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
-                    ${student.behavior === 'challenging' ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : ''}
-                  `}
-                >
-                  {student.behavior.charAt(0).toUpperCase() + student.behavior.slice(1)}
-                </Badge>
-              </div>
+              {/* Mentor matches */}
+              <Tabs defaultValue="best" className="w-full">
+                <TabsList className="sticky top-0 grid grid-cols-2 mb-4 bg-background z-10">
+                  <TabsTrigger value="best">{translations.bestMatch[language]}</TabsTrigger>
+                  <TabsTrigger value="alternatives">{translations.alternatives[language]}</TabsTrigger>
+                </TabsList>
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{translations.emotionalState[language]}:</span>
-                <Badge
-                  variant="outline"
-                  className={`
-                    ${student.emotional_state === 'happy' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : ''}
-                    ${student.emotional_state === 'neutral' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : ''}
-                    ${student.emotional_state === 'stressed' ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : ''}
-                  `}
-                >
-                  {translateValue('emotional', student.emotional_state)}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          {/* Mentor matches */}
-          <Tabs defaultValue="best" className="w-full">
-            <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="best">{translations.bestMatch[language]}</TabsTrigger>
-              <TabsTrigger value="alternatives">{translations.alternatives[language]}</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="best">
-              <MentorCard
-                mentor={best_match}
-                isSelected={selectedMentor?.id === best_match.id}
-                onSelect={() => handleSelectMentor(best_match)}
-                language={language}
-                translations={translations}
-              />
-            </TabsContent>
-
-            <TabsContent value="alternatives">
-              <div className="space-y-4">
-                {alternatives.map((mentor) => (
+                <TabsContent value="best" className="pb-6">
                   <MentorCard
-                    key={mentor.id}
-                    mentor={mentor}
-                    isSelected={selectedMentor?.id === mentor.id}
-                    onSelect={() => handleSelectMentor(mentor)}
+                    mentor={best_match}
+                    isSelected={selectedMentor?.id === best_match.id}
+                    onSelect={() => handleSelectMentor(best_match)}
                     language={language}
                     translations={translations}
                   />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+
+                <TabsContent value="alternatives" className="pb-6">
+                  <div className="space-y-4">
+                    {alternatives.map((mentor) => (
+                      <MentorCard
+                        key={mentor.id}
+                        mentor={mentor}
+                        isSelected={selectedMentor?.id === mentor.id}
+                        onSelect={() => handleSelectMentor(mentor)}
+                        language={language}
+                        translations={translations}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
         </CardContent>
       </Card>
     )
@@ -591,7 +572,7 @@ interface MentorCardProps {
   mentor: Mentor
   isSelected: boolean
   onSelect: () => void
-  language: "en" | "hi" | "pa"
+  language: "en" | "hi" | "te"
   translations: any
 }
 

@@ -26,6 +26,47 @@ export function VoiceCommand({ onCommand, language = "en", availableCommands = [
   )
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const recognitionRef = useRef<any>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Safe audio playback function that handles interruptions
+  const playSuccessSound = async () => {
+    try {
+      // Stop any previous audio playback
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      }
+
+      // Create and play new audio
+      const audio = new Audio("/success-chime.mp3")
+      audio.volume = 0.5
+      audioRef.current = audio
+
+      // Handle promise rejection for AbortError and other errors
+      const playPromise = audio.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .catch((error) => {
+            // AbortError: The play() request was interrupted (this is normal, not an error to log)
+            if (error.name === "AbortError") {
+              // Silently ignore - this is expected behavior when audio playback is interrupted
+              return
+            }
+            // NotAllowedError: User hasn't interacted with the page yet
+            if (error.name === "NotAllowedError") {
+              console.debug("Audio playback not allowed until user interaction")
+              return
+            }
+            // Other errors worth logging
+            if (error.name !== "NotSupportedError") {
+              console.debug("Audio playback error:", error.name)
+            }
+          })
+      }
+    } catch (error) {
+      console.debug("Audio playback setup error:", error)
+    }
+  }
 
   // Initialize speech recognition
   useEffect(() => {
@@ -72,9 +113,7 @@ export function VoiceCommand({ onCommand, language = "en", availableCommands = [
           }
 
           // Play success sound
-          const audio = new Audio("/success-chime.mp3")
-          audio.volume = 0.5
-          audio.play().catch((e) => console.log("Audio play failed:", e))
+          playSuccessSound()
 
           // Reset after a delay
           timeoutRef.current = setTimeout(() => {
@@ -116,6 +155,12 @@ export function VoiceCommand({ onCommand, language = "en", availableCommands = [
         } catch (e) {
           console.error("Error stopping speech recognition", e)
         }
+      }
+
+      // Clean up audio playback
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
       }
 
       if (timeoutRef.current) {
@@ -189,9 +234,7 @@ export function VoiceCommand({ onCommand, language = "en", availableCommands = [
         }
 
         // Play success sound
-        const audio = new Audio("/success-chime.mp3")
-        audio.volume = 0.5
-        audio.play().catch((e) => console.log("Audio play failed:", e))
+        playSuccessSound()
 
         // Reset after a delay
         timeoutRef.current = setTimeout(() => {

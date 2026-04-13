@@ -293,6 +293,7 @@ export async function GET(
 ) {
   const params = await Promise.resolve(context.params);
   const studentId = params.studentId || new URL(request.url).searchParams.get('studentId');
+  console.log('[match-mentor] Received studentId', studentId);
 
   if (!studentId) {
     return NextResponse.json({ error: 'studentId is required' }, { status: 400 });
@@ -305,8 +306,15 @@ export async function GET(
   }
 
   try {
-    return NextResponse.json(buildMatchResult(student));
+    const result = buildMatchResult(student);
+    console.log('[match-mentor] Returning match result', {
+      studentId,
+      bestMatchId: result.best_match.id,
+      alternativesCount: result.alternatives.length,
+    });
+    return NextResponse.json(result);
   } catch (error) {
+    console.error('[match-mentor] Failed to compute match result', { studentId, error });
     const message = error instanceof Error ? error.message : 'Failed to compute mentor matches';
     return NextResponse.json({ error: message }, { status: 500 });
   }
