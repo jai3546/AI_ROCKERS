@@ -100,7 +100,7 @@ export default function LandingPage() {
   return (
     <main
       suppressHydrationWarning
-      className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-accent/20 via-background to-highlight/20"
+      className="min-h-screen flex flex-col items-center justify-center p-6 bg-yellow-400"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
