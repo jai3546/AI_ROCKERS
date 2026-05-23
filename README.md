@@ -5,7 +5,7 @@
   <h1><b><a href="https://vidyaai-sage.vercel.app/">VidyAI</a></b></h1> 
 
 <p>
-  <img src="https://img.shields.io/github/stars/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=6C63FF" alt="Stars"/>
+  <img src="https://img.shields.io/github/stars/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=6C63FF&cacheSeconds=0" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=7C3AED" alt="Forks"/>
   <img src="https://img.shields.io/github/watchers/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=8B5CF6" alt="Watchers"/>
   <img src="https://img.shields.io/github/license/jai3546/AI_ROCKERS?style=for-the-badge&color=EC4899" alt="License"/>
