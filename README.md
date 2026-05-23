@@ -7,8 +7,8 @@
 <p>
   <img src="https://img.shields.io/github/stars/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=6C63FF&cacheSeconds=0" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=7C3AED" alt="Forks"/>
-  <img src="https://img.shields.io/github/watchers/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=8B5CF6" alt="Watchers"/>
-  <img src="https://img.shields.io/github/license/jai3546/AI_ROCKERS?style=for-the-badge&color=EC4899" alt="License"/>
+  <img src="https://img.shields.io/github/watchers/jai3546/AI_ROCKERS?style=for-the-badge&logo=github&color=8B5CF6&cacheSeconds=0" alt="Watchers"/>
+  <img src="https://img.shields.io/github/license/jai3546/AI_ROCKERS?style=for-the-badge&color=EC4899&cacheSeconds=0" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"/>
   <img src="https://img.shields.io/badge/Contributors-Welcome-blueviolet?style=for-the-badge" alt="Contributors Welcome"/>
 </p>
