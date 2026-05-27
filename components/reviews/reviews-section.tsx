@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ReviewCard, ReviewData } from "./review-card"
 import { ReviewForm } from "./review-form"
-import TestimonialCarousel from "./carousal"
+import TestimonialCarousel from "./carosel"
 
 interface ReviewsSectionProps {
   title: string
@@ -71,16 +71,6 @@ const sampleReviews: ReviewData[] = [
     date: "3 weeks ago"
   }
 ]
-
-const testimonials = [
-  { id: 1, name: 'Arjun Mehta', role: 'B.Tech Student', quote: '“VidyaAI Sage has completely changed the way I study. The AI explains everything so clearly!”', rating: 5, avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80' },
-  { id: 2, name: 'Priya Sharma', role: 'BCA Student', quote: '“The doubt solving and notes generation features are incredible. It’s like having a personal tutor 24/7!”', rating: 5, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80' },
-  { id: 3, name: 'Rohan Verma', role: 'B.Sc Student', quote: '“Super easy to use and saves so much time. Perfect study buddy for exam preparation.”', rating: 5, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80' },
-  { id: 4, name: 'Ananya Gupta', role: 'B.Com Student', quote: '“I love how accurate and instant the answers are. VidyaAI Sage is truly a game-changer!”', rating: 5, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80' },
-  { id: 5, name: 'Ishaan Nair', role: 'M.Tech Student', quote: '“The conceptual deep-dives are phenomenal. It breaks down complex architectural topics effortlessly.”', rating: 5, avatar: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=150&auto=format&fit=crop&q=80' },
-  { id: 6, name: 'Kriti Joshi', role: 'MCA Student', quote: '“Automated revision notes saved me during mid-terms. Highly accurate definitions and code snippets.”', rating: 5, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
-  { id: 7, name: 'Kabir Singh', role: 'B.E. Student', quote: '“Unbelievable tool. The interactive problem-solving modules felt exactly like a live 1-on-1 session.”', rating: 5, avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80' }
-];
 
 export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSectionProps) {
   const [currentPage, setCurrentPage] = useState(0)
