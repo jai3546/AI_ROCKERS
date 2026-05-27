@@ -160,7 +160,7 @@ export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSect
   return (
     <section className="w-full py-12">
       <div className="container px-4 mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+        {/* <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
             {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
@@ -179,11 +179,9 @@ export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSect
               <span className="ml-2 text-foreground font-medium">4.8</span>
               <span className="ml-1 text-muted-foreground">({reviews.length})</span>
             </div>
-            <Button onClick={handleAddReview} variant="outline" size="sm">
-              {translations.writeReview[language]}
-            </Button>
+           
           </div>
-        </div>
+        </div> */}
 
                 <TestimonialCarousel/>
 
@@ -221,7 +219,9 @@ export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSect
           </div>
         )} */}
       </div>
-
+ <Button onClick={handleAddReview} variant="outline" size="sm">
+              {translations.writeReview[language]}
+</Button>
       {/* Review Form */}
       <AnimatePresence>
         {showReviewForm && (

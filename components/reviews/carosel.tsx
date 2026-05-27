@@ -19,7 +19,7 @@ const testimonials: Testimonial[] = [
     role: "Student, Class 10",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
     rating: 5,
-    quote: "VidyAI has completely transformed my learning experience. The voice commands make it so easy to navigate, and the emotional tracking helps me stay focused. I've improved my grades significantly!",
+    quote: "VidyAI has completely transformed my learning experience. The voice commands make it so easy to navigate and  improved my grades significantly!",
     // date: "2 weeks ago"
   },
   {
@@ -28,7 +28,7 @@ const testimonials: Testimonial[] = [
     role: "Student, Class 8",
      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     rating: 4,
-    quote: "I love using the flashcards and quizzes. They make studying fun and interactive. The dark mode is also great for studying at night without straining my eyes.",
+    quote: "I love using the flashcards and quizzes. Its fun and interactive. The dark mode is also great for studying at night without straining my eyes.",
     // date: "1 month ago"
   },
   {
@@ -46,7 +46,7 @@ const testimonials: Testimonial[] = [
     role: "Teacher, Science",
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80',
     rating: 5,
-    quote: "As a teacher, I find the school portal incredibly useful. It helps me track student progress and identify areas where they need additional support. The weekly reports are comprehensive and insightful.",
+    quote: "As a teacher, I find the school portal incredibly useful. It helps me track student progress and the weekly reports are insightful.",
     // date: "1 month ago"
   },
   {
@@ -55,7 +55,7 @@ const testimonials: Testimonial[] = [
     role: "Parent",
     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80',
     rating: 4,
-    quote: "I appreciate being able to monitor my child's learning progress. The emotional tracking feature gives me insights into how they're engaging with the material, which helps me provide better support at home.",
+    quote: "Tracking my child's emotions reveals how he truly engage, empowering me to provide targeted, meaningful support right where they need it most.",
     // date: "2 months ago"
   },
   {
@@ -64,7 +64,7 @@ const testimonials: Testimonial[] = [
     role: "Student, Class 11",
      avatar:'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
     rating: 5,
-    quote: "The summaries feature has been a game-changer for my exam preparation. It helps me quickly review key concepts and saves so much time. The voice navigation is also very intuitive.",
+    quote: "The summaries feature has been a game-changer for my exam preparation; quick review of key concepts saves so much time.",
     // date: "3 weeks ago"
   }
 ]
@@ -200,7 +200,7 @@ export default function TestimonialCarousel() {
               >
                 <div>
                   <div className="text-[#FF71A4] opacity-80 text-4xl font-serif leading-none mb-2" aria-hidden="true">“</div>
-                  <p className="text-[#334155] font-medium leading-relaxed mb-4 text-[13px] md:text-[14px] line-clamp-5">
+                  <p className="text-[#334155] font-medium leading-relaxed mb-4 text-[13px] md:text-[14px] line-clamp-6">
                     {item.quote}
                   </p>
                 </div>
