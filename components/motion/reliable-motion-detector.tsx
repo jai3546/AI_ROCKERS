@@ -5,13 +5,7 @@ import { AlertTriangle, CheckCircle, Camera, CameraOff, RefreshCw } from 'lucide
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-}
+import { MotionData } from '@/types/interface'
 
 interface MotionDetectorProps {
   onMotionDetected?: (data: MotionData) => void
