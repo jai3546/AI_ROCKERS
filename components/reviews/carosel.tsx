@@ -19,7 +19,7 @@ const testimonials: Testimonial[] = [
     role: "Student, Class 10",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
     rating: 5,
-    quote: "VidyAI has completely transformed my learning experience. The voice commands make it so easy to navigate and  improved my grades significantly!",
+    quote: "Vidya AI has completely transformed my learning experience. The voice commands make it so easy to navigate and  improved my grades significantly!",
     // date: "2 weeks ago"
   },
   {
@@ -168,7 +168,7 @@ export default function TestimonialCarousel() {
           Loved by Students, Trusted by <span className="relative inline-block text-[#0F172A]">Thousands<span className="absolute bottom-0 left-0 w-full h-[6px] bg-[#FF71A4] rounded-full opacity-40"></span></span>
         </h2>
         <p className="text-sm md:text-base text-[#64748B]">
-          Here's what our users have to say about <span className="text-[#FF508E] font-semibold">VidyaAI Sage</span>.
+          Here's what our users have to say about <span className="text-[#FF508E] font-semibold">VidyaAI </span>.
         </p>
       </div>
 

@@ -14,7 +14,7 @@ interface ReviewsSectionProps {
   language?: "en" | "hi" | "te"
 }
 
-// Sample reviews data
+// Sample reviews data not used in production
 const sampleReviews: ReviewData[] = [
   {
     id: "1",
@@ -22,7 +22,7 @@ const sampleReviews: ReviewData[] = [
     role: "Student, Class 10",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
     rating: 5,
-    comment: "VidyAI has completely transformed my learning experience. The voice commands make it so easy to navigate, and the emotional tracking helps me stay focused. I've improved my grades significantly!",
+    comment: "Vidya AI has completely transformed my learning experience. The voice commands make it so easy to navigate, and the emotional tracking helps me stay focused. I've improved my grades significantly!",
     date: "2 weeks ago"
   },
   {
