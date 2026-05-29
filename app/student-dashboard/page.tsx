@@ -53,6 +53,8 @@ import { FlashcardDeck } from "@/components/learning/flashcard-deck"
 import { StudySummaries } from "@/components/learning/study-summaries"
 import { LearningOptionsMenu } from "@/components/learning/learning-options-menu"
 import { Textbooks } from "@/components/learning/textbooks"
+import { MindMap } from "@/components/learning/mind-map"
+import { getMindMapData } from "@/data/mind-map-data"
 import { sampleTextbooks } from "@/data/textbooks"
 import { ImprovedMotionDetector, type MotionData } from "@/components/motion/improved-motion-detector"
 import { ImprovedEmotionDetector, type EmotionData } from "@/components/tracking/improved-emotion-detector"
@@ -92,10 +94,14 @@ export default function StudentDashboardPage() {
   const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [showAiTutor, setShowAiTutor] = useState(false)
   const [showQuiz, setShowQuiz] = useState(false)
+  const [activeQuizSubject, setActiveQuizSubject] = useState<string | undefined>(undefined)
   const [showFlashcards, setShowFlashcards] = useState(false)
   const [showSummaries, setShowSummaries] = useState(false)
   const [showLearningOptions, setShowLearningOptions] = useState(false)
   const [showTextbooks, setShowTextbooks] = useState(false)
+  const [showMindMap, setShowMindMap] = useState(false)
+  const [activeMindMapTopic, setActiveMindMapTopic] = useState<string>("Photosynthesis")
+  const [activeMindMapSubject, setActiveMindMapSubject] = useState<string>("Science")
   const [showReward, setShowReward] = useState(false)
   const [showMotionTracker, setShowMotionTracker] = useState(false)
   const [showEmotionDetector, setShowEmotionDetector] = useState(false)
@@ -134,9 +140,10 @@ export default function StudentDashboardPage() {
       // Force immediate emotion detection with a default emotion
       setTimeout(() => {
         const emotionData: EmotionData = {
-          timestamp: Date.now(),
+          timestamp: new Date(),
           emotion: 'focused',
           confidence: 85,
+          faceDetected: true,
           fatigueScore: 20,
           attentionScore: 80
         };
@@ -653,12 +660,12 @@ export default function StudentDashboardPage() {
     // Update last motion data
     setLastMotionData(motionData)
 
-    // Always set user in frame to true
-    setUserInFrame(true)
-    setShowOutOfFrameWarning(false)
+    // Set states based on actual detected motion data
+    setUserInFrame(motionData.inFrame)
+    setShowOutOfFrameWarning(!motionData.inFrame)
 
-    // Award XP occasionally
-    if (Math.random() < 0.02) {
+    // Award XP occasionally if in frame
+    if (motionData.inFrame && Math.random() < 0.02) {
       // Award a small amount of XP for motion tracking
       setCurrentXP(prev => prev + 1)
     }
@@ -811,7 +818,10 @@ export default function StudentDashboardPage() {
             variant="ghost"
             size="icon"
             className="relative group"
-            onClick={() => setShowQuiz(true)}
+            onClick={() => {
+              setActiveQuizSubject(undefined)
+              setShowQuiz(true)
+            }}
           >
             <BookOpen size={20} />
             <span className="sr-only">Learn</span>
@@ -902,7 +912,10 @@ export default function StudentDashboardPage() {
           timeLeft="8h 45m"
           progress={0}
           language={language}
-          onStart={() => setShowQuiz(true)}
+          onStart={() => {
+            setActiveQuizSubject("Science")
+            setShowQuiz(true)
+          }}
         />
 
         {/* Syllabus Selector */}
@@ -994,7 +1007,13 @@ export default function StudentDashboardPage() {
                       15 min
                     </div>
                   </div>
-                  <Button className="w-full bg-secondary hover:bg-secondary/90" onClick={() => setShowQuiz(true)}>
+                  <Button 
+                    className="w-full bg-secondary hover:bg-secondary/90" 
+                    onClick={() => {
+                      setActiveQuizSubject("Science")
+                      setShowQuiz(true)
+                    }}
+                  >
                     {translations.startQuiz[language]}
                   </Button>
                 </CardContent>
@@ -1154,9 +1173,10 @@ export default function StudentDashboardPage() {
                           // Force immediate emotion detection
                           setTimeout(() => {
                             const emotionData: EmotionData = {
-                              timestamp: Date.now(),
+                              timestamp: new Date(),
                               emotion: 'focused',
                               confidence: 85,
+                              faceDetected: true,
                               fatigueScore: 20,
                               attentionScore: 80
                             };
@@ -1385,14 +1405,17 @@ export default function StudentDashboardPage() {
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg">
+              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
                 <QuizContainer
                   questions={allQuizQuestions}
                   language={language}
                   syllabus={selectedSyllabus}
-                  subject="Science"
+                  subject={activeQuizSubject}
                   onComplete={handleQuizComplete}
-                  onClose={() => setShowQuiz(false)}
+                  onClose={() => {
+                    setShowQuiz(false)
+                    setActiveQuizSubject(undefined)
+                  }}
                 />
               </div>
             </motion.div>
@@ -1424,7 +1447,7 @@ export default function StudentDashboardPage() {
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg">
+              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
                 <FlashcardDeck
                   cards={allFlashcards}
                   language={language}
@@ -1461,7 +1484,7 @@ export default function StudentDashboardPage() {
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg">
+              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
                 <StudySummaries
                   summaries={allSummaries}
                   language={language}
@@ -1564,6 +1587,7 @@ export default function StudentDashboardPage() {
               onClose={() => setShowLearningOptions(false)}
               onSelectQuiz={() => {
                 setShowLearningOptions(false)
+                setActiveQuizSubject(undefined)
                 setShowQuiz(true)
               }}
               onSelectFlashcards={() => {
@@ -1577,6 +1601,12 @@ export default function StudentDashboardPage() {
               onSelectTextbooks={() => {
                 setShowLearningOptions(false)
                 setShowTextbooks(true)
+              }}
+              onSelectMindMap={() => {
+                setShowLearningOptions(false)
+                setActiveMindMapTopic("Photosynthesis")
+                setActiveMindMapSubject("Science")
+                setShowMindMap(true)
               }}
               language={language}
             />
@@ -1605,6 +1635,42 @@ export default function StudentDashboardPage() {
                 language={language}
                 syllabus={selectedSyllabus}
               />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mind Map Modal */}
+      <AnimatePresence>
+        {showMindMap && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-3xl relative"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-4 z-50 bg-white/80 dark:bg-slate-800 rounded-full"
+                onClick={() => setShowMindMap(false)}
+              >
+                <X size={18} />
+              </Button>
+
+              <div className="bg-white dark:bg-card p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
+                <MindMap
+                  data={getMindMapData(activeMindMapTopic, activeMindMapSubject)}
+                  title={`${activeMindMapTopic} Concept Map`}
+                  language={language}
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -1668,9 +1734,10 @@ export default function StudentDashboardPage() {
             onEmotionDetected={(data) => {
               // Convert SimpleEmotionData to EmotionData
               const emotionData: EmotionData = {
-                timestamp: data.timestamp.getTime(),
+                timestamp: data.timestamp,
                 emotion: data.emotion,
                 confidence: data.confidence,
+                faceDetected: data.faceDetected,
                 fatigueScore: data.fatigueScore,
                 attentionScore: data.attentionScore
               }

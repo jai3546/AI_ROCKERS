@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { EmotionData } from "./real-time-emotion-detector"
+import { EmotionData } from "./improved-emotion-detector"
 
 interface EmotionDisplayProps {
   emotionData: EmotionData | null

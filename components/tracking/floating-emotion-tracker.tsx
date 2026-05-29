@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Smile, Frown, Meh, AlertTriangle, Eye, X, Maximize2, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { EmotionData } from "./real-time-emotion-detector"
+import { EmotionData } from "./improved-emotion-detector"
 import { EmotionDisplay } from "./emotion-display"
 
 interface FloatingEmotionTrackerProps {
