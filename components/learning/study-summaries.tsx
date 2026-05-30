@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -40,6 +40,156 @@ export function StudySummaries({
   const [viewMode, setViewMode] = useState<"card" | "compact">("card")
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [activeMindMapSummary, setActiveMindMapSummary] = useState<StudySummary | null>(null)
+
+  // Audio Speech Synthesis state and refs
+  const [activeSummaryId, setActiveSummaryId] = useState<string | null>(null)
+  const [isPlaying, setIsPlaying] = useState<boolean>(false)
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(0)
+  const [playbackRate, setPlaybackRate] = useState<number>(1)
+
+  const activeSummaryIdRef = useRef<string | null>(null)
+  const isPlayingRef = useRef<boolean>(false)
+  const currentIndexRef = useRef<number>(0)
+  const playbackRateRef = useRef<number>(1)
+  const sentencesRef = useRef<string[]>([])
+
+  // Clean up speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  // Helper to split text into sentences
+  const splitIntoSentences = (text: string): string[] => {
+    if (!text) return []
+    const regex = /[^.!?]+(?:[.!?]+(?:\s+|$)|$)/g
+    const matches = text.match(regex)
+    return matches ? matches.map(s => s.trim()).filter(Boolean) : [text]
+  }
+
+  // Speak the current sentence
+  const speakCurrent = (summaryId: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return
+
+    window.speechSynthesis.cancel()
+
+    const idx = currentIndexRef.current
+    const list = sentencesRef.current
+
+    if (idx < 0 || idx >= list.length || !isPlayingRef.current || activeSummaryIdRef.current !== summaryId) {
+      if (idx >= list.length && activeSummaryIdRef.current === summaryId) {
+        handleStop()
+      }
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance(list[idx])
+    utterance.rate = playbackRateRef.current
+
+    // Detect language or fallback
+    if (language === "hi") {
+      utterance.lang = "hi-IN"
+    } else if (language === "te") {
+      utterance.lang = "te-IN"
+    } else {
+      utterance.lang = "en-US"
+    }
+
+    // Set matching voice if possible
+    const voices = window.speechSynthesis.getVoices()
+    const matchedVoice = voices.find(voice => 
+      voice.lang.toLowerCase().startsWith(utterance.lang.toLowerCase()) ||
+      (language === "en" && voice.lang.toLowerCase().startsWith("en"))
+    )
+    if (matchedVoice) {
+      utterance.voice = matchedVoice
+    }
+
+    utterance.onstart = () => {
+      if (activeSummaryIdRef.current === summaryId && currentIndexRef.current === idx) {
+        setCurrentSentenceIndex(idx)
+      }
+    }
+
+    utterance.onend = () => {
+      if (isPlayingRef.current && activeSummaryIdRef.current === summaryId) {
+        currentIndexRef.current = idx + 1
+        speakCurrent(summaryId)
+      }
+    }
+
+    utterance.onerror = (e) => {
+      if (e.error !== "interrupted") {
+        console.error("Speech Synthesis Error:", e)
+      }
+    }
+
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const handleStartSpeech = (summary: StudySummary) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return
+
+    window.speechSynthesis.cancel()
+
+    const sentences = splitIntoSentences(summary.content)
+    sentencesRef.current = sentences
+    currentIndexRef.current = 0
+    isPlayingRef.current = true
+    activeSummaryIdRef.current = summary.id
+
+    setActiveSummaryId(summary.id)
+    setIsPlaying(true)
+    setCurrentSentenceIndex(0)
+
+    speakCurrent(summary.id)
+  }
+
+  const handlePlayPause = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis || !activeSummaryId) return
+
+    if (isPlaying) {
+      window.speechSynthesis.pause()
+      isPlayingRef.current = false
+      setIsPlaying(false)
+    } else {
+      isPlayingRef.current = true
+      setIsPlaying(true)
+      
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume()
+      } else {
+        speakCurrent(activeSummaryId)
+      }
+    }
+  }
+
+  const handleStop = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return
+
+    window.speechSynthesis.cancel()
+    
+    setActiveSummaryId(null)
+    setIsPlaying(false)
+    setCurrentSentenceIndex(0)
+    
+    activeSummaryIdRef.current = null
+    isPlayingRef.current = false
+    currentIndexRef.current = 0
+    sentencesRef.current = []
+  }
+
+  const handleSpeedChange = (rate: number) => {
+    setPlaybackRate(rate)
+    playbackRateRef.current = rate
+
+    if (activeSummaryId && isPlaying) {
+      speakCurrent(activeSummaryId)
+    }
+  }
 
   // Filter summaries based on syllabus and search query
   useEffect(() => {
@@ -172,6 +322,16 @@ export function StudySummaries({
       hi: "सारांश खोजें...",
       te: "సారాంశాలను శోధించండి...",
     },
+    listen: {
+      en: "Listen",
+      hi: "सुनें",
+      te: "వినండి",
+    },
+    speed: {
+      en: "Speed",
+      hi: "गति",
+      te: "వేగం",
+    },
     cardView: {
       en: "Card View",
       hi: "कार्ड व्यू",
@@ -282,7 +442,7 @@ ${summary.content}
                 size="icon"
                 onClick={() => setViewMode(viewMode === "card" ? "compact" : "card")}
               >
-                {viewMode === "card" ? <FileText size={16} /> : <Card size={16} />}
+                 {viewMode === "card" ? <FileText size={16} /> : <LayoutGrid size={16} />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -335,10 +495,79 @@ ${summary.content}
                       </CardHeader>
                       <CardContent className={`${viewMode === "compact" ? 'pt-3 pb-3' : 'pt-4'}`}>
                         <div className={`prose prose-sm dark:prose-invert max-w-none ${viewMode === "compact" ? 'line-clamp-3' : ''}`}>
-                          <p>{summary.content}</p>
+                          {activeSummaryId === summary.id ? (
+                            <p className="whitespace-pre-wrap">
+                              {splitIntoSentences(summary.content).map((sentence, idx) => {
+                                const isHighlighted = idx === currentSentenceIndex;
+                                return (
+                                  <span
+                                    key={idx}
+                                    className={
+                                      isHighlighted
+                                        ? "bg-yellow-200 dark:bg-yellow-800/50 text-yellow-950 dark:text-yellow-100 transition-colors duration-200 px-1 py-0.5 rounded font-medium shadow-sm inline"
+                                        : "text-foreground/90 transition-colors duration-200"
+                                    }
+                                  >
+                                    {sentence}{" "}
+                                  </span>
+                                );
+                              })}
+                            </p>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{summary.content}</p>
+                          )}
                         </div>
                       </CardContent>
-                      <CardFooter className="flex justify-end gap-2 pt-0 pb-3">
+                      <CardFooter className="flex justify-end items-center gap-2 pt-0 pb-3">
+                        {activeSummaryId === summary.id ? (
+                          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-border mr-auto">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-blue-600 dark:text-blue-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
+                              onClick={handlePlayPause}
+                              title={isPlaying ? "Pause" : "Play"}
+                            >
+                              {isPlaying ? <Pause size={13} /> : <Play size={13} />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-red-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
+                              onClick={handleStop}
+                              title="Stop"
+                            >
+                              <Square size={11} fill="currentColor" />
+                            </Button>
+                            <span className="text-xs text-muted-foreground select-none">|</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground mr-0.5">
+                                {translations.speed[language]}:
+                              </span>
+                              <select
+                                value={playbackRate}
+                                onChange={(e) => handleSpeedChange(Number(e.target.value))}
+                                className="text-xs bg-transparent border-0 font-medium focus:ring-0 focus:outline-none cursor-pointer pr-1 py-0"
+                              >
+                                <option value="0.75" className="bg-background">0.75x</option>
+                                <option value="1" className="bg-background">1.0x</option>
+                                <option value="1.25" className="bg-background">1.25x</option>
+                                <option value="1.5" className="bg-background">1.5x</option>
+                                <option value="2" className="bg-background">2.0x</option>
+                              </select>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-1 h-8 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-900/30 mr-auto"
+                            onClick={() => handleStartSpeech(summary)}
+                          >
+                            <Volume2 size={14} />
+                            {translations.listen[language]}
+                          </Button>
+                        )}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
