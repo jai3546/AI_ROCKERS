@@ -347,18 +347,105 @@ export function safeJsonParse(str: string): any {
   try {
     return JSON.parse(cleaned);
   } catch (initialError) {
-    console.warn("Standard JSON.parse failed, attempting aggressive repair.", initialError);
+    console.warn("Standard JSON.parse failed, attempting aggressive scanning repair.", initialError);
     try {
-      // Escape raw newlines inside JSON string values
-      const repaired = cleaned.replace(/"([^"]*)"/g, (match, p1) => {
-        return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
-      });
+      // Escape raw newlines inside JSON string values safely via character scanning
+      let repaired = "";
+      let inString = false;
+      let escapeNext = false;
+      for (let i = 0; i < cleaned.length; i++) {
+        const char = cleaned[i];
+        if (escapeNext) {
+          repaired += char;
+          escapeNext = false;
+          continue;
+        }
+        if (char === '\\') {
+          repaired += char;
+          escapeNext = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          repaired += char;
+          continue;
+        }
+        if (inString && char === '\n') {
+          repaired += '\\n';
+        } else if (inString && char === '\r') {
+          repaired += '\\r';
+        } else {
+          repaired += char;
+        }
+      }
       return JSON.parse(repaired);
     } catch (repairedError) {
       console.error("Aggressive JSON repair failed:", repairedError);
-      throw initialError;
+      return null;
     }
   }
+}
+
+export function extractStringField(jsonStr: string, fieldName: string): string | null {
+  const regex = new RegExp(`"${fieldName}"\\s*:\\s*"([\\s\\S]*?)"\\s*(?:,\\s*"[a-zA-Z0-9_-]+"\\s*:|\\s*})`, "i");
+  const match = jsonStr.match(regex);
+  if (match) {
+    return match[1]
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '\r')
+      .replace(/\\t/g, '\t');
+  }
+  const fallbackRegex = new RegExp(`"${fieldName}"\\s*:\\s*"([\\s\\S]*?)"`, "i");
+  const fallbackMatch = jsonStr.match(fallbackRegex);
+  if (fallbackMatch) {
+    return fallbackMatch[1]
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '\r')
+      .replace(/\\t/g, '\t');
+  }
+  return null;
+}
+
+export function extractBalancedObject(str: string): string | null {
+  let braceCount = 0;
+  let inString = false;
+  let escapeNext = false;
+  let startIndex = str.indexOf('{');
+  
+  if (startIndex === -1) return null;
+  
+  for (let i = startIndex; i < str.length; i++) {
+    const char = str[i];
+    
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    
+    if (!inString) {
+      if (char === '{') {
+        braceCount++;
+      } else if (char === '}') {
+        braceCount--;
+        if (braceCount === 0) {
+          return str.substring(startIndex, i + 1);
+        }
+      }
+    }
+  }
+  return null;
 }
 
 export interface AiSummaryResult {
@@ -427,13 +514,51 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
         const data = await response.json();
         let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
         
+        let title = topic;
+        let summary = "";
+        let mindMapData = null;
+
         const parsed = safeJsonParse(rawText);
-        
-        return {
-          title: parsed.title || topic,
-          summary: parsed.summary || "No summary generated.",
-          mindMapData: parsed.mindMapData || { id: "root", label: topic }
-        };
+        if (parsed) {
+          title = parsed.title || topic;
+          summary = parsed.summary || "";
+          mindMapData = parsed.mindMapData || null;
+        } else {
+          console.warn("safeJsonParse failed for summary, attempting regex extraction on raw text");
+          
+          // Regex extraction of title
+          const titleVal = extractStringField(rawText, "title");
+          if (titleVal) {
+            title = titleVal;
+          }
+
+          // Regex extraction of summary
+          const summaryVal = extractStringField(rawText, "summary");
+          if (summaryVal) {
+            summary = summaryVal;
+          }
+
+          // Regex extraction of mindMapData
+          const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
+          if (mindMapMatch) {
+            try {
+              const block = extractBalancedObject(mindMapMatch[1]);
+              if (block) {
+                mindMapData = safeJsonParse(block);
+              }
+            } catch (e) {
+              console.warn("Failed to parse extracted mindMapData JSON:", e);
+            }
+          }
+        }
+
+        if (summary) {
+          return {
+            title,
+            summary,
+            mindMapData: mindMapData || { id: "root", label: title }
+          };
+        }
       }
     } catch (e) {
       console.error("Failed to generate AI summary, falling back to mock:", e);
@@ -680,9 +805,69 @@ Respond ONLY with a valid JSON block containing the array of questions. Do not w
         const data = await response.json();
         let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
         
+        let arrayData: any[] | null = null;
         const parsed = safeJsonParse(rawText);
-        const arrayData = extractArray(parsed);
-        if (arrayData) {
+        if (parsed) {
+          arrayData = extractArray(parsed);
+        }
+        
+        if (!arrayData) {
+          console.warn("Quiz JSON parsing failed, attempting regex/brace extraction on raw text");
+          
+          // Match the outer JSON array first
+          const arrayMatch = rawText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+          if (arrayMatch) {
+            arrayData = safeJsonParse(arrayMatch[0]);
+          }
+          
+          // If arrayData is still null or empty, parse it question-by-question using regex
+          if (!arrayData || arrayData.length === 0) {
+            arrayData = [];
+            const questionBlocks = rawText.match(/\{\s*"question"[\s\S]*?"options"[\s\S]*?\}/g);
+            if (questionBlocks) {
+              for (const block of questionBlocks) {
+                try {
+                  const questionText = extractStringField(block, "question") || "";
+                  
+                  const optionsMatch = block.match(/"options"\s*:\s*\[([\s\S]*?)\]/);
+                  const options: any[] = [];
+                  if (optionsMatch) {
+                    const optItems = optionsMatch[1].match(/\{\s*"id"[\s\S]*?\}/g);
+                    if (optItems) {
+                      for (const optItem of optItems) {
+                        const idVal = extractStringField(optItem, "id");
+                        const textVal = extractStringField(optItem, "text");
+                        const correctMatch = optItem.match(/"isCorrect"\s*:\s*(true|false)/);
+                        if (idVal && textVal) {
+                          options.push({
+                            id: idVal,
+                            text: textVal,
+                            isCorrect: correctMatch ? correctMatch[1] === "true" : false
+                          });
+                        }
+                      }
+                    }
+                  }
+                  
+                  if (questionText && options.length > 0) {
+                    const topicVal = extractStringField(block, "topic") || subject;
+                    const pointsMatch = block.match(/"points"\s*:\s*(\d+)/);
+                    arrayData.push({
+                      question: questionText,
+                      options: options,
+                      points: pointsMatch ? parseInt(pointsMatch[1], 10) : 20,
+                      topic: topicVal
+                    });
+                  }
+                } catch (e) {
+                  console.warn("Failed to extract individual question block:", e);
+                }
+              }
+            }
+          }
+        }
+
+        if (arrayData && arrayData.length > 0) {
           return arrayData.map((q, idx) => ({
             id: `ai-quiz-${idx}-${Date.now()}`,
             question: q.question,
@@ -751,9 +936,45 @@ Respond ONLY with a valid JSON block containing the array of flashcards. Do not 
         const data = await response.json();
         let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
         
+        let arrayData: any[] | null = null;
         const parsed = safeJsonParse(rawText);
-        const arrayData = extractArray(parsed);
-        if (arrayData) {
+        if (parsed) {
+          arrayData = extractArray(parsed);
+        }
+        
+        if (!arrayData) {
+          console.warn("Flashcards JSON parsing failed, attempting regex/brace extraction on raw text");
+          
+          // Match the outer JSON array block
+          const arrayMatch = rawText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+          if (arrayMatch) {
+            arrayData = safeJsonParse(arrayMatch[0]);
+          }
+          
+          // If arrayData is still null or empty, parse it card-by-card using regex
+          if (!arrayData || arrayData.length === 0) {
+            arrayData = [];
+            const cardBlocks = rawText.match(/\{\s*"front"[\s\S]*?"back"[\s\S]*?\}/g);
+            if (cardBlocks) {
+              for (const block of cardBlocks) {
+                try {
+                  const frontVal = extractStringField(block, "front");
+                  const backVal = extractStringField(block, "back");
+                  if (frontVal && backVal) {
+                    arrayData.push({
+                      front: frontVal,
+                      back: backVal
+                    });
+                  }
+                } catch (e) {
+                  console.warn("Failed to extract individual card block:", e);
+                }
+              }
+            }
+          }
+        }
+
+        if (arrayData && arrayData.length > 0) {
           return arrayData.map((card, idx) => ({
             id: `ai-card-${idx}-${Date.now()}`,
             front: card.front,

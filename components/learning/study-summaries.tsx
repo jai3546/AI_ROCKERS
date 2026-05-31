@@ -132,6 +132,7 @@ export function StudySummaries({
       setAllSummariesList(prev => [...prev, newSummary])
       setActiveSubject(targetSubject)
       setShowSubjectSelect(false)
+      setSearchQuery("")
     } catch (error) {
       console.error("AI Summary generation failed:", error)
     } finally {
