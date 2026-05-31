@@ -122,6 +122,7 @@ export default function StudentDashboardPage() {
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
   const [selectedSyllabus, setSelectedSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">("General")
+  const [dashboardSubject, setDashboardSubject] = useState<string>("all")
   const [userInFrame, setUserInFrame] = useState(true)
   const [showOutOfFrameWarning, setShowOutOfFrameWarning] = useState(false)
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
@@ -752,6 +753,82 @@ export default function StudentDashboardPage() {
       }
     }
   }
+  // Dynamic card content calculations based on syllabus and subject
+  const getQuizDetails = () => {
+    if (dashboardSubject === "all") {
+      const questionsCount = allQuizQuestions.filter(
+        q => q.syllabus === selectedSyllabus || q.syllabus === "General"
+      ).length
+      return {
+        title: "All Subjects Quiz",
+        countText: `${questionsCount} questions available`,
+        timeText: `${Math.round(questionsCount * 1.5)} min`,
+        subject: undefined
+      }
+    } else {
+      const questionsCount = allQuizQuestions.filter(
+        q => q.subject === dashboardSubject && (q.syllabus === selectedSyllabus || q.syllabus === "General")
+      ).length
+      return {
+        title: `${dashboardSubject} Quiz`,
+        countText: `${questionsCount} questions`,
+        timeText: `${Math.round(questionsCount * 1.5)} min`,
+        subject: dashboardSubject
+      }
+    }
+  }
+
+  const getFlashcardDetails = () => {
+    if (dashboardSubject === "all") {
+      const cardsCount = allFlashcards.filter(
+        c => c.syllabus === selectedSyllabus || c.syllabus === "General"
+      ).length
+      return {
+        title: "All Concepts",
+        countText: `${cardsCount} cards available`,
+        timeText: `${Math.round(cardsCount * 0.7)} min`,
+        subject: "all"
+      }
+    } else {
+      const cardsCount = allFlashcards.filter(
+        c => c.subject === dashboardSubject && (c.syllabus === selectedSyllabus || c.syllabus === "General")
+      ).length
+      return {
+        title: `${dashboardSubject} Concepts`,
+        countText: `${cardsCount} cards`,
+        timeText: `${Math.round(cardsCount * 0.7)} min`,
+        subject: dashboardSubject
+      }
+    }
+  }
+
+  const getSummaryDetails = () => {
+    if (dashboardSubject === "all") {
+      const summariesCount = allSummaries.filter(
+        s => s.syllabus === selectedSyllabus || s.syllabus === "General"
+      ).length
+      return {
+        title: "All Notes",
+        countText: `${summariesCount} summaries available`,
+        timeText: `${summariesCount * 5} min`,
+        subject: "all"
+      }
+    } else {
+      const summariesCount = allSummaries.filter(
+        s => s.subject === dashboardSubject && (s.syllabus === selectedSyllabus || s.syllabus === "General")
+      ).length
+      return {
+        title: `${dashboardSubject} Notes`,
+        countText: `${summariesCount} summaries`,
+        timeText: `${summariesCount * 5} min`,
+        subject: dashboardSubject
+      }
+    }
+  }
+
+  const quizDetails = getQuizDetails()
+  const flashcardDetails = getFlashcardDetails()
+  const summaryDetails = getSummaryDetails()
 
   return (
     <main className="min-h-screen bg-background pb-20">
@@ -918,40 +995,56 @@ export default function StudentDashboardPage() {
           }}
         />
 
-        {/* Syllabus Selector */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium">Selected Syllabus:</h3>
-          <div className="flex gap-2">
-            <Button
-              variant={selectedSyllabus === "AP" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSyllabus("AP")}
-            >
-              AP
-            </Button>
-            <Button
-              variant={selectedSyllabus === "Telangana" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSyllabus("Telangana")}
-            >
-              Telangana
-            </Button>
-            <Button
-              variant={selectedSyllabus === "CBSE" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSyllabus("CBSE")}
-            >
-              CBSE
-            </Button>
-            <Button
-              variant={selectedSyllabus === "General" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSyllabus("General")}
-            >
-              General
-            </Button>
+        {/* Learning Filters Card */}
+        <Card className="border border-border/50 shadow-sm bg-card p-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Syllabus Selection */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <BookOpen size={14} className="text-primary" />
+                Syllabus
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {(["General", "CBSE", "AP", "Telangana"] as const).map((syll) => (
+                  <Button
+                    key={syll}
+                    variant={selectedSyllabus === syll ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedSyllabus(syll)}
+                    className="rounded-full px-4 h-9 text-xs font-medium transition-all"
+                  >
+                    {syll}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Subject Selection */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Brain size={14} className="text-secondary" />
+                Subject Selection
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {["all", "Science", "Math", "English", "Social Studies"].map((subj) => (
+                  <Button
+                    key={subj}
+                    variant={dashboardSubject === subj ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setDashboardSubject(subj)}
+                    className={`rounded-full px-4 h-9 text-xs font-medium transition-all ${
+                      dashboardSubject === subj
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        : ""
+                    }`}
+                  >
+                    {subj === "all" ? "All Subjects" : subj}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        </Card>
 
         {/* Learning Section */}
         <section>
@@ -998,19 +1091,19 @@ export default function StudentDashboardPage() {
                         <Star size={16} className="text-secondary" />
                       </div>
                       <div className="text-sm">
-                        <p className="font-medium">Science Quiz</p>
-                        <p className="text-foreground/70">10 questions</p>
+                        <p className="font-medium">{quizDetails.title}</p>
+                        <p className="text-foreground/70">{quizDetails.countText}</p>
                       </div>
                     </div>
                     <div className="text-xs font-medium text-foreground/50">
                       <Clock size={14} className="inline mr-1" />
-                      15 min
+                      {quizDetails.timeText}
                     </div>
                   </div>
                   <Button 
                     className="w-full bg-secondary hover:bg-secondary/90" 
                     onClick={() => {
-                      setActiveQuizSubject("Science")
+                      setActiveQuizSubject(quizDetails.subject)
                       setShowQuiz(true)
                     }}
                   >
@@ -1036,13 +1129,13 @@ export default function StudentDashboardPage() {
                         <Star size={16} className="text-accent" />
                       </div>
                       <div className="text-sm">
-                        <p className="font-medium">Science Concepts</p>
-                        <p className="text-foreground/70">15 cards</p>
+                        <p className="font-medium">{flashcardDetails.title}</p>
+                        <p className="text-foreground/70">{flashcardDetails.countText}</p>
                       </div>
                     </div>
                     <div className="text-xs font-medium text-foreground/50">
                       <Clock size={14} className="inline mr-1" />
-                      10 min
+                      {flashcardDetails.timeText}
                     </div>
                   </div>
                   <Button className="w-full bg-accent hover:bg-accent/90" onClick={() => setShowFlashcards(true)}>
@@ -1068,12 +1161,13 @@ export default function StudentDashboardPage() {
                         <Star size={16} className="text-highlight" />
                       </div>
                       <div className="text-sm">
-                        <p className="font-medium">Science Notes</p>
-                        <p className="text-foreground/70">3 summaries</p>
+                        <p className="font-medium">{summaryDetails.title}</p>
+                        <p className="text-foreground/70">{summaryDetails.countText}</p>
                       </div>
                     </div>
                     <div className="text-xs font-medium text-foreground/50">
-                      <Clock size={14} className="inline mr-1" />5 min
+                      <Clock size={14} className="inline mr-1" />
+                      {summaryDetails.timeText}
                     </div>
                   </div>
                   <Button
@@ -1452,6 +1546,7 @@ export default function StudentDashboardPage() {
                   cards={allFlashcards}
                   language={language}
                   syllabus={selectedSyllabus}
+                  subject={flashcardDetails.subject}
                   onClose={() => setShowFlashcards(false)}
                 />
               </div>
@@ -1489,6 +1584,7 @@ export default function StudentDashboardPage() {
                   summaries={allSummaries}
                   language={language}
                   syllabus={selectedSyllabus}
+                  subject={summaryDetails.subject === "all" ? undefined : summaryDetails.subject}
                   onClose={() => setShowSummaries(false)}
                 />
               </div>

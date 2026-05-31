@@ -982,21 +982,21 @@ ${index + 1}. ${q.question}
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Star size={18} className="text-secondary" />
             <span className="font-semibold text-sm">
               {translations.quizProgress[language]} {currentQuestionIndex + 1} {translations.of[language]} {totalQuestions}
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
             <div className="text-xs font-semibold text-muted-foreground">
               {translations.score[language]}: <span className="text-foreground font-bold">{score}</span> {translations.points[language]}
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-1 h-8 text-xs"
+              className="flex items-center gap-1 h-8 text-xs shrink-0"
               onClick={() => setShowAiGenerator(true)}
             >
               <Sparkles size={12} />

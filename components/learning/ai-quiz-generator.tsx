@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { generateAiQuiz } from "@/services/gemini-api"
 
 interface QuizOption {
   id: string
@@ -39,6 +40,7 @@ export function AiQuizGenerator({
   defaultSubject = ""
 }: AiQuizGeneratorProps) {
   const [subject, setSubject] = useState(defaultSubject)
+  const [customSubject, setCustomSubject] = useState("")
   const [numQuestions, setNumQuestions] = useState(5)
   const [syllabus, setSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">(defaultSyllabus)
 
@@ -657,8 +659,10 @@ export function AiQuizGenerator({
 
   // This function generates realistic questions based on the selected subject
   const generateQuestions = async () => {
-    if (!subject.trim()) {
-      setError("Please select a subject")
+    const selectedSubject = subject === "custom" ? customSubject : subject
+
+    if (!selectedSubject.trim()) {
+      setError("Please select or enter a subject")
       return
     }
 
@@ -666,27 +670,35 @@ export function AiQuizGenerator({
     setError(null)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // First attempt to generate using Gemini AI
+      try {
+        const generated = await generateAiQuiz(selectedSubject, syllabus, numQuestions)
+        if (generated && generated.length > 0) {
+          onQuestionsGenerated(generated)
+          return
+        }
+      } catch (e) {
+        console.warn("AI generation failed, falling back to templates:", e)
+      }
 
       // Get templates for the selected subject
-      let templates = questionTemplates[subject as keyof typeof questionTemplates] || []
+      let templates = questionTemplates[selectedSubject as keyof typeof questionTemplates] || []
 
       // If templates are fewer than requested, merge with fallback templates
       if (templates.length < numQuestions) {
         let fallbackSubject = "Science"
-        if (subject === "Math") fallbackSubject = "Science"
-        else if (subject === "English") fallbackSubject = "Social Studies"
-        else if (subject === "Physics" || subject === "Chemistry" || subject === "Biology") fallbackSubject = "Science"
-        else if (subject === "History" || subject === "Geography") fallbackSubject = "Social Studies"
-        else if (subject === "Computer Science") fallbackSubject = "Science"
+        if (selectedSubject === "Math") fallbackSubject = "Science"
+        else if (selectedSubject === "English") fallbackSubject = "Social Studies"
+        else if (selectedSubject === "Physics" || selectedSubject === "Chemistry" || selectedSubject === "Biology") fallbackSubject = "Science"
+        else if (selectedSubject === "History" || selectedSubject === "Geography") fallbackSubject = "Social Studies"
+        else if (selectedSubject === "Computer Science") fallbackSubject = "Science"
 
         const fallbackTemplates = questionTemplates[fallbackSubject as keyof typeof questionTemplates] || []
         templates = [...templates, ...fallbackTemplates]
       }
 
       if (templates.length === 0) {
-        throw new Error(`No questions available for ${subject}`)
+        throw new Error(`No questions available for ${selectedSubject}`)
       }
 
       // Select random questions from the templates
@@ -701,9 +713,9 @@ export function AiQuizGenerator({
           question: template.question,
           options: template.options,
           points: 20,
-          subject: subject,
+          subject: selectedSubject,
           syllabus: syllabus,
-          topic: subject
+          topic: selectedSubject
         }
       })
 
@@ -713,7 +725,7 @@ export function AiQuizGenerator({
         for (let i = 0; i < remaining; i++) {
           questions.push({
             id: `ai-${questions.length + i}`,
-            question: `What is a fundamental concept in ${subject} that is essential for intermediate study?`,
+            question: `What is a fundamental concept in ${selectedSubject} that is essential for intermediate study?`,
             options: [
               { id: "a", text: `Concept Option A (Key detail)`, isCorrect: true },
               { id: "b", text: `Concept Option B (Distractor)`, isCorrect: false },
@@ -721,9 +733,9 @@ export function AiQuizGenerator({
               { id: "d", text: `Concept Option D (Distractor)`, isCorrect: false },
             ],
             points: 20,
-            subject: subject,
+            subject: selectedSubject,
             syllabus: syllabus,
-            topic: subject
+            topic: selectedSubject
           })
         }
       }
@@ -751,7 +763,12 @@ export function AiQuizGenerator({
           <Label htmlFor="subject">{translations.subject[language]}</Label>
           <Select
             value={subject}
-            onValueChange={setSubject}
+            onValueChange={(value) => {
+              setSubject(value)
+              if (value !== "custom") {
+                setCustomSubject("")
+              }
+            }}
           >
             <SelectTrigger id="subject">
               <SelectValue placeholder={translations.enterSubject[language]} />
@@ -760,9 +777,22 @@ export function AiQuizGenerator({
               {subjects.map((subj) => (
                 <SelectItem key={subj} value={subj}>{subj}</SelectItem>
               ))}
+              <SelectItem value="custom">Custom Subject</SelectItem>
             </SelectContent>
           </Select>
         </div>
+
+        {subject === "custom" && (
+          <div className="space-y-2">
+            <Label htmlFor="customSubject">Custom Subject / Topic</Label>
+            <Input
+              id="customSubject"
+              value={customSubject}
+              onChange={(e) => setCustomSubject(e.target.value)}
+              placeholder="Enter a subject (e.g., Python loops, Photosynthesis)"
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

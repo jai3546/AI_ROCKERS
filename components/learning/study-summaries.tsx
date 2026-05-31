@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { updateSchoolPortal } from "@/services/school-portal-service"
 import { MindMap } from "./mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
+import { generateAiSummaryAndMindmap } from "@/services/gemini-api"
 
 export interface StudySummary {
   id: string
@@ -19,6 +20,7 @@ export interface StudySummary {
   content: string
   subject: string
   syllabus: "AP" | "Telangana" | "CBSE" | "General"
+  customMindMapData?: any
 }
 
 interface StudySummariesProps {
@@ -26,20 +28,116 @@ interface StudySummariesProps {
   onClose: () => void
   language?: "en" | "hi" | "te"
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
+  subject?: string
+}
+
+const SUBJECTS_CONFIG = {
+  "Science": {
+    icon: Globe,
+    color: "text-blue-500",
+    gradient: "from-blue-500/20 via-cyan-500/10 to-transparent",
+    border: "border-blue-500/30 hover:border-blue-500",
+    description: "Read concise summaries on biological, physical, and chemical topics."
+  },
+  "Math": {
+    icon: Compass,
+    color: "text-purple-500",
+    gradient: "from-purple-500/20 via-indigo-500/10 to-transparent",
+    border: "border-purple-500/30 hover:border-purple-500",
+    description: "Study key mathematical theories, properties, and core formulas."
+  },
+  "Social Studies": {
+    icon: Layers,
+    color: "text-amber-500",
+    gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
+    border: "border-amber-500/30 hover:border-amber-500",
+    description: "Explore geography, history, and civic structure notes."
+  },
+  "English": {
+    icon: BookMarked,
+    color: "text-emerald-500",
+    gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
+    border: "border-emerald-500/30 hover:border-emerald-500",
+    description: "Review parts of speech, grammar guides, and literary device notes."
+  }
 }
 
 export function StudySummaries({
   summaries,
   onClose,
   language = "en",
-  syllabus = "General"
+  syllabus = "General",
+  subject = "all"
 }: StudySummariesProps) {
+  const [allSummariesList, setAllSummariesList] = useState<StudySummary[]>(summaries)
   const [filteredSummaries, setFilteredSummaries] = useState<StudySummary[]>([])
-  const [activeSubject, setActiveSubject] = useState<string>("all")
+  const [activeSubject, setActiveSubject] = useState<string>(subject)
+  const [showSubjectSelect, setShowSubjectSelect] = useState<boolean>(subject === "all")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [viewMode, setViewMode] = useState<"card" | "compact">("card")
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [activeMindMapSummary, setActiveMindMapSummary] = useState<StudySummary | null>(null)
+  const [isGeneratingAI, setIsGeneratingAI] = useState<boolean>(false)
+  const [aiTargetSubject, setAiTargetSubject] = useState<string>("Science")
+  const [customAiSubject, setCustomAiSubject] = useState<string>("")
+
+  // Sync state if summaries prop changes
+  useEffect(() => {
+    setAllSummariesList(summaries)
+  }, [summaries])
+
+  // Update AI target subject based on search classification or active tab
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const guessed = activeSubject && activeSubject !== "all" ? activeSubject : classifySubject(searchQuery)
+      setAiTargetSubject(guessed)
+      setCustomAiSubject("")
+    }
+  }, [searchQuery, activeSubject])
+
+  const classifySubject = (query: string): string => {
+    const q = query.toLowerCase();
+    if (/math|equation|geometry|number|sum|algebra|calculus|arithmetic|triangle|pythagor/.test(q)) {
+      return "Math";
+    }
+    if (/history|river|civic|geography|war|monument|culture|constitution|social|polity|dynasty/.test(q)) {
+      return "Social Studies";
+    }
+    if (/grammar|poem|noun|verb|english|story|literature|parts of speech|prose/.test(q)) {
+      return "English";
+    }
+    return "Science"; // default fallback
+  };
+
+  const handleGenerateAISummary = async () => {
+    if (!searchQuery.trim()) return
+    
+    let targetSubject = aiTargetSubject === "Other" ? (customAiSubject.trim() || "General") : aiTargetSubject
+    targetSubject = targetSubject.charAt(0).toUpperCase() + targetSubject.slice(1)
+    
+    setIsGeneratingAI(true)
+
+    try {
+      const result = await generateAiSummaryAndMindmap(searchQuery, targetSubject, syllabus)
+      
+      const newSummary: StudySummary = {
+        id: `ai-summary-${Date.now()}`,
+        title: result.title,
+        content: result.summary,
+        subject: targetSubject,
+        syllabus: syllabus as any || "General",
+        customMindMapData: result.mindMapData
+      }
+
+      setAllSummariesList(prev => [...prev, newSummary])
+      setActiveSubject(targetSubject)
+      setShowSubjectSelect(false)
+    } catch (error) {
+      console.error("AI Summary generation failed:", error)
+    } finally {
+      setIsGeneratingAI(false)
+    }
+  }
 
   // Audio Speech Synthesis state and refs
   const [activeSummaryId, setActiveSummaryId] = useState<string | null>(null)
@@ -189,12 +287,20 @@ export function StudySummaries({
     if (activeSummaryId && isPlaying) {
       speakCurrent(activeSummaryId)
     }
-  }
+  }  // Sync activeSubject when subject prop changes
+  useEffect(() => {
+    if (subject && subject !== "all") {
+      setActiveSubject(subject)
+      setShowSubjectSelect(false)
+    } else {
+      setShowSubjectSelect(true)
+    }
+  }, [subject])
 
   // Filter summaries based on syllabus and search query
   useEffect(() => {
     // First filter by syllabus
-    let filtered = summaries.filter(summary => summary.syllabus === syllabus || summary.syllabus === "General")
+    let filtered = allSummariesList.filter(summary => summary.syllabus === syllabus || summary.syllabus === "General")
 
     // Then filter by search query if present
     if (searchQuery.trim()) {
@@ -208,19 +314,25 @@ export function StudySummaries({
 
     setFilteredSummaries(filtered.length > 0 ? filtered : [])
 
-    // Set initial active subject if not already set
-    if (activeSubject === "all") {
-      const subjects = new Set(filtered.map(summary => summary.subject))
-      if (subjects.size > 0) {
-        setActiveSubject(Array.from(subjects)[0])
+    // Set initial active subject if not already set or is 'all'
+    if (activeSubject === "all" || !activeSubject) {
+      const subjectsSet = new Set(filtered.map(summary => summary.subject))
+      if (subjectsSet.size > 0) {
+        const subjectsArray = Array.from(subjectsSet)
+        if (subject && subjectsArray.includes(subject)) {
+          setActiveSubject(subject)
+        } else {
+          setActiveSubject(subjectsArray[0])
+        }
       }
     }
-  }, [summaries, syllabus, searchQuery, activeSubject])
-
+  }, [allSummariesList, syllabus, searchQuery, activeSubject, subject])
   // Get unique subjects for tabs
-  const subjects = Array.from(new Set(summaries
-    .filter(summary => summary.syllabus === syllabus || summary.syllabus === "General")
-    .map(summary => summary.subject)))
+  const subjects = Array.from(new Set(
+    (searchQuery.trim() ? filteredSummaries : allSummariesList)
+      .filter(summary => summary.syllabus === syllabus || summary.syllabus === "General")
+      .map(summary => summary.subject)
+  ))
 
   // Handle copy to clipboard
   const handleCopy = (summary: StudySummary) => {
@@ -386,11 +498,10 @@ ${summary.content}
     try {
       await updateSchoolPortal({
         studentId: "current-user",
-        activityType: 'summary',
+        activityType: 'tutor',
         activityDetails: {
           subject: summary.subject,
-          summaryId: summary.id,
-          downloaded: true,
+          completed: true,
           timestamp: Date.now()
         }
       });
@@ -399,7 +510,73 @@ ${summary.content}
     }
   }
 
-  if (summaries.length === 0) {
+  if (showSubjectSelect) {
+    return (
+      <div className="w-full max-w-2xl mx-auto space-y-6 py-4 px-2">
+        <div className="flex items-center justify-between animate-fade-in">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+            <BookOpen className="text-primary" size={20} />
+            Choose Subject for Summaries
+          </h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X size={18} />
+          </Button>
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Select a subject to browse and study its summaries.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {subjects.map((subj) => {
+            const config = SUBJECTS_CONFIG[subj as keyof typeof SUBJECTS_CONFIG] || {
+              icon: BookOpen,
+              color: "text-foreground",
+              gradient: "from-gray-500/10 to-transparent",
+              border: "border-border hover:border-gray-500",
+              description: "Browse subject summaries."
+            }
+            const IconComponent = config.icon
+            const summaryCount = allSummariesList.filter(
+              s => s.subject === subj && (s.syllabus === syllabus || s.syllabus === "General")
+            ).length
+
+            return (
+              <motion.div
+                key={subj}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setActiveSubject(subj)
+                  setShowSubjectSelect(false)
+                }}
+                className="cursor-pointer"
+              >
+                <Card className={`overflow-hidden border-2 h-full transition-all duration-300 shadow-sm hover:shadow-md bg-gradient-to-br ${config.gradient} ${config.border}`}>
+                  <CardContent className="p-5 flex flex-col justify-between h-full gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl bg-background flex items-center justify-center shadow-sm ${config.color}`}>
+                        <IconComponent size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-foreground">{subj}</h3>
+                        <p className="text-xs text-muted-foreground">{summaryCount} summaries available</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-foreground/80 leading-relaxed font-light">{config.description}</p>
+                    <div className="flex items-center text-xs font-semibold text-primary mt-2">
+                      View Notes <ChevronRight size={14} className="ml-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  if (allSummariesList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p>{translations.noSummaries[language]}</p>
@@ -414,6 +591,17 @@ ${summary.content}
     <div className="w-full max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
+          {subject === "all" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSubjectSelect(true)}
+              className="mr-2 h-8 text-xs flex items-center gap-1 hover:bg-muted"
+            >
+              <ArrowLeft size={12} />
+              Subjects
+            </Button>
+          )}
           <BookOpen size={20} />
           {translations.summaries[language]}
         </h2>
@@ -452,23 +640,107 @@ ${summary.content}
         </TooltipProvider>
       </div>
 
-      {filteredSummaries.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {searchQuery ? translations.noResults[language] : translations.noSummaries[language]}
-          </h3>
+      {isGeneratingAI ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center space-y-6 bg-muted/20 dark:bg-card/30 rounded-2xl border-2 border-dashed border-purple-500/20 backdrop-blur-sm">
+          <div className="relative flex items-center justify-center w-20 h-20">
+            <div className="absolute inset-0 rounded-full border-4 border-purple-500/20 dark:border-purple-500/10 animate-pulse"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-t-purple-600 dark:border-t-purple-400 animate-spin"></div>
+            <Sparkles size={28} className="text-purple-600 dark:text-purple-400 animate-pulse" />
+          </div>
+          <div className="space-y-2 max-w-md text-center flex flex-col items-center">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              Creating Study Summary
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Gemini AI is researching <strong className="text-foreground">"{searchQuery}"</strong>, generating key concepts, and constructing an interactive mind map...
+            </p>
+          </div>
         </div>
-      )}
+      ) : filteredSummaries.length === 0 ? (
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">
+              {searchQuery ? translations.noResults[language] : translations.noSummaries[language]}
+            </h3>
+          </div>
 
-      {filteredSummaries.length > 0 && (
-        <Tabs defaultValue={subjects[0]} className="w-full">
-          <TabsList className="mb-4 w-full">
+          {searchQuery.trim() !== "" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="overflow-hidden border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-transparent dark:from-purple-950/20 dark:via-indigo-950/10 dark:to-transparent shadow-md hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 shadow-sm border border-purple-500/20">
+                      <Sparkles size={24} className="animate-pulse" />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <h4 className="font-bold text-lg text-foreground flex items-center gap-1.5">
+                        Generate Summary with Gemini AI
+                      </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        No preloaded summary found for <strong className="text-foreground font-semibold">"{searchQuery}"</strong>. 
+                        Let Gemini AI generate a detailed study summary and interactive mind map instantly.
+                      </p>
+                      <div className="mt-3.5 flex flex-wrap items-center gap-2 pt-1">
+                        <span className="text-xs font-semibold text-muted-foreground">Select Subject:</span>
+                        {["Science", "Math", "Social Studies", "English", "Other"].map((subj) => (
+                          <Badge
+                            key={subj}
+                            variant={aiTargetSubject === subj ? "default" : "outline"}
+                            className="cursor-pointer transition-all duration-200 hover:scale-105"
+                            onClick={() => {
+                              setAiTargetSubject(subj)
+                              if (subj !== "Other") {
+                                setCustomAiSubject("")
+                              }
+                            }}
+                          >
+                            {subj}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {aiTargetSubject === "Other" && (
+                        <div className="mt-3 space-y-1.5 text-left max-w-[240px]">
+                          <span className="text-[11px] font-semibold text-muted-foreground">Custom Subject Name:</span>
+                          <Input
+                            type="text"
+                            placeholder="e.g. Computer Science, Geography"
+                            value={customAiSubject}
+                            onChange={(e) => setCustomAiSubject(e.target.value)}
+                            className="h-8 text-xs rounded-lg"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleGenerateAISummary}
+                    disabled={isGeneratingAI}
+                    className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shrink-0 py-5 px-6 rounded-xl border border-indigo-500/30"
+                  >
+                    <Sparkles size={16} />
+                    Generate with AI
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+      ) : null}
+
+      {!isGeneratingAI && filteredSummaries.length > 0 && (
+        <Tabs value={activeSubject} onValueChange={setActiveSubject} className="w-full">
+          <TabsList className="mb-4 w-full flex-wrap h-auto bg-muted/50 p-1">
             {subjects.map(subject => (
               <TabsTrigger
                 key={subject}
                 value={subject}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-sm py-1.5 sm:py-2"
               >
                 {subject}
               </TabsTrigger>
@@ -518,7 +790,7 @@ ${summary.content}
                           )}
                         </div>
                       </CardContent>
-                      <CardFooter className="flex justify-end items-center gap-2 pt-0 pb-3">
+                      <CardFooter className="flex flex-wrap justify-start sm:justify-end items-center gap-2 pt-2 pb-3">
                         {activeSummaryId === summary.id ? (
                           <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-border mr-auto">
                             <Button
@@ -674,7 +946,7 @@ ${summary.content}
 
               <div className="bg-white dark:bg-card p-4 rounded-xl shadow-2xl border border-border dark:border-border">
                 <MindMap
-                  data={getMindMapData(activeMindMapSummary.title, activeMindMapSummary.subject)}
+                  data={activeMindMapSummary.customMindMapData || getMindMapData(activeMindMapSummary.title, activeMindMapSummary.subject)}
                   title={`${activeMindMapSummary.title} - Concept Map`}
                   language={language}
                 />
