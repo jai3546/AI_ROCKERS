@@ -58,7 +58,7 @@ export interface EmotionData {
   confidence: number
   fatigueScore?: number
   attentionScore?: number
-   message?: string
+  message?: string
   faceDetected?: boolean
   lightingQuality?: "good" | "poor" | "unknown"
 }
