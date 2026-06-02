@@ -192,10 +192,10 @@ Subject: ${card.subject}
     URL.revokeObjectURL(url)
   }
 
-  if (!currentCard) {
+  if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p>No flashcards available for this syllabus.</p>
+        <p>No flashcards available.</p>
         <Button onClick={onClose} className="mt-4">
           {translations.close[language]}
         </Button>

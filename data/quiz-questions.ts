@@ -12,6 +12,7 @@ export interface QuizQuestion {
   points: number
   subject: string
   syllabus: "AP" | "Telangana" | "CBSE" | "General"
+  topic: string
 }
 
 // General questions that apply to all syllabi
@@ -27,7 +28,8 @@ const generalQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Science",
-    syllabus: "General"
+    syllabus: "General",
+    topic: "Photosynthesis"
   },
   {
     id: "gen2",
@@ -40,7 +42,8 @@ const generalQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Science",
-    syllabus: "General"
+    syllabus: "General",
+    topic: "Space & Astronomy"
   },
   {
     id: "gen3",
@@ -53,7 +56,8 @@ const generalQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Science",
-    syllabus: "General"
+    syllabus: "General",
+    topic: "Human Anatomy"
   },
   {
     id: "gen4",
@@ -66,7 +70,8 @@ const generalQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Math",
-    syllabus: "General"
+    syllabus: "General",
+    topic: "Geometry"
   },
   {
     id: "gen5",
@@ -79,7 +84,8 @@ const generalQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "English",
-    syllabus: "General"
+    syllabus: "General",
+    topic: "Literature"
   }
 ];
 
@@ -96,7 +102,8 @@ const apQuestions: QuizQuestion[] = [
     ],
     points: 25,
     subject: "Social Studies",
-    syllabus: "AP"
+    syllabus: "AP",
+    topic: "Geography & Rivers"
   },
   {
     id: "ap2",
@@ -109,7 +116,8 @@ const apQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Social Studies",
-    syllabus: "AP"
+    syllabus: "AP",
+    topic: "Art & Culture"
   },
   {
     id: "ap3",
@@ -122,7 +130,8 @@ const apQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Social Studies",
-    syllabus: "AP"
+    syllabus: "AP",
+    topic: "Temples & Landmarks"
   },
   {
     id: "ap4",
@@ -135,7 +144,8 @@ const apQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Science",
-    syllabus: "AP"
+    syllabus: "AP",
+    topic: "Agriculture"
   },
   {
     id: "ap5",
@@ -148,7 +158,8 @@ const apQuestions: QuizQuestion[] = [
     ],
     points: 25,
     subject: "Social Studies",
-    syllabus: "AP"
+    syllabus: "AP",
+    topic: "History"
   }
 ];
 
@@ -165,7 +176,8 @@ const telanganaQuestions: QuizQuestion[] = [
     ],
     points: 25,
     subject: "Social Studies",
-    syllabus: "Telangana"
+    syllabus: "Telangana",
+    topic: "History"
   },
   {
     id: "ts2",
@@ -178,7 +190,8 @@ const telanganaQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Science",
-    syllabus: "Telangana"
+    syllabus: "Telangana",
+    topic: "Zoology"
   },
   {
     id: "ts3",
@@ -191,7 +204,8 @@ const telanganaQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Social Studies",
-    syllabus: "Telangana"
+    syllabus: "Telangana",
+    topic: "Culture & Festivals"
   },
   {
     id: "ts4",
@@ -204,7 +218,8 @@ const telanganaQuestions: QuizQuestion[] = [
     ],
     points: 25,
     subject: "Social Studies",
-    syllabus: "Telangana"
+    syllabus: "Telangana",
+    topic: "Irrigation & Rivers"
   },
   {
     id: "ts5",
@@ -217,7 +232,8 @@ const telanganaQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Social Studies",
-    syllabus: "Telangana"
+    syllabus: "Telangana",
+    topic: "Geography"
   }
 ];
 
@@ -234,7 +250,8 @@ const cbseQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Science",
-    syllabus: "CBSE"
+    syllabus: "CBSE",
+    topic: "Chemistry"
   },
   {
     id: "cbse2",
@@ -247,7 +264,8 @@ const cbseQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Social Studies",
-    syllabus: "CBSE"
+    syllabus: "CBSE",
+    topic: "History"
   },
   {
     id: "cbse3",
@@ -260,7 +278,8 @@ const cbseQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Math",
-    syllabus: "CBSE"
+    syllabus: "CBSE",
+    topic: "Algebra"
   },
   {
     id: "cbse4",
@@ -273,7 +292,8 @@ const cbseQuestions: QuizQuestion[] = [
     ],
     points: 20,
     subject: "Science",
-    syllabus: "CBSE"
+    syllabus: "CBSE",
+    topic: "Physics"
   },
   {
     id: "cbse5",
@@ -286,7 +306,8 @@ const cbseQuestions: QuizQuestion[] = [
     ],
     points: 15,
     subject: "Social Studies",
-    syllabus: "CBSE"
+    syllabus: "CBSE",
+    topic: "Geography"
   }
 ];
 

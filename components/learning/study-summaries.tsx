@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { updateSchoolPortal } from "@/services/school-portal-service"
+import { MindMap } from "./mind-map"
+import { getMindMapData } from "@/data/mind-map-data"
 
 export interface StudySummary {
   id: string
@@ -37,6 +39,7 @@ export function StudySummaries({
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [viewMode, setViewMode] = useState<"card" | "compact">("card")
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [activeMindMapSummary, setActiveMindMapSummary] = useState<StudySummary | null>(null)
 
   // Filter summaries based on syllabus and search query
   useEffect(() => {
@@ -236,7 +239,7 @@ ${summary.content}
     }
   }
 
-  if (filteredSummaries.length === 0) {
+  if (summaries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p>{translations.noSummaries[language]}</p>
@@ -391,6 +394,16 @@ ${summary.content}
                         <Button
                           variant="outline"
                           size="sm"
+                          className="flex items-center gap-1 h-8 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 dark:border-purple-900/30"
+                          onClick={() => setActiveMindMapSummary(summary)}
+                        >
+                          <Workflow size={14} />
+                          Mind Map
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="flex items-center gap-1 h-8"
                           onClick={() => handleDownloadSummary(summary)}
                         >
@@ -405,6 +418,42 @@ ${summary.content}
           ))}
         </Tabs>
       )}
+
+      {/* Mind Map Overlay Modal */}
+      <AnimatePresence>
+        {activeMindMapSummary && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-3xl relative"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-3 top-3 z-50 bg-white/85 hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800 rounded-full"
+                onClick={() => setActiveMindMapSummary(null)}
+              >
+                <X size={18} />
+              </Button>
+
+              <div className="bg-white dark:bg-card p-4 rounded-xl shadow-2xl border border-border dark:border-border">
+                <MindMap
+                  data={getMindMapData(activeMindMapSummary.title, activeMindMapSummary.subject)}
+                  title={`${activeMindMapSummary.title} - Concept Map`}
+                  language={language}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
