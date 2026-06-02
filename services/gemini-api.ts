@@ -43,8 +43,8 @@ export async function getGeminiResponse(
       throw new Error('Gemini API key is not configured');
     }
 
-    // Construct the API URL for Gemini 2.5 Flash model
-    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    // Construct the API URL for Gemini 2.5 Flash-Lite model (optimized for speed and higher quota limits)
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
     // Create a system prompt based on subject and language
     let systemPrompt = `You are an educational AI tutor specializing in ${subject}. `;
@@ -530,16 +530,33 @@ export interface AiSummaryResult {
   };
 }
 
+export function getApiKey(): string | null {
+  const rawKey = typeof window !== 'undefined' 
+    ? localStorage.getItem("gemini_api_key") || process.env.NEXT_PUBLIC_GEMINI_API_KEY 
+    : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    
+  if (!rawKey) return null;
+  const trimmed = rawKey.trim();
+  if (trimmed === "" || 
+      trimmed === "undefined" || 
+      trimmed === "null" || 
+      trimmed === "your-api-key-here" || 
+      trimmed === "your_actual_gemini_api_key_here") {
+    return null;
+  }
+  return trimmed;
+}
+
 export async function generateAiSummaryAndMindmap(
   topic: string,
   subject: string = "Science",
   syllabus: string = "General"
 ): Promise<AiSummaryResult> {
-  const apiKey = typeof window !== 'undefined' ? localStorage.getItem("gemini_api_key") || process.env.NEXT_PUBLIC_GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = getApiKey();
 
-  if (apiKey && apiKey !== 'your-api-key-here') {
+  if (apiKey) {
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
       const systemPrompt = `You are a high-quality educational content creator. The user will specify a topic. 
 You must respond with a JSON object containing:
@@ -825,11 +842,11 @@ export async function generateAiQuiz(
   syllabus: string = "General",
   numQuestions: number = 5
 ): Promise<any[]> {
-  const apiKey = typeof window !== 'undefined' ? localStorage.getItem("gemini_api_key") || process.env.NEXT_PUBLIC_GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = getApiKey();
 
-  if (apiKey && apiKey !== 'your-api-key-here') {
+  if (apiKey) {
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
       const systemPrompt = `You are an expert school teacher creating educational quizzes for K-12 students. 
 You must respond with a JSON array containing ${numQuestions} multiple-choice questions for the subject "${subject}" under the "${syllabus}" syllabus.
@@ -963,11 +980,11 @@ export async function generateAiFlashcards(
   syllabus: string = "General",
   numFlashcards: number = 5
 ): Promise<any[]> {
-  const apiKey = typeof window !== 'undefined' ? localStorage.getItem("gemini_api_key") || process.env.NEXT_PUBLIC_GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = getApiKey();
 
-  if (apiKey && apiKey !== 'your-api-key-here') {
+  if (apiKey) {
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
       const systemPrompt = `You are a high-quality educational flashcard generator.
 You must respond with a JSON array containing ${numFlashcards} flashcards for the subject "${subject}" under the "${syllabus}" syllabus.

@@ -31,6 +31,7 @@ interface StudySummariesProps {
   subject?: string
   onTriggerQuiz?: (subject: string, topic: string) => void
   onTriggerFlashcards?: (subject: string, topic: string) => void
+  onAddSummary?: (summary: StudySummary) => void
 }
 
 const SUBJECTS_CONFIG = {
@@ -71,7 +72,8 @@ export function StudySummaries({
   syllabus = "General",
   subject = "all",
   onTriggerQuiz,
-  onTriggerFlashcards
+  onTriggerFlashcards,
+  onAddSummary
 }: StudySummariesProps) {
   const [allSummariesList, setAllSummariesList] = useState<StudySummary[]>(summaries)
   const [filteredSummaries, setFilteredSummaries] = useState<StudySummary[]>([])
@@ -135,6 +137,9 @@ export function StudySummaries({
       }
 
       setAllSummariesList(prev => [...prev, newSummary])
+      if (onAddSummary) {
+        onAddSummary(newSummary)
+      }
       setActiveSubject(targetSubject)
       setSearchQuery("")
       setCustomAiSubject("")

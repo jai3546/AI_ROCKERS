@@ -413,6 +413,7 @@ ${index + 1}. ${q.question}
     setFilteredQuestions([...newQuestions])
     setIsAiActive(true)
     if (newQuestions.length > 0) {
+      setSelectedSubject(newQuestions[0].subject)
       setSelectedTopic(newQuestions[0].topic) // Directly set so selectTopic wrapper doesn't reset isAiActive
     }
     setShowAiGenerator(false)
