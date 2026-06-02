@@ -15,5 +15,4 @@ export type BadgeCategory =
   | "tutor"
   | "subject"
 
-export type Emotion = "happy" | "sad" | "angry" | "surprised" | "neutral" | "fearful" | "disgusted" | "none"
-export type EmotionType = "happy" | "sad" | "confused" | "bored" | "focused" | "unknown"
+export type EmotionType = "happy" | "sad" | "angry" | "surprised" | "neutral" | "fearful" | "disgusted" | "confused" | "bored" | "focused" | "unknown" | "none"
