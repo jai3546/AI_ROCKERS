@@ -1488,13 +1488,13 @@ export default function StudentDashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-6 top-6 z-50 bg-white rounded-full"
+                className="absolute right-6 top-6 z-50 bg-white dark:bg-slate-800 text-foreground dark:text-white rounded-full hover:bg-muted dark:hover:bg-slate-700"
                 onClick={() => setShowQuiz(false)}
               >
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
+              <div className="bg-white dark:bg-card text-foreground dark:text-foreground p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto border border-border dark:border-border/50">
                 <QuizContainer
                   questions={allQuizQuestions}
                   language={language}
@@ -1534,13 +1534,13 @@ export default function StudentDashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-6 top-6 z-50 bg-white rounded-full"
+                className="absolute right-6 top-6 z-50 bg-white dark:bg-slate-800 text-foreground dark:text-white rounded-full hover:bg-muted dark:hover:bg-slate-700"
                 onClick={() => setShowFlashcards(false)}
               >
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
+              <div className="bg-white dark:bg-card text-foreground dark:text-foreground p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto border border-border dark:border-border/50">
                 <FlashcardDeck
                   cards={allFlashcards}
                   language={language}
@@ -1579,13 +1579,13 @@ export default function StudentDashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-6 top-6 z-50 bg-white rounded-full"
+                className="absolute right-6 top-6 z-50 bg-white dark:bg-slate-800 text-foreground dark:text-white rounded-full hover:bg-muted dark:hover:bg-slate-700"
                 onClick={() => setShowSummaries(false)}
               >
                 <X size={18} />
               </Button>
 
-              <div className="bg-white p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto">
+              <div className="bg-white dark:bg-card text-foreground dark:text-foreground p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto border border-border dark:border-border/50">
                 <StudySummaries
                   summaries={allSummaries}
                   language={language}
