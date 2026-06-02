@@ -46,6 +46,8 @@ interface QuizContainerProps {
   onClose: () => void
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
   subject?: string
+  defaultShowAiGenerator?: boolean
+  defaultAiTopic?: string
 }
 
 // Subject config for UI aesthetics
@@ -203,7 +205,9 @@ export function QuizContainer({
   onComplete,
   onClose,
   syllabus = "General",
-  subject
+  subject,
+  defaultShowAiGenerator = false,
+  defaultAiTopic = ""
 }: QuizContainerProps) {
   const [selectedSubject, setSelectedSubject] = useState<string | undefined>(subject)
   const [selectedTopic, setSelectedTopic] = useState<string | undefined>(undefined)
@@ -214,7 +218,7 @@ export function QuizContainer({
   const [answers, setAnswers] = useState<{ [key: string]: boolean }>({})
   const [quizComplete, setQuizComplete] = useState(false)
   const [filteredQuestions, setFilteredQuestions] = useState<QuizQuestion[]>([])
-  const [showAiGenerator, setShowAiGenerator] = useState(false)
+  const [showAiGenerator, setShowAiGenerator] = useState(defaultShowAiGenerator)
   const [isAiActive, setIsAiActive] = useState(false)
 
   // Explicit state update helpers that reset AI mode when browsing static quizzes
@@ -525,6 +529,7 @@ ${index + 1}. ${q.question}
           language={language}
           defaultSyllabus={syllabus}
           defaultSubject={selectedSubject}
+          defaultCustomSubject={defaultAiTopic}
         />
       </div>
     )
@@ -586,6 +591,29 @@ ${index + 1}. ${q.question}
               </motion.div>
             )
           })}
+        </div>
+
+        {/* Generate with AI option */}
+        <div className="mt-6 pt-4 border-t border-border animate-fade-in">
+          <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
+            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 text-left">
+                <h4 className="font-bold text-md flex items-center gap-1.5 text-foreground">
+                  <Sparkles size={16} className="text-purple-600 dark:text-purple-400 animate-pulse" />
+                  Generate custom Quiz with Gemini AI
+                </h4>
+                <p className="text-xs text-muted-foreground max-w-md font-light">
+                  Can't find your subject or want to practice a specific topic? Create custom multiple-choice questions instantly.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowAiGenerator(true)}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-indigo-500/20 shrink-0"
+              >
+                Start AI Quiz Generator
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

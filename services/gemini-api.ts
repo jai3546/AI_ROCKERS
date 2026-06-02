@@ -121,7 +121,7 @@ export async function getGeminiResponse(
         temperature: 0.4,  // Lower temperature for more focused responses
         topK: 32,
         topP: 0.9,
-        maxOutputTokens: 2048,  // Increased token limit for more detailed responses
+        maxOutputTokens: 4096,  // Increased token limit for more detailed responses
         responseMimeType: "text/plain",  // Ensure plain text responses
       }
     };
@@ -326,6 +326,74 @@ export function getMockGeminiResponse(
   return { text: responseText };
 }
 
+export function repairTruncatedJson(str: string): string {
+  let cleaned = str.trim();
+  
+  let inString = false;
+  let escapeNext = false;
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+    }
+  }
+
+  if (inString) {
+    cleaned += '"';
+  }
+
+  let openBraces: string[] = [];
+  inString = false;
+  escapeNext = false;
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === '{' || char === '[') {
+        openBraces.push(char);
+      } else if (char === '}') {
+        if (openBraces[openBraces.length - 1] === '{') {
+          openBraces.pop();
+        }
+      } else if (char === ']') {
+        if (openBraces[openBraces.length - 1] === '[') {
+          openBraces.pop();
+        }
+      }
+    }
+  }
+
+  while (openBraces.length > 0) {
+    const last = openBraces.pop();
+    if (last === '{') {
+      cleaned += '}';
+    } else if (last === '[') {
+      cleaned += ']';
+    }
+  }
+
+  return cleaned;
+}
+
 export function safeJsonParse(str: string): any {
   let cleaned = str.trim();
   
@@ -334,6 +402,9 @@ export function safeJsonParse(str: string): any {
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   }
   cleaned = cleaned.trim();
+
+  // Repair truncated JSON first to close any open quotes/braces
+  cleaned = repairTruncatedJson(cleaned);
 
   // Strip single-line comments
   cleaned = cleaned.replace(/\/\/.*$/gm, "");
@@ -347,7 +418,7 @@ export function safeJsonParse(str: string): any {
   try {
     return JSON.parse(cleaned);
   } catch (initialError) {
-    console.warn("Standard JSON.parse failed, attempting aggressive scanning repair.", initialError);
+    console.warn("Standard JSON.parse failed, attempting aggressive scanning repair.");
     try {
       // Escape raw newlines inside JSON string values safely via character scanning
       let repaired = "";
@@ -380,7 +451,7 @@ export function safeJsonParse(str: string): any {
       }
       return JSON.parse(repaired);
     } catch (repairedError) {
-      console.error("Aggressive JSON repair failed:", repairedError);
+      console.warn("Aggressive JSON repair failed");
       return null;
     }
   }
@@ -497,7 +568,7 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
         ],
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
           responseMimeType: "application/json"
         }
       };
@@ -788,7 +859,7 @@ Respond ONLY with a valid JSON block containing the array of questions. Do not w
         ],
         generationConfig: {
           temperature: 0.5,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
           responseMimeType: "application/json"
         }
       };
@@ -919,7 +990,7 @@ Respond ONLY with a valid JSON block containing the array of flashcards. Do not 
         ],
         generationConfig: {
           temperature: 0.5,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
           responseMimeType: "application/json"
         }
       };

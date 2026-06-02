@@ -14,14 +14,18 @@ import { Flashcard } from "@/data/flashcards"
 interface AIFlashcardGeneratorProps {
   onFlashcardsGenerated: (flashcards: Flashcard[]) => void
   syllabus: "AP" | "Telangana" | "CBSE" | "General"
+  defaultSubject?: string
+  defaultCustomSubject?: string
 }
 
 export function AIFlashcardGenerator({
   onFlashcardsGenerated,
-  syllabus
+  syllabus,
+  defaultSubject = "",
+  defaultCustomSubject = ""
 }: AIFlashcardGeneratorProps) {
-  const [subject, setSubject] = useState("")
-  const [customSubject, setCustomSubject] = useState("")
+  const [subject, setSubject] = useState(defaultCustomSubject ? "custom" : (defaultSubject || ""))
+  const [customSubject, setCustomSubject] = useState(defaultCustomSubject || "")
   const [numFlashcards, setNumFlashcards] = useState(5)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2 } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -29,6 +29,8 @@ interface StudySummariesProps {
   language?: "en" | "hi" | "te"
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
   subject?: string
+  onTriggerQuiz?: (subject: string, topic: string) => void
+  onTriggerFlashcards?: (subject: string, topic: string) => void
 }
 
 const SUBJECTS_CONFIG = {
@@ -67,7 +69,9 @@ export function StudySummaries({
   onClose,
   language = "en",
   syllabus = "General",
-  subject = "all"
+  subject = "all",
+  onTriggerQuiz,
+  onTriggerFlashcards
 }: StudySummariesProps) {
   const [allSummariesList, setAllSummariesList] = useState<StudySummary[]>(summaries)
   const [filteredSummaries, setFilteredSummaries] = useState<StudySummary[]>([])
@@ -116,6 +120,7 @@ export function StudySummaries({
     targetSubject = targetSubject.charAt(0).toUpperCase() + targetSubject.slice(1)
     
     setIsGeneratingAI(true)
+    setShowSubjectSelect(false)
 
     try {
       const result = await generateAiSummaryAndMindmap(searchQuery, targetSubject, syllabus)
@@ -131,8 +136,8 @@ export function StudySummaries({
 
       setAllSummariesList(prev => [...prev, newSummary])
       setActiveSubject(targetSubject)
-      setShowSubjectSelect(false)
       setSearchQuery("")
+      setCustomAiSubject("")
     } catch (error) {
       console.error("AI Summary generation failed:", error)
     } finally {
@@ -573,6 +578,82 @@ ${summary.content}
             )
           })}
         </div>
+
+        {/* Custom AI Summary Generation Block */}
+        <div className="mt-6 pt-4 border-t border-border">
+          <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/25">
+                  <Sparkles size={20} className="text-purple-500 animate-pulse" />
+                </div>
+                <div className="space-y-0.5 text-left">
+                  <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                    Generate Custom Summary
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Enter any topic & subject to generate a detailed summary and mind map instantly using Gemini AI.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5 text-left">
+                  <span className="text-[11px] font-semibold text-muted-foreground">Select Subject:</span>
+                  <select
+                    className="w-full h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value={aiTargetSubject}
+                    onChange={(e) => {
+                      setAiTargetSubject(e.target.value)
+                      if (e.target.value !== "Other") {
+                        setCustomAiSubject("")
+                      }
+                    }}
+                  >
+                    {["Science", "Math", "Social Studies", "English", "Other"].map((subj) => (
+                      <option key={subj} value={subj} className="bg-background">
+                        {subj}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 text-left">
+                  <span className="text-[11px] font-semibold text-muted-foreground">Enter Topic Name:</span>
+                  <Input
+                    type="text"
+                    placeholder="e.g. Photosynthesis, Linear Equations"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {aiTargetSubject === "Other" && (
+                <div className="space-y-1.5 text-left max-w-[280px]">
+                  <span className="text-[11px] font-semibold text-muted-foreground">Custom Subject Name:</span>
+                  <Input
+                    type="text"
+                    placeholder="e.g. Computer Science, Geography"
+                    value={customAiSubject}
+                    onChange={(e) => setCustomAiSubject(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              )}
+
+              <Button
+                onClick={handleGenerateAISummary}
+                disabled={isGeneratingAI || !searchQuery.trim()}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20"
+              >
+                <Sparkles size={14} />
+                Generate Summary & Mind Map
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -789,6 +870,37 @@ ${summary.content}
                           ) : (
                             <p className="whitespace-pre-wrap">{summary.content}</p>
                           )}
+                        </div>
+
+                        {/* AI Quick Study Actions (Quiz & Flashcards) */}
+                        <div className="mt-4 p-3 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-transparent dark:from-purple-950/20 dark:via-indigo-950/10 dark:to-transparent rounded-xl border border-purple-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={16} className="text-purple-600 dark:text-purple-400 shrink-0 animate-pulse" />
+                            <div>
+                              <h4 className="text-xs font-semibold text-foreground">Transform into Interactive Study Tools</h4>
+                              <p className="text-[10px] text-muted-foreground font-light">Test your understanding of this topic with AI-generated quizzes or flashcards.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 sm:flex-initial h-7 text-[10px] border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 flex items-center gap-1"
+                              onClick={() => onTriggerQuiz && onTriggerQuiz(summary.subject, summary.title)}
+                            >
+                              <Brain size={12} />
+                              Generate Quiz
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 sm:flex-initial h-7 text-[10px] border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 flex items-center gap-1"
+                              onClick={() => onTriggerFlashcards && onTriggerFlashcards(summary.subject, summary.title)}
+                            >
+                              <FileText size={12} />
+                              Generate Flashcards
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                       <CardFooter className="flex flex-wrap justify-start sm:justify-end items-center gap-2 pt-2 pb-3">

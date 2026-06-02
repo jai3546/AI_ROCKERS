@@ -25,6 +25,8 @@ interface FlashcardDeckProps {
   language?: "en" | "hi" | "te"
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
   subject?: string
+  defaultShowAiGenerator?: boolean
+  defaultAiTopic?: string
 }
 
 const SUBJECTS_CONFIG = {
@@ -64,7 +66,9 @@ export function FlashcardDeck({
   onFlashcardsGenerated, // Optional prop in case parent wants to listen, but local state manages rendering
   language = "en",
   syllabus = "General",
-  subject = "all"
+  subject = "all",
+  defaultShowAiGenerator = false,
+  defaultAiTopic = ""
 }: FlashcardDeckProps & { onFlashcardsGenerated?: (cards: Flashcard[]) => void }) {
   const [allCardsList, setAllCardsList] = useState<Flashcard[]>(cards)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -72,7 +76,7 @@ export function FlashcardDeck({
   const [filteredCards, setFilteredCards] = useState<Flashcard[]>([])
   const [selectedSubject, setSelectedSubject] = useState<string>(subject)
   const [showSubjectSelect, setShowSubjectSelect] = useState<boolean>(subject === "all")
-  const [showAIGenerator, setShowAIGenerator] = useState(false)
+  const [showAIGenerator, setShowAIGenerator] = useState(defaultShowAiGenerator)
 
   // Sync state if cards prop changes
   useEffect(() => {
@@ -315,6 +319,32 @@ Subject: ${card.subject}
             )
           })}
         </div>
+
+        {/* Generate with AI option */}
+        <div className="mt-6 pt-4 border-t border-border animate-fade-in">
+          <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
+            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 text-left">
+                <h4 className="font-bold text-md flex items-center gap-1.5 text-foreground">
+                  <Sparkles size={16} className="text-purple-600 dark:text-purple-400 animate-pulse" />
+                  Generate custom Flashcards with Gemini AI
+                </h4>
+                <p className="text-xs text-muted-foreground max-w-md font-light">
+                  Can't find your subject or want to practice a specific topic? Create custom flashcards instantly.
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  setShowAIGenerator(true)
+                  setShowSubjectSelect(false)
+                }}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-indigo-500/20 shrink-0"
+              >
+                Start AI Flashcard Generator
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -339,7 +369,12 @@ Subject: ${card.subject}
               <Sparkles size={18} className="text-primary" />
               {translations.generateAI[language]}
             </h3>
-            <Button variant="ghost" size="icon" onClick={() => setShowAIGenerator(false)}>
+            <Button variant="ghost" size="icon" onClick={() => {
+              setShowAIGenerator(false)
+              if (selectedSubject === "all") {
+                setShowSubjectSelect(true)
+              }
+            }}>
               <X size={18} />
             </Button>
           </div>
@@ -347,6 +382,8 @@ Subject: ${card.subject}
           <AIFlashcardGenerator
             onFlashcardsGenerated={handleAIFlashcardsGenerated}
             syllabus={syllabus}
+            defaultSubject={selectedSubject === "all" ? "" : selectedSubject}
+            defaultCustomSubject={defaultAiTopic}
           />
         </div>
       ) : (

@@ -97,6 +97,11 @@ export default function StudentDashboardPage() {
   const [activeQuizSubject, setActiveQuizSubject] = useState<string | undefined>(undefined)
   const [showFlashcards, setShowFlashcards] = useState(false)
   const [showSummaries, setShowSummaries] = useState(false)
+  const [activeQuizTopic, setActiveQuizTopic] = useState<string | undefined>(undefined)
+  const [showQuizAi, setShowQuizAi] = useState<boolean>(false)
+  const [activeFlashcardTopic, setActiveFlashcardTopic] = useState<string | undefined>(undefined)
+  const [showFlashcardAi, setShowFlashcardAi] = useState<boolean>(false)
+  const [activeFlashcardSubject, setActiveFlashcardSubject] = useState<string | undefined>(undefined)
   const [showLearningOptions, setShowLearningOptions] = useState(false)
   const [showTextbooks, setShowTextbooks] = useState(false)
   const [showMindMap, setShowMindMap] = useState(false)
@@ -487,16 +492,6 @@ export default function StudentDashboardPage() {
       en: "Congratulations!",
       hi: "बधाई हो!",
       te: "అభినందనలు!",
-    },
-    motionTracking: {
-      en: "Motion Detection",
-      hi: "गति पहचान",
-      te: "చలన గుర్తింపు",
-    },
-    motionTrackingDesc: {
-      en: "Stay in frame for better learning experience.",
-      hi: "बेहतर सीखने के अनुभव के लिए फ्रेम में रहें।",
-      te: "మెరుగైన అభ్యాస అనుభవం కోసం ఫ్రేమ్‌లో ఉండండి.",
     },
   }
 
@@ -1196,7 +1191,7 @@ export default function StudentDashboardPage() {
               className="flex items-center gap-2 bg-primary hover:bg-primary/90"
             >
               <Camera size={16} />
-              {translations.openCamera ? translations.openCamera[language] : "Start Camera"}
+              {(translations as any).openCamera ? (translations as any).openCamera[language] : "Start Camera"}
             </Button>
           </div>
 
@@ -1505,10 +1500,14 @@ export default function StudentDashboardPage() {
                   language={language}
                   syllabus={selectedSyllabus}
                   subject={activeQuizSubject}
+                  defaultShowAiGenerator={showQuizAi}
+                  defaultAiTopic={activeQuizTopic}
                   onComplete={handleQuizComplete}
                   onClose={() => {
                     setShowQuiz(false)
                     setActiveQuizSubject(undefined)
+                    setActiveQuizTopic(undefined)
+                    setShowQuizAi(false)
                   }}
                 />
               </div>
@@ -1546,8 +1545,15 @@ export default function StudentDashboardPage() {
                   cards={allFlashcards}
                   language={language}
                   syllabus={selectedSyllabus}
-                  subject={flashcardDetails.subject}
-                  onClose={() => setShowFlashcards(false)}
+                  subject={activeFlashcardSubject || flashcardDetails.subject}
+                  defaultShowAiGenerator={showFlashcardAi}
+                  defaultAiTopic={activeFlashcardTopic}
+                  onClose={() => {
+                    setShowFlashcards(false)
+                    setActiveFlashcardSubject(undefined)
+                    setActiveFlashcardTopic(undefined)
+                    setShowFlashcardAi(false)
+                  }}
                 />
               </div>
             </motion.div>
@@ -1586,6 +1592,20 @@ export default function StudentDashboardPage() {
                   syllabus={selectedSyllabus}
                   subject={summaryDetails.subject === "all" ? undefined : summaryDetails.subject}
                   onClose={() => setShowSummaries(false)}
+                  onTriggerQuiz={(subject, topic) => {
+                    setShowSummaries(false)
+                    setActiveQuizSubject(subject)
+                    setActiveQuizTopic(topic)
+                    setShowQuizAi(true)
+                    setShowQuiz(true)
+                  }}
+                  onTriggerFlashcards={(subject, topic) => {
+                    setShowSummaries(false)
+                    setActiveFlashcardSubject(subject)
+                    setActiveFlashcardTopic(topic)
+                    setShowFlashcardAi(true)
+                    setShowFlashcards(true)
+                  }}
                 />
               </div>
             </motion.div>

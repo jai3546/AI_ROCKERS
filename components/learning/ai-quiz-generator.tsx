@@ -31,16 +31,18 @@ interface AiQuizGeneratorProps {
   language?: "en" | "hi" | "te"
   defaultSyllabus?: "AP" | "Telangana" | "CBSE" | "General"
   defaultSubject?: string
+  defaultCustomSubject?: string
 }
 
 export function AiQuizGenerator({
   onQuestionsGenerated,
   language = "en",
   defaultSyllabus = "General",
-  defaultSubject = ""
+  defaultSubject = "",
+  defaultCustomSubject = ""
 }: AiQuizGeneratorProps) {
-  const [subject, setSubject] = useState(defaultSubject)
-  const [customSubject, setCustomSubject] = useState("")
+  const [subject, setSubject] = useState(defaultCustomSubject ? "custom" : defaultSubject)
+  const [customSubject, setCustomSubject] = useState(defaultCustomSubject || "")
   const [numQuestions, setNumQuestions] = useState(5)
   const [syllabus, setSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">(defaultSyllabus)
 
