@@ -208,7 +208,7 @@ export default function TestimonialCarousel() {
                 <div className="pt-4 border-t border-gray-100 flex items-center gap-3 mt-auto">
                   <img 
                     src={item.avatar} 
-                    alt="" 
+                    alt={`${item.name}'s avatar`}
                     className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                   />
                   <div>

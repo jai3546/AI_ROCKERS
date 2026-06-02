@@ -56,7 +56,7 @@ const sampleReviews: ReviewData[] = [
     id: "5",
     name: "Meera Desai",
     role: "Parent",
-    avatar: "'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80'",
+    avatar: '',
     rating: 4,
     comment: "I appreciate being able to monitor my child's learning progress. The emotional tracking feature gives me insights into how they're engaging with the material, which helps me provide better support at home.",
     date: "2 months ago"
@@ -65,7 +65,7 @@ const sampleReviews: ReviewData[] = [
     id: "6",
     name: "Arjun Kumar",
     role: "Student, Class 11",
-    avatar:'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
+    avatar: '',
     rating: 5,
     comment: "The summaries feature has been a game-changer for my exam preparation. It helps me quickly review key concepts and saves so much time. The voice navigation is also very intuitive.",
     date: "3 weeks ago"
