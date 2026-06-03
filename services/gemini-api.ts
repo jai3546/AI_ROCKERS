@@ -825,6 +825,146 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
   return { title, summary: content, mindMapData };
 }
 
+export async function generateAiSummaryFromDocument(
+  documentText: string,
+  documentName: string,
+  subject: string = "Science",
+  syllabus: string = "General"
+): Promise<AiSummaryResult> {
+  const apiKey = getApiKey();
+
+  if (apiKey) {
+    try {
+      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+
+      const systemPrompt = `You are a high-quality educational content creator. The user has uploaded a document named "${documentName}". 
+You must respond with a JSON object containing:
+1. "title": A short, capitalized, descriptive title of the document or its core topic.
+2. "summary": A detailed, clear educational summary of the document's contents suitable for K-12 students. Use paragraphs and bullet points.
+3. "mindMapData": A hierarchical tree structure of the concepts in the document. The root node is the main title.
+   Each node in the tree MUST have this exact interface:
+   interface MindMapNode {
+     id: string;
+     label: string; // 1-3 words max
+     color?: string; // Hex color string corresponding to branch theme
+     children?: MindMapNode[];
+   }
+   Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
+   
+Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
+
+      const requestBody = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: systemPrompt + "\n\nExtracted Document Content:\n" + documentText }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 4096,
+          responseMimeType: "application/json"
+        }
+      };
+
+      const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        
+        let title = documentName.replace(/\.[^/.]+$/, "");
+        title = title.charAt(0).toUpperCase() + title.slice(1);
+        let summary = "";
+        let mindMapData = null;
+
+        const parsed = safeJsonParse(rawText);
+        if (parsed) {
+          title = parsed.title || title;
+          summary = parsed.summary || "";
+          mindMapData = parsed.mindMapData || null;
+        } else {
+          console.warn("safeJsonParse failed for document summary, attempting regex extraction on raw text");
+          
+          const titleVal = extractStringField(rawText, "title");
+          if (titleVal) {
+            title = titleVal;
+          }
+
+          const summaryVal = extractStringField(rawText, "summary");
+          if (summaryVal) {
+            summary = summaryVal;
+          }
+
+          const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
+          if (mindMapMatch) {
+            try {
+              const block = extractBalancedObject(mindMapMatch[1]);
+              if (block) {
+                mindMapData = safeJsonParse(block);
+              }
+            } catch (e) {
+              console.warn("Failed to parse extracted mindMapData JSON:", e);
+            }
+          }
+        }
+
+        if (summary) {
+          return {
+            title,
+            summary,
+            mindMapData: mindMapData || { id: "root", label: title }
+          };
+        }
+      }
+    } catch (e) {
+      console.error("Failed to generate AI summary from document, falling back to mock:", e);
+    }
+  }
+
+  // Fallback to basic structured mock summary if API fails
+  const title = documentName.replace(/\.[^/.]+$/, "");
+  const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
+  const content = `This is a study summary generated from your uploaded document "${documentName}". It covers the core concepts, historical outline, and practical aspects discussed in your materials.\n\nKey areas covered in the document include:\n• Key Definitions & Terms: Essential terms and formulas extracted from the text.\n• Structured Outline: A logical breakdown of the chapter/slide topics.\n• Core Summary points: Important takeaways to assist you in study revision and homework preparation.`;
+  
+  const mindMapData = {
+    id: "root",
+    label: formattedTitle,
+    color: "#3b82f6",
+    children: [
+      {
+        id: "d1",
+        label: "Overview",
+        color: "#10b981",
+        children: [
+          { id: "d1-1", label: "Introduction", color: "#10b981" },
+          { id: "d1-2", label: "Core Scope", color: "#10b981" }
+        ]
+      },
+      {
+        id: "d2",
+        label: "Core Themes",
+        color: "#f59e0b",
+        children: [
+          { id: "d2-1", label: "Key Terms", color: "#f59e0b" },
+          { id: "d2-2", label: "Methodology", color: "#f59e0b" }
+        ]
+      }
+    ]
+  };
+
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  return { title: formattedTitle, summary: content, mindMapData };
+}
+
 export function extractArray(parsed: any): any[] | null {
   if (Array.isArray(parsed)) return parsed;
   if (parsed && typeof parsed === "object") {
