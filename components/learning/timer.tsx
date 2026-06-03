@@ -24,7 +24,7 @@ export default function Timer({
     setAnswer('');
   }, [question, initialTime]);
 
-useEffect(() => {
+  useEffect(() => {
     if (timeLeft <= 0) {
       onTimeUp();
       return;
