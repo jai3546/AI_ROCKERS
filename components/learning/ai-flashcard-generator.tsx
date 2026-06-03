@@ -8,19 +8,24 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { generateAiFlashcards } from "@/services/gemini-api"
 import { Flashcard } from "@/data/flashcards"
 
 interface AIFlashcardGeneratorProps {
   onFlashcardsGenerated: (flashcards: Flashcard[]) => void
   syllabus: "AP" | "Telangana" | "CBSE" | "General"
+  defaultSubject?: string
+  defaultCustomSubject?: string
 }
 
 export function AIFlashcardGenerator({
   onFlashcardsGenerated,
-  syllabus
+  syllabus,
+  defaultSubject = "",
+  defaultCustomSubject = ""
 }: AIFlashcardGeneratorProps) {
-  const [subject, setSubject] = useState("")
-  const [customSubject, setCustomSubject] = useState("")
+  const [subject, setSubject] = useState(defaultCustomSubject ? "custom" : (defaultSubject || ""))
+  const [customSubject, setCustomSubject] = useState(defaultCustomSubject || "")
   const [numFlashcards, setNumFlashcards] = useState(5)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -46,8 +51,16 @@ export function AIFlashcardGenerator({
     setError(null)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // First attempt to generate using Gemini AI
+      try {
+        const generated = await generateAiFlashcards(selectedSubject, syllabus, numFlashcards)
+        if (generated && generated.length > 0) {
+          onFlashcardsGenerated(generated)
+          return
+        }
+      } catch (e) {
+        console.warn("AI generation failed, falling back to templates:", e)
+      }
 
       // Generate flashcards based on the subject
       const flashcards: Flashcard[] = []
