@@ -132,6 +132,9 @@ export default function StudentDashboardPage() {
   const [showOutOfFrameWarning, setShowOutOfFrameWarning] = useState(false)
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
   const [showStudentDetails, setShowStudentDetails] = useState(false)
+  const [studyTime, setStudyTime] = useState(0)
+  const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
+  const [breakMessage, setBreakMessage] = useState("")
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
@@ -139,6 +142,25 @@ export default function StudentDashboardPage() {
       setLanguage(storedLanguage)
     }
   }, [])
+
+  useEffect(() => {
+     if (studyTime > 0 && studyTime % 45 === 0) {
+       setBreakMessage(
+          "You have been studying for 45 minutes. A short Pomodoro break may help maintain focus."
+      )
+
+       setShowBreakSuggestion(true)
+    }
+  }, [studyTime])
+
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStudyTime((prev) => prev + 1)
+     }, 60000)
+
+     return () => clearInterval(timer)
+   }, [])
 
   // Auto-start emotion tracking immediately
   useEffect(() => {
@@ -671,6 +693,16 @@ export default function StudentDashboardPage() {
   const handleEmotionDetected = (emotionData: EmotionData) => {
     // Update last emotion data
     setLastEmotionData(emotionData)
+    if (
+       emotionData.fatigueScore > 75 ||
+       emotionData.attentionScore < 30
+    ) {
+       setBreakMessage(
+          "You seem tired. Consider taking a short break, stretching, or drinking water."
+       )
+
+       setShowBreakSuggestion(true)
+       }
     console.log('Emotion detected:', emotionData)
 
     // Update emotion history
@@ -986,6 +1018,29 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Daily Challenge */}
+        {
+          showBreakSuggestion && (
+           <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <AlertTriangle size={18} />
+                  Smart Break Suggestion
+                </CardTitle>
+             </CardHeader>
+
+            <CardContent>
+               <p>{breakMessage}</p>
+
+               <Button
+                 className="mt-3"
+                 onClick={() => setShowBreakSuggestion(false)}
+               >
+                 Got It
+                </Button>
+             </CardContent>
+           </Card>
+          )
+       }
         <DailyChallenge
           title="Science Challenge"
           description="Complete a quiz about photosynthesis and earn bonus XP!"
