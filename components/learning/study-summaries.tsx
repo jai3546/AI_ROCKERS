@@ -111,13 +111,25 @@ export function StudySummaries({
     e.stopPropagation()
     setDragActive(false)
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0])
+      const file = e.dataTransfer.files[0]
+      if (file.size > 15 * 1024 * 1024) {
+        setUploadError("File size exceeds the 15MB limit.")
+        setSelectedFile(null)
+      } else {
+        setSelectedFile(file)
+        setUploadError(null)
+      }
     }
   }
 
   const handleUploadAndSummarize = async () => {
     if (!selectedFile) {
       setUploadError("Please select a file first")
+      return
+    }
+
+    if (selectedFile.size > 15 * 1024 * 1024) {
+      setUploadError("File size exceeds the 15MB limit.")
       return
     }
 
@@ -141,8 +153,18 @@ export function StudySummaries({
       })
 
       if (!parseResponse.ok) {
-        const errorData = await parseResponse.json()
-        throw new Error(errorData.error || "Failed to parse document content.")
+        let errorMessage = "Failed to parse document content."
+        try {
+          const contentType = parseResponse.headers.get("content-type")
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await parseResponse.json()
+            errorMessage = errorData.error || errorMessage
+          } else {
+            const textError = await parseResponse.text()
+            errorMessage = textError || errorMessage
+          }
+        } catch (_) {}
+        throw new Error(errorMessage)
       }
 
       const { text } = await parseResponse.json()
@@ -819,7 +841,14 @@ ${summary.content}
                           className="hidden"
                           onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
-                              setSelectedFile(e.target.files[0])
+                              const file = e.target.files[0]
+                              if (file.size > 15 * 1024 * 1024) {
+                                setUploadError("File size exceeds the 15MB limit.")
+                                setSelectedFile(null)
+                              } else {
+                                setSelectedFile(file)
+                                setUploadError(null)
+                              }
                             }
                           }}
                         />
@@ -852,7 +881,7 @@ ${summary.content}
 
                 <Button
                   onClick={handleUploadAndSummarize}
-                  disabled={uploadStep !== "idle" && uploadStep !== "complete" || !selectedFile}
+                  disabled={(uploadStep !== "idle" && uploadStep !== "complete") || !selectedFile}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20 mt-auto"
                 >
                   {uploadStep === "reading" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Reading...</>}
@@ -1358,7 +1387,14 @@ ${summary.content}
                         className="hidden"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            setSelectedFile(e.target.files[0])
+                            const file = e.target.files[0]
+                            if (file.size > 15 * 1024 * 1024) {
+                              setUploadError("File size exceeds the 15MB limit.")
+                              setSelectedFile(null)
+                            } else {
+                              setSelectedFile(file)
+                              setUploadError(null)
+                            }
                           }
                         }}
                       />
