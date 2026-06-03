@@ -24,7 +24,7 @@ export default function Timer({
     setAnswer('');
   }, [question, initialTime]);
 
-  useEffect(() => {
+useEffect(() => {
     if (timeLeft <= 0) {
       onTimeUp();
       return;
@@ -40,7 +40,7 @@ export default function Timer({
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [onTimeUp]);
+  }, [timeLeft, onTimeUp]);
 
   // Dynamic User Experience: Determine urgency based on time remaining
   const isTimeRunningOut = timeLeft <= 10;
