@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface TimerProps {
@@ -18,14 +18,28 @@ export default function Timer({
 }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [answer, setAnswer] = useState('');
+  
+  // Create a ref to always hold the latest answer without triggering re-renders
+  const answerRef = useRef(answer);
 
+  // Keep the ref updated whenever the user types
+  useEffect(() => {
+    answerRef.current = answer;
+  }, [answer]);
+
+  // Reset timer and answer when a new question loads
   useEffect(() => {
     setTimeLeft(initialTime);
     setAnswer('');
   }, [question, initialTime]);
 
+  // Timer logic and auto-submit
   useEffect(() => {
     if (timeLeft <= 0) {
+      // Submit the latest answer from the ref before calling onTimeUp
+      if (answerRef.current.trim()) {
+        onSubmit(answerRef.current);
+      }
       onTimeUp();
       return;
     }
@@ -40,7 +54,7 @@ export default function Timer({
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [timeLeft, onTimeUp]);
+  }, [timeLeft, onTimeUp, onSubmit]);
 
   // Dynamic User Experience: Determine urgency based on time remaining
   const isTimeRunningOut = timeLeft <= 10;
