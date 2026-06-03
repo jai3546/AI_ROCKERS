@@ -16,8 +16,13 @@ export default function Timer({
   onSubmit,
   onTimeUp,
 }: TimerProps) {
-  const [timeLeft, setTimeLeft] = useState(initialTime);
+const [timeLeft, setTimeLeft] = useState(initialTime);
   const [answer, setAnswer] = useState('');
+
+  useEffect(() => {
+    setTimeLeft(initialTime);
+    setAnswer('');
+  }, [question, initialTime]);
 
   useEffect(() => {
     // Base Condition: Check if time is up
