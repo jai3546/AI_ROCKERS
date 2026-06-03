@@ -904,7 +904,7 @@ ${index + 1}. ${q.question}
               </div>
               <Progress value={percentageScore} className="h-2 mb-4" />
               <p className="text-sm font-semibold mb-6">
-                Your Score: {percentageScore}% {percentageScore >= 70 ? '🎉 Great Job!' : '👍 Keep studying!'}
+                Your Score: {percentageScore}% {percentageScore >= 50 ? (percentageScore >= 70 ? '🎉 Great Job!' : '👍 Keep studying!') : 'Nice try! Keep studying to master this topic.'}
               </p>
             </div>
 
