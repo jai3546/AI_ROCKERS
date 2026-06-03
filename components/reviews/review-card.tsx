@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Star, Quote } from "lucide-react"
+import { Quote, Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
 
 export interface ReviewData {
   id: string
@@ -18,48 +18,52 @@ export interface ReviewData {
 
 interface ReviewCardProps {
   review: ReviewData
-  index: number
 }
 
-export function ReviewCard({ review, index }: ReviewCardProps) {
+export function ReviewCard({ review }: ReviewCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-    >
-      <Card className="h-full bg-white dark:bg-card border border-border dark:border-border shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="h-full w-full">
+      <Card
+        className={cn(
+          "h-full w-full min-h-[22rem] overflow-hidden rounded-[1.95rem] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(17,24,39,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(244,114,182,0.12)] sm:min-h-[24rem] lg:min-h-[26rem] dark:border-border/80 dark:bg-card"
+        )}
+      >
+        <CardContent className="flex h-full flex-col px-6 py-6 sm:px-7 sm:py-7">
+          <Quote className="h-14 w-14 text-pink-400" strokeWidth={2.5} />
+
+          <div className="mt-5 flex-1">
+            <p className="max-w-[18ch] text-[1.05rem] leading-8 tracking-[-0.02em] text-slate-800 line-clamp-5 dark:text-foreground/90 sm:line-clamp-4 lg:line-clamp-5">
+              “{review.comment}”
+            </p>
+          </div>
+
+          <div className="mt-auto border-t border-pink-100 pt-5 dark:border-pink-950/70">
             <div className="flex items-center gap-3">
-              <Avatar>
+              <Avatar className="h-14 w-14 border-2 border-white shadow-md dark:border-card">
                 <AvatarImage src={review.avatar} alt={review.name} />
-                <AvatarFallback className="bg-primary/20 text-primary">
-                  {review.name.split(" ").map(n => n[0]).join("")}
+                <AvatarFallback className="bg-gradient-to-br from-pink-200 via-rose-100 to-sky-100 text-slate-800 dark:from-pink-900/40 dark:via-rose-900/30 dark:to-sky-900/30 dark:text-foreground">
+                  {review.name
+                    .split(" ")
+                    .map((namePart) => namePart[0])
+                    .join("")}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h4 className="font-medium text-foreground">{review.name}</h4>
-                <p className="text-sm text-muted-foreground">{review.role}</p>
+                <h4 className="text-base font-semibold text-slate-900 dark:text-foreground">{review.name}</h4>
+                <p className="text-sm font-medium text-pink-500 dark:text-pink-300">{review.role}</p>
               </div>
             </div>
-            <div className="flex items-center">
-              {Array.from({ length: 5 }).map((_, i) => (
+
+            <div className="mt-3 flex items-center gap-1 text-yellow-400">
+              {Array.from({ length: 5 }).map((_, starIndex) => (
                 <Star
-                  key={i}
-                  size={16}
-                  className={i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-300 dark:text-gray-600"}
+                  key={starIndex}
+                  size={17}
+                  className={starIndex < review.rating ? "fill-yellow-400" : "fill-transparent text-yellow-200 dark:text-yellow-900"}
                 />
               ))}
             </div>
           </div>
-          <div className="relative">
-            <Quote size={24} className="absolute -top-2 -left-2 text-primary/20" />
-            <p className="text-foreground/80 dark:text-foreground/80 text-sm pl-4 pr-2">
-              {review.comment}
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground mt-4 text-right">{review.date}</p>
         </CardContent>
       </Card>
     </motion.div>
