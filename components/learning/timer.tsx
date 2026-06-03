@@ -16,7 +16,7 @@ export default function Timer({
   onSubmit,
   onTimeUp,
 }: TimerProps) {
-const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [answer, setAnswer] = useState('');
 
   useEffect(() => {
