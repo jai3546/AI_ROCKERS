@@ -3,6 +3,14 @@ import { NextResponse } from 'next/server';
 import { PDFParse } from 'pdf-parse';
 // @ts-ignore
 import officeParser from 'officeparser';
+import path from 'path';
+import { pathToFileURL } from 'url';
+
+// Configure absolute worker path dynamically as a file:// URL to support Windows paths in dynamic imports
+// Using the nested pdfjs-dist inside pdf-parse to ensure API and Worker versions match exactly
+const workerPath = path.join(process.cwd(), 'node_modules', 'pdf-parse', 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs');
+const workerURL = pathToFileURL(workerPath).href;
+PDFParse.setWorker(workerURL);
 
 export async function POST(request: Request) {
   try {
