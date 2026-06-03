@@ -24,20 +24,21 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
     setAnswer('');
   }, [question, initialTime]);
 
-  useEffect(() => {
-    // Base Condition: Check if time is up
+useEffect(() => {
     if (timeLeft <= 0) {
       onTimeUp();
       return;
     }
 
-    // Creating the Interval: Set up a countdown every 1 second
     const timerId = setInterval(() => {
-      // Updating State: Use functional update to guarantee latest state
-      setTimeLeft((prev) => prev - 1);
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    // Cleanup Function: Clear interval when component unmounts or effect re-runs
     return () => clearInterval(timerId);
   }, [timeLeft, onTimeUp]);
 
