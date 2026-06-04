@@ -34,8 +34,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         error: 'File size exceeds 15MB limit' 
       }, { status: 400 });
+    const arrayBuffer = await file.arrayBuffer();
+    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB limit
+    if (arrayBuffer.byteLength > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size exceeds 15MB limit' }, { status: 413 });
     }
-    
+    const buffer = Buffer.from(arrayBuffer);
     const filename = file.name.toLowerCase();
 
     let text = '';
