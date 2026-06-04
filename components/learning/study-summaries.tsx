@@ -884,6 +884,7 @@ ${summary.content}
                   disabled={(uploadStep !== "idle" && uploadStep !== "complete") || !selectedFile}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20 mt-auto"
                 >
+                >
                   {uploadStep === "reading" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Reading...</>}
                   {uploadStep === "parsing" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Extracting slides...</>}
                   {uploadStep === "ai_generating" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> AI Generating...</>}
