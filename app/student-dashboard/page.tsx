@@ -1422,6 +1422,14 @@ export default function StudentDashboardPage() {
             <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
             <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
           </Button>
+<Button
+            variant="ghost"
+            className="flex flex-col items-center gap-1 h-auto py-2"
+            onClick={() => router.push("/session-history")}
+          >
+            <TrendingUp size={20} />
+            <span className="text-xs">History</span>
+          </Button>
         </div>
       </div>
 
