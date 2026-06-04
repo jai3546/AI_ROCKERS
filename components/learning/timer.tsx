@@ -34,13 +34,9 @@ export default function Timer({
   }, [question, initialTime]);
 
   // Timer logic and auto-submit
+// Timer logic and auto-submit
   useEffect(() => {
     if (timeLeft <= 0) {
-      // Submit the latest answer from the ref before calling onTimeUp
-      if (answerRef.current.trim()) {
-        onSubmit(answerRef.current);
-      }
-      onTimeUp();
       return;
     }
 
@@ -54,7 +50,17 @@ export default function Timer({
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [timeLeft, onTimeUp, onSubmit]);
+  }, [timeLeft]);
+  
+  // Handle time up separately to avoid infinite loops
+  useEffect(() => {
+    if (timeLeft === 0) {
+      if (answerRef.current.trim()) {
+        onSubmit(answerRef.current);
+      }
+      onTimeUp();
+    }
+  }, [timeLeft, onSubmit, onTimeUp]);
 
   // Dynamic User Experience: Determine urgency based on time remaining
   const isTimeRunningOut = timeLeft <= 10;
