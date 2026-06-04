@@ -51,14 +51,23 @@ export function QuizCard({ question, options, timeLimit = 45, points, onAnswer, 
     return () => clearInterval(timer)
   }, [isAnswered, isActive])
 
-  // Handle timeout - separate effect to avoid parent state update during render
+  // Handle timeout - evaluate the CURRENTLY selected option instead of defaulting to false
   useEffect(() => {
     if (timeLeft === 0 && !isAnswered && isActive) {
       setIsAnswered(true)
       setIsActive(false)
-      onAnswer(false)
+      
+      let correct = false
+      // If they had an option selected when time ran out, check if it's correct
+      if (selectedOption && selectedOption !== 'custom') {
+        const selectedOptionObj = options.find((opt) => opt.id === selectedOption)
+        correct = selectedOptionObj?.isCorrect || false
+      }
+      
+      setIsCorrect(correct)
+      onAnswer(correct)
     }
-  }, [timeLeft, isAnswered, isActive, onAnswer])
+  }, [timeLeft, isAnswered, isActive, onAnswer, options, selectedOption])
 
   const translations = {
     timeLeft: {
@@ -93,9 +102,6 @@ export function QuizCard({ question, options, timeLimit = 45, points, onAnswer, 
     },
   }
 
-  // In a real app, we would use useEffect to handle the timer
-  // and API calls to check answers
-
   const handleSelectOption = (optionId: string) => {
     if (isAnswered || !isActive) return
     setSelectedOption(optionId)
@@ -109,8 +115,6 @@ export function QuizCard({ question, options, timeLimit = 45, points, onAnswer, 
 
     // Handle custom answer separately
     if (selectedOption === 'custom') {
-      // For custom answers, we'll always mark them as incorrect for now
-      // In a real implementation, you might want to use AI to evaluate the answer
       setIsCorrect(false)
       setIsAnswered(true)
       onAnswer(false)
