@@ -133,6 +133,9 @@ export default function StudentDashboardPage() {
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
   const [showStudentDetails, setShowStudentDetails] = useState(false)
   const [studyTime, setStudyTime] = useState(0)
+  const [sessionLength, setSessionLength] = useState(25)
+  const [timeLeft, setTimeLeft] = useState(25 * 60)
+  const [isRunning, setIsRunning] = useState(false)
   const formatStudyTime = () => {
       const hours = Math.floor(studyTime / 60)
       const minutes = studyTime % 60
@@ -153,31 +156,33 @@ export default function StudentDashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (studyTime === 30) {
-      setBreakMessage(
-        "You have been studying for 30 minutes. Consider drinking water and stretching for a minute."
-      )
+    if (!isRunning) return
 
-       setShowBreakSuggestion(true)
-    }
+    const interval = setInterval(() => {
+       setTimeLeft((prev) => {
+         if (prev <= 1) {
+           clearInterval(interval)
 
-    if (studyTime === 45) {
-      setBreakMessage(
-         "You have been studying for 45 minutes. A short Pomodoro break may help maintain focus."
-      )
+           setIsRunning(false)
 
-       setShowBreakSuggestion(true)
-    }
-  }, [studyTime])
+           setBreakMessage(
+              `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
+           )
+
+           setShowBreakSuggestion(true)
+
+           return 0
+         } 
+
+       return prev - 1
+       })
+     }, 1000)
+
+    return () => clearInterval(interval)
+   }, [isRunning, sessionLength])
 
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStudyTime((prev) => prev + 1)
-     }, 60000)
-
-     return () => clearInterval(timer)
-   }, [])
+ 
 
   // Auto-start emotion tracking immediately
   useEffect(() => {
@@ -1043,13 +1048,57 @@ export default function StudentDashboardPage() {
            </CardHeader>
 
            <CardContent>
-             <p className="text-3xl font-bold">
-                {formatStudyTime()}
-            </p>
+             <div className="flex gap-2 mb-4">
 
-            <p className="text-sm text-muted-foreground mt-2">
-               Study session tracking is active.
-           </p>
+               <Button
+                  variant="outline"
+                  onClick={() => {
+                      setSessionLength(25)
+                      setTimeLeft(25 * 60)
+                   }}
+              >
+                   25 Min
+              </Button>
+
+               <Button
+                  variant="outline"
+                  onClick={() => {
+                      setSessionLength(30)
+                      setTimeLeft(30 * 60)
+                  }}
+               >
+                   30 Min
+              </Button>
+
+              <Button
+                  variant="outline"
+                  onClick={() => {
+                      setSessionLength(45)
+                      setTimeLeft(45 * 60)
+                   }}
+              >
+                   45 Min
+               </Button>
+
+            </div>
+
+             <p className="text-3xl font-bold">
+                 {Math.floor(timeLeft / 60)
+                    .toString()
+                    .padStart(2, "0")}
+                :
+                {(timeLeft % 60)
+                    .toString()
+                    .padStart(2, "0")}
+             </p>
+
+             <Button
+                 className="mt-4"
+                 onClick={() => setIsRunning(true)}
+             >
+                 Start Session
+             </Button>
+             
           </CardContent>
         </Card>
 
