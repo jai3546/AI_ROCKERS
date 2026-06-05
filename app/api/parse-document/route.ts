@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const filename = file.name.toLowerCase();
-    const filename = file.name.toLowerCase();
     
     // Validate MIME type in addition to extension
     const allowedMimeTypes = [
