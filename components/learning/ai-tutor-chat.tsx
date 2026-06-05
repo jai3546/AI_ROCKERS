@@ -117,96 +117,87 @@ export function AiTutorChat({
   }, [learningStyle])
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
+  if (!inputValue.trim()) return
 
-    // Add user message
-    const userMessage: Message = {
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: inputValue,
+    sender: "user",
+    timestamp: new Date(),
+  }
+
+  setMessages((prev) => [...prev, userMessage])
+  setInputValue("")
+  setIsTyping(true)
+
+  const updatedLearningStyle = updateLearningStyleProfile(currentLearningStyle, {
+    textInteractions: 1,
+    videoInteractions: userMessage.content.toLowerCase().includes('video') ||
+                      userMessage.content.toLowerCase().includes('see') ||
+                      userMessage.content.toLowerCase().includes('show') ? 1 : 0,
+    audioInteractions: userMessage.content.toLowerCase().includes('audio') ||
+                       userMessage.content.toLowerCase().includes('hear') ||
+                       userMessage.content.toLowerCase().includes('listen') ? 1 : 0,
+    practicalInteractions: userMessage.content.toLowerCase().includes('practice') ||
+                           userMessage.content.toLowerCase().includes('try') ||
+                           userMessage.content.toLowerCase().includes('do') ? 1 : 0
+  })
+
+  setCurrentLearningStyle(updatedLearningStyle)
+
+  if (onLearningStyleUpdate) {
+    onLearningStyleUpdate(updatedLearningStyle)
+  }
+
+  try {
+    const apiKey = getApiKey()
+    let response
+
+    if (apiKey && apiKey !== 'your-api-key-here') {
+      response = await getGeminiResponse(
+        userMessage.content,
+        currentSubject,
+        language,
+        currentLearningStyle,
+        currentEmotionState
+      )
+    } else {
+      response = await getMockGeminiResponse(
+        userMessage.content,
+        currentSubject,
+        language,
+        currentLearningStyle,
+        currentEmotionState
+      )
+    }
+
+    const botMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
+      content: response.text,
+      sender: "bot",
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
-    setIsTyping(true)
+    setMessages((prev) => [...prev, botMessage])
+  } catch (error) {
+    console.error('Error getting AI response:', error)
 
-    // Update learning style based on interaction
-    const updatedLearningStyle = updateLearningStyleProfile(currentLearningStyle, {
-      textInteractions: 1,
-      // Detect if the message contains indicators of learning style preference
-      videoInteractions: userMessage.content.toLowerCase().includes('video') ||
-                        userMessage.content.toLowerCase().includes('see') ||
-                        userMessage.content.toLowerCase().includes('show') ? 1 : 0,
-      audioInteractions: userMessage.content.toLowerCase().includes('audio') ||
-                         userMessage.content.toLowerCase().includes('hear') ||
-                         userMessage.content.toLowerCase().includes('listen') ? 1 : 0,
-      practicalInteractions: userMessage.content.toLowerCase().includes('practice') ||
-                             userMessage.content.toLowerCase().includes('try') ||
-                             userMessage.content.toLowerCase().includes('do') ? 1 : 0
-    })
-
-    setCurrentLearningStyle(updatedLearningStyle)
-
-    // Notify parent component of learning style update
-    if (onLearningStyleUpdate) {
-      onLearningStyleUpdate(updatedLearningStyle)
+    const errorMessage: Message = {
+      id: Date.now().toString(),
+      content: language === 'en'
+        ? "I'm sorry, I couldn't process your request right now. Please try again later."
+        : language === 'hi'
+        ? "मुझे खेद है, मैं अभी आपके अनुरोध को प्रोसेस नहीं कर सका। कृपया बाद में पुनः प्रयास करें।"
+        : "క్షమించండి, నేను ప్రస్తుతం మీ అభ్యర్థనను ప్రాసెస్ చేయలేకపోయాను. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.",
+      sender: "bot",
+      timestamp: new Date(),
     }
 
-    try {
-      // Try to get response from Gemini API
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      let response
-
-      if (apiKey && apiKey !== 'your-api-key-here') {
-        // Use the real API if key is available
-        response = await getGeminiResponse(
-          userMessage.content,
-          currentSubject,
-          language,
-          currentLearningStyle,
-          currentEmotionState
-        )
-      } else {
-        // Fall back to mock responses if no API key
-        response = getMockGeminiResponse(
-          userMessage.content,
-          currentSubject,
-          language,
-          currentLearningStyle,
-          currentEmotionState
-        )
-      }
-
-      // Create bot message from response
-      const botMessage: Message = {
-        id: Date.now().toString(),
-        content: response.text,
-        sender: "bot",
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, botMessage])
-    } catch (error) {
-      console.error('Error getting AI response:', error)
-
-      // Fallback message on error
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        content: language === 'en'
-          ? "I'm sorry, I couldn't process your request right now. Please try again later."
-          : language === 'hi'
-          ? "मुझे खेद है, मैं अभी आपके अनुरोध को प्रोसेस नहीं कर सका। कृपया बाद में पुनः प्रयास करें।"
-          : "క్షమించండి, నేను ప్రస్తుతం మీ అభ్యర్థనను ప్రాసెస్ చేయలేకపోయాను. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.",
-        sender: "bot",
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, errorMessage])
-    } finally {
-      setIsTyping(false)
-    }
+    setMessages((prev) => [...prev, errorMessage])
+  } finally {
+    setIsTyping(false)
   }
+}
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
