@@ -22,6 +22,20 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(arrayBuffer);
     const filename = file.name.toLowerCase();
     const filename = file.name.toLowerCase();
+    
+    // Validate MIME type in addition to extension
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain'
+    ];
+    
+    if (!allowedMimeTypes.includes(file.type)) {
+      return NextResponse.json({ 
+        error: 'Invalid file type. Please upload a valid PDF, PPT, PPTX or TXT file.' 
+      }, { status: 400 });
+    }
 
     let text = '';
 
