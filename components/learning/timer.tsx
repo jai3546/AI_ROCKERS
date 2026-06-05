@@ -134,7 +134,7 @@ export default function Timer({
         </div>
       )}
 
-{/* Time's Up Message */}
+      {/* Time's Up Message */}
       {timeLeft <= 0 && (
         <div className="mt-4 p-3 bg-red-100 border border-red-500 rounded-lg">
           <p className="text-sm font-semibold text-red-800">
