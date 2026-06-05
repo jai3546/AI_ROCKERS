@@ -23,20 +23,51 @@ interface QuizCardProps {
   language?: "en" | "hi" | "te"
 }
 
-export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, onNext, language = "en" }: QuizCardProps) {
+export function QuizCard({ question, options, timeLimit = 45, points, onAnswer, onNext, language = "en" }: QuizCardProps) {
   // Reset state when question changes
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isAnswered, setIsAnswered] = useState(false)
   const [timeLeft, setTimeLeft] = useState(timeLimit)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
+  const [isActive, setIsActive] = useState(true)
 
-  // Reset selected option when question changes
+  // Reset selected option when question changes and start timer
   useEffect(() => {
     setSelectedOption(null);
     setIsAnswered(false);
     setIsCorrect(null);
     setTimeLeft(timeLimit);
+    setIsActive(true);
   }, [question, timeLimit])
+
+  // Timer countdown effect - just counts down
+  useEffect(() => {
+    if (isAnswered || !isActive) return
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev <= 1 ? 0 : prev - 1)
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isAnswered, isActive])
+
+  // Handle timeout - evaluate the CURRENTLY selected option instead of defaulting to false
+  useEffect(() => {
+    if (timeLeft === 0 && !isAnswered && isActive) {
+      setIsAnswered(true)
+      setIsActive(false)
+      
+      let correct = false
+      // If they had an option selected when time ran out, check if it's correct
+      if (selectedOption && selectedOption !== 'custom') {
+        const selectedOptionObj = options.find((opt) => opt.id === selectedOption)
+        correct = selectedOptionObj?.isCorrect || false
+      }
+      
+      setIsCorrect(correct)
+      onAnswer(correct)
+    }
+  }, [timeLeft, isAnswered, isActive, onAnswer, options, selectedOption])
 
   const translations = {
     timeLeft: {
@@ -71,11 +102,8 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
     },
   }
 
-  // In a real app, we would use useEffect to handle the timer
-  // and API calls to check answers
-
   const handleSelectOption = (optionId: string) => {
-    if (isAnswered) return
+    if (isAnswered || !isActive) return
     setSelectedOption(optionId)
   }
 
@@ -87,8 +115,6 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
 
     // Handle custom answer separately
     if (selectedOption === 'custom') {
-      // For custom answers, we'll always mark them as incorrect for now
-      // In a real implementation, you might want to use AI to evaluate the answer
       setIsCorrect(false)
       setIsAnswered(true)
       onAnswer(false)
@@ -123,14 +149,17 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
         {timeLimit > 0 && (
           <div className="mt-2">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="flex items-center gap-1">
-                <Clock size={12} className="text-foreground/70" />
-                <span className="text-foreground/70">{translations.timeLeft[language]}:</span>
-                <span className="font-medium">{timeLeft}s</span>
+              <span className={`flex items-center gap-1 ${timeLeft <= 10 ? "text-red-500 font-bold" : ""}`}>
+                <Clock size={12} className={`${timeLeft <= 10 ? "text-red-500 animate-pulse" : "text-foreground/70"}`} />
+                <span className={timeLeft <= 10 ? "text-red-500" : "text-foreground/70"}>{translations.timeLeft[language]}:</span>
+                <span className={`font-medium ${timeLeft <= 10 ? "text-red-500" : ""}`}>{timeLeft}s</span>
               </span>
-              <span className="font-medium">{Math.round((timeLeft / timeLimit) * 100)}%</span>
+              <span className={`font-medium ${timeLeft <= 10 ? "text-red-500" : ""}`}>{Math.round((timeLeft / timeLimit) * 100)}%</span>
             </div>
-            <Progress value={(timeLeft / timeLimit) * 100} className="h-1" />
+            <Progress 
+              value={(timeLeft / timeLimit) * 100} 
+              className={`h-1 ${timeLeft <= 10 ? "bg-red-200" : ""}`} 
+            />
           </div>
         )}
       </CardHeader>
@@ -189,7 +218,7 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
                 )}
               </div>
               <textarea
-                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary"
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary ${isAnswered || !isActive ? "opacity-50 cursor-not-allowed" : ""}`}
                 rows={2}
                 placeholder="Type your answer here..."
                 value={customAnswerText}
@@ -198,7 +227,7 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
                   handleSelectOption("custom");
                   setCustomAnswerText(e.target.value);
                 }}
-                disabled={isAnswered}
+                disabled={isAnswered || !isActive}
               />
             </div>
           </motion.div>
@@ -207,7 +236,7 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
         {isAnswered ? (
           <div className="flex flex-col items-center gap-2">
             <div className={`text-lg font-bold ${isCorrect ? "text-green-500" : "text-red-500"}`}>
-              {isCorrect ? translations.correct[language] : translations.incorrect[language]}
+              {timeLeft === 0 && !isCorrect ? "Time's Up!" : (isCorrect ? translations.correct[language] : translations.incorrect[language])}
               {isCorrect && " +" + points}
             </div>
             <Button
@@ -220,7 +249,7 @@ export function QuizCard({ question, options, timeLimit = 30, points, onAnswer, 
         ) : (
           <Button
             onClick={handleCheckAnswer}
-            disabled={!selectedOption}
+            disabled={!selectedOption || !isActive}
             className="w-full bg-secondary hover:bg-secondary/90 disabled:opacity-50"
           >
             {translations.checkAnswer[language]}
