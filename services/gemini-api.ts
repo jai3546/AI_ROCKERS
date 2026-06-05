@@ -269,51 +269,51 @@ export async function getMockGeminiResponse(
   const lowerPrompt = prompt.toLowerCase().trim();
   const casualKeywords = ['hi', 'hello', 'hey', 'greetings', 'sup', 'yo', 'joke', 'fun fact', 'how are you'];
   const isCasual = casualKeywords.some(keyword => lowerPrompt.includes(keyword));
+  const topicAnswers: Record<string, string> = {
+    gravity: "Gravity is a fundamental force that pulls objects with mass toward each other. On Earth, it gives weight to objects and causes them to fall when dropped. Isaac Newton first described it mathematically — the force depends on the masses of two objects and the distance between them. Albert Einstein later redefined gravity through General Relativity, describing it as a curvature in space-time caused by mass. Without gravity, planets wouldn't orbit the sun, and life on Earth wouldn't exist.",
+
+    photosynthesis: "Photosynthesis is the process by which plants, algae, and some bacteria convert sunlight into food. Using sunlight, water absorbed from roots, and carbon dioxide from the air, plants produce glucose and release oxygen as a byproduct. This happens inside chloroplasts — organelles found in plant cells — using a green pigment called chlorophyll. Photosynthesis is essential to life on Earth: it produces the oxygen we breathe and forms the foundation of nearly every food chain.",
+
+    newton: "Sir Isaac Newton was an English mathematician, physicist, and astronomer born in 1643. He is best known for his three Laws of Motion and the Law of Universal Gravitation. His first law states that an object stays at rest or in motion unless acted upon by a force. His second law defines force as mass times acceleration (F=ma). His third law states that every action has an equal and opposite reaction. Newton also co-invented calculus and made major contributions to optics.",
+
+    einstein: "Albert Einstein was a German-born physicist born in 1879, widely regarded as one of the greatest scientists of all time. He developed the Theory of Special Relativity, introducing the famous equation E=mc², which states that energy and mass are interchangeable. His Theory of General Relativity redefined our understanding of gravity as the curvature of space-time caused by massive objects. Einstein won the Nobel Prize in Physics in 1921 for his discovery of the photoelectric effect.",
+
+    evolution: "Evolution is the process by which living organisms change over successive generations through natural selection, mutation, genetic drift, and gene flow. Charles Darwin proposed the theory of evolution by natural selection in 1859 in his book 'On the Origin of Species'. Organisms that are better adapted to their environment tend to survive and reproduce more successfully, passing favorable traits to offspring. Over millions of years, this leads to the emergence of new species and the diversity of life we see today.",
+
+    cell: "A cell is the basic structural and functional unit of all living organisms. Cells were first discovered by Robert Hooke in 1665. There are two main types: prokaryotic cells (like bacteria), which have no nucleus, and eukaryotic cells (like plant and animal cells), which have a defined nucleus. Key parts of a cell include the nucleus (which contains DNA), the mitochondria (which produce energy), the cell membrane (which controls what enters and exits), and ribosomes (which build proteins).",
+
+    dna: "DNA, or Deoxyribonucleic Acid, is the molecule that carries the genetic instructions for the development, functioning, growth, and reproduction of all known living organisms. It is shaped like a double helix — two strands twisted around each other, discovered by Watson and Crick in 1953. DNA is made of four chemical bases: Adenine (A), Thymine (T), Guanine (G), and Cytosine (C). Genes are specific sequences of DNA that code for proteins, which carry out most of the body's functions.",
+
+    atom: "An atom is the smallest unit of an element that retains the chemical properties of that element. Atoms consist of three types of subatomic particles: protons and neutrons in the nucleus at the center, and electrons orbiting the nucleus in shells. Protons carry a positive charge, electrons carry a negative charge, and neutrons have no charge. The number of protons determines what element an atom is — for example, all carbon atoms have 6 protons. Atoms bond together to form molecules and compounds.",
+
+    mitosis: "Mitosis is the process of cell division in which one parent cell divides to produce two identical daughter cells, each with the same number of chromosomes as the original. It is essential for growth, repair, and asexual reproduction in living organisms. Mitosis occurs in four main stages: Prophase (chromosomes condense), Metaphase (chromosomes align in the middle), Anaphase (chromosomes are pulled apart), and Telophase (two new nuclei form). This is followed by cytokinesis, where the cytoplasm divides.",
+
+    pythagoras: "The Pythagorean theorem states that in a right-angled triangle, the square of the hypotenuse (the side opposite the right angle) is equal to the sum of the squares of the other two sides. Written as a formula: a² + b² = c², where c is the hypotenuse. For example, if one side is 3 and the other is 4, the hypotenuse is 5 (because 9 + 16 = 25). This theorem is fundamental in geometry and is used in architecture, navigation, physics, and computer graphics.",
+
+    osmosis: "Osmosis is the movement of water molecules through a semi-permeable membrane from an area of lower solute concentration to an area of higher solute concentration. This process continues until equilibrium is reached. It is a passive process — it requires no energy. Osmosis is critical in biology: it helps plant roots absorb water from the soil, maintains cell shape, and regulates water balance in the human body. A classic example is a wilting plant that recovers after being watered.",
+
+    climate: "Climate change refers to long-term shifts in global temperatures and weather patterns. While some climate change is natural, since the 1800s human activities — especially the burning of fossil fuels like coal, oil, and gas — have been the main driver. This releases greenhouse gases like carbon dioxide and methane, which trap heat in the atmosphere in what is known as the greenhouse effect. Consequences include rising sea levels, more extreme weather events, melting polar ice, and threats to biodiversity and food security.",
+
+    democracy: "Democracy is a system of government in which power is held by the people, either directly or through elected representatives. The word comes from the Greek words 'demos' (people) and 'kratos' (power). Key principles of democracy include free and fair elections, protection of individual rights, rule of law, and freedom of speech and press. There are two main types: direct democracy, where citizens vote on laws directly, and representative democracy, where elected officials make decisions on behalf of the people.",
+
+    ww2: "World War II was a global conflict fought from 1939 to 1945, involving most of the world's nations. It began when Nazi Germany under Adolf Hitler invaded Poland on September 1, 1939. The war was fought between the Allies (including the UK, USA, Soviet Union, and France) and the Axis powers (Germany, Italy, and Japan). Major events include the Holocaust, the Battle of Britain, D-Day, and the atomic bombings of Hiroshima and Nagasaki. The war ended in 1945 and resulted in approximately 70-85 million deaths, making it the deadliest conflict in human history.",
+
+    french_revolution: "The French Revolution was a period of radical political and social transformation in France from 1789 to 1799. It was driven by widespread inequality, financial crisis, and Enlightenment ideas about liberty and equality. Key events include the storming of the Bastille on July 14, 1789 (now celebrated as Bastille Day), the Declaration of the Rights of Man, the execution of King Louis XVI, and the Reign of Terror. The Revolution ended with Napoleon Bonaparte's rise to power and had a lasting impact on modern democracy worldwide.",
+
+    algebra: "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating those symbols to solve equations and understand relationships between quantities. Instead of using specific numbers, algebra uses variables (like x and y) to represent unknown values. Key concepts include equations (e.g., 2x + 3 = 7), inequalities, functions, and polynomials. Algebra is foundational for advanced mathematics, science, engineering, economics, and computer science. It teaches logical thinking and problem-solving skills applicable in everyday life.",
+
+    shakespeare: "William Shakespeare was an English playwright, poet, and actor born in 1564 in Stratford-upon-Avon, England. He is widely regarded as the greatest writer in the English language and the world's greatest dramatist. Shakespeare wrote 37 plays, 154 sonnets, and several longer poems. His works include tragedies like Hamlet, Othello, and Macbeth; comedies like A Midsummer Night's Dream and Much Ado About Nothing; and histories like Richard III. His plays have been translated into every major language and are performed more often than those of any other playwright.",
+
+    water_cycle: "The water cycle, also known as the hydrological cycle, describes the continuous movement of water on, above, and below Earth's surface. It has four main stages: Evaporation (water from oceans, lakes, and rivers is heated by the sun and turns into water vapor), Condensation (water vapor rises, cools, and forms clouds), Precipitation (water falls back to Earth as rain, snow, or hail), and Collection (water collects in oceans, rivers, lakes, and groundwater). The water cycle is essential for distributing freshwater across the planet and regulating climate.",
+  };
+
+  for (const key in topicAnswers) {
+    if (lowerPrompt.includes(key.replace('_', ' ')) || lowerPrompt.includes(key)) {
+      return { text: topicAnswers[key] };
+    }
+  }
 
   if (isCasual) {
-    const topicAnswers: Record<string, string> = {
-      gravity: "Gravity is a fundamental force that pulls objects with mass toward each other. On Earth, it gives weight to objects and causes them to fall when dropped. Isaac Newton first described it mathematically — the force depends on the masses of two objects and the distance between them. Albert Einstein later redefined gravity through General Relativity, describing it as a curvature in space-time caused by mass. Without gravity, planets wouldn't orbit the sun, and life on Earth wouldn't exist.",
-
-      photosynthesis: "Photosynthesis is the process by which plants, algae, and some bacteria convert sunlight into food. Using sunlight, water absorbed from roots, and carbon dioxide from the air, plants produce glucose and release oxygen as a byproduct. This happens inside chloroplasts — organelles found in plant cells — using a green pigment called chlorophyll. Photosynthesis is essential to life on Earth: it produces the oxygen we breathe and forms the foundation of nearly every food chain.",
-
-      newton: "Sir Isaac Newton was an English mathematician, physicist, and astronomer born in 1643. He is best known for his three Laws of Motion and the Law of Universal Gravitation. His first law states that an object stays at rest or in motion unless acted upon by a force. His second law defines force as mass times acceleration (F=ma). His third law states that every action has an equal and opposite reaction. Newton also co-invented calculus and made major contributions to optics.",
-
-      einstein: "Albert Einstein was a German-born physicist born in 1879, widely regarded as one of the greatest scientists of all time. He developed the Theory of Special Relativity, introducing the famous equation E=mc², which states that energy and mass are interchangeable. His Theory of General Relativity redefined our understanding of gravity as the curvature of space-time caused by massive objects. Einstein won the Nobel Prize in Physics in 1921 for his discovery of the photoelectric effect.",
-
-      evolution: "Evolution is the process by which living organisms change over successive generations through natural selection, mutation, genetic drift, and gene flow. Charles Darwin proposed the theory of evolution by natural selection in 1859 in his book 'On the Origin of Species'. Organisms that are better adapted to their environment tend to survive and reproduce more successfully, passing favorable traits to offspring. Over millions of years, this leads to the emergence of new species and the diversity of life we see today.",
-
-      cell: "A cell is the basic structural and functional unit of all living organisms. Cells were first discovered by Robert Hooke in 1665. There are two main types: prokaryotic cells (like bacteria), which have no nucleus, and eukaryotic cells (like plant and animal cells), which have a defined nucleus. Key parts of a cell include the nucleus (which contains DNA), the mitochondria (which produce energy), the cell membrane (which controls what enters and exits), and ribosomes (which build proteins).",
-
-      dna: "DNA, or Deoxyribonucleic Acid, is the molecule that carries the genetic instructions for the development, functioning, growth, and reproduction of all known living organisms. It is shaped like a double helix — two strands twisted around each other, discovered by Watson and Crick in 1953. DNA is made of four chemical bases: Adenine (A), Thymine (T), Guanine (G), and Cytosine (C). Genes are specific sequences of DNA that code for proteins, which carry out most of the body's functions.",
-
-      atom: "An atom is the smallest unit of an element that retains the chemical properties of that element. Atoms consist of three types of subatomic particles: protons and neutrons in the nucleus at the center, and electrons orbiting the nucleus in shells. Protons carry a positive charge, electrons carry a negative charge, and neutrons have no charge. The number of protons determines what element an atom is — for example, all carbon atoms have 6 protons. Atoms bond together to form molecules and compounds.",
-
-      mitosis: "Mitosis is the process of cell division in which one parent cell divides to produce two identical daughter cells, each with the same number of chromosomes as the original. It is essential for growth, repair, and asexual reproduction in living organisms. Mitosis occurs in four main stages: Prophase (chromosomes condense), Metaphase (chromosomes align in the middle), Anaphase (chromosomes are pulled apart), and Telophase (two new nuclei form). This is followed by cytokinesis, where the cytoplasm divides.",
-
-      pythagoras: "The Pythagorean theorem states that in a right-angled triangle, the square of the hypotenuse (the side opposite the right angle) is equal to the sum of the squares of the other two sides. Written as a formula: a² + b² = c², where c is the hypotenuse. For example, if one side is 3 and the other is 4, the hypotenuse is 5 (because 9 + 16 = 25). This theorem is fundamental in geometry and is used in architecture, navigation, physics, and computer graphics.",
-
-      osmosis: "Osmosis is the movement of water molecules through a semi-permeable membrane from an area of lower solute concentration to an area of higher solute concentration. This process continues until equilibrium is reached. It is a passive process — it requires no energy. Osmosis is critical in biology: it helps plant roots absorb water from the soil, maintains cell shape, and regulates water balance in the human body. A classic example is a wilting plant that recovers after being watered.",
-
-      climate: "Climate change refers to long-term shifts in global temperatures and weather patterns. While some climate change is natural, since the 1800s human activities — especially the burning of fossil fuels like coal, oil, and gas — have been the main driver. This releases greenhouse gases like carbon dioxide and methane, which trap heat in the atmosphere in what is known as the greenhouse effect. Consequences include rising sea levels, more extreme weather events, melting polar ice, and threats to biodiversity and food security.",
-
-      democracy: "Democracy is a system of government in which power is held by the people, either directly or through elected representatives. The word comes from the Greek words 'demos' (people) and 'kratos' (power). Key principles of democracy include free and fair elections, protection of individual rights, rule of law, and freedom of speech and press. There are two main types: direct democracy, where citizens vote on laws directly, and representative democracy, where elected officials make decisions on behalf of the people.",
-
-      ww2: "World War II was a global conflict fought from 1939 to 1945, involving most of the world's nations. It began when Nazi Germany under Adolf Hitler invaded Poland on September 1, 1939. The war was fought between the Allies (including the UK, USA, Soviet Union, and France) and the Axis powers (Germany, Italy, and Japan). Major events include the Holocaust, the Battle of Britain, D-Day, and the atomic bombings of Hiroshima and Nagasaki. The war ended in 1945 and resulted in approximately 70-85 million deaths, making it the deadliest conflict in human history.",
-
-      french_revolution: "The French Revolution was a period of radical political and social transformation in France from 1789 to 1799. It was driven by widespread inequality, financial crisis, and Enlightenment ideas about liberty and equality. Key events include the storming of the Bastille on July 14, 1789 (now celebrated as Bastille Day), the Declaration of the Rights of Man, the execution of King Louis XVI, and the Reign of Terror. The Revolution ended with Napoleon Bonaparte's rise to power and had a lasting impact on modern democracy worldwide.",
-
-      algebra: "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating those symbols to solve equations and understand relationships between quantities. Instead of using specific numbers, algebra uses variables (like x and y) to represent unknown values. Key concepts include equations (e.g., 2x + 3 = 7), inequalities, functions, and polynomials. Algebra is foundational for advanced mathematics, science, engineering, economics, and computer science. It teaches logical thinking and problem-solving skills applicable in everyday life.",
-
-      shakespeare: "William Shakespeare was an English playwright, poet, and actor born in 1564 in Stratford-upon-Avon, England. He is widely regarded as the greatest writer in the English language and the world's greatest dramatist. Shakespeare wrote 37 plays, 154 sonnets, and several longer poems. His works include tragedies like Hamlet, Othello, and Macbeth; comedies like A Midsummer Night's Dream and Much Ado About Nothing; and histories like Richard III. His plays have been translated into every major language and are performed more often than those of any other playwright.",
-
-      water_cycle: "The water cycle, also known as the hydrological cycle, describes the continuous movement of water on, above, and below Earth's surface. It has four main stages: Evaporation (water from oceans, lakes, and rivers is heated by the sun and turns into water vapor), Condensation (water vapor rises, cools, and forms clouds), Precipitation (water falls back to Earth as rain, snow, or hail), and Collection (water collects in oceans, rivers, lakes, and groundwater). The water cycle is essential for distributing freshwater across the planet and regulating climate.",
-    };
-
-    for (const key in topicAnswers) {
-      if (lowerPrompt.includes(key.replace('_', ' ')) || lowerPrompt.includes(key)) {
-        return { text: topicAnswers[key] };
-      }
-    }
     if (generalQueryCount < 10) {
       generalQueryCount++;
       const currentEmotion = (emotionState?.emotion && ['sad', 'angry', 'fearful', 'happy'].includes(emotionState.emotion.toLowerCase())) 
@@ -327,7 +327,7 @@ export async function getMockGeminiResponse(
     }
   }
 
-  const eduKeywords = ['gravity', 'math', 'science', 'history', 'photosynthesis', 'equation', ...];
+  const eduKeywords = ['gravity', 'math', 'science', 'history', 'photosynthesis', 'equation', 'cell', 'atom', 'dna', 'mitosis', 'osmosis', 'climate', 'democracy', 'algebra', 'newton', 'einstein'];
   const isEducational = eduKeywords.some(k => lowerPrompt.includes(k));
   if (!isCasual && !isEducational) {
     return { text: "I'm VidyAI's learning assistant! Try asking about Science, Math, History and more 📚" };
