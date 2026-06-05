@@ -53,6 +53,7 @@ export default function Timer({
   }, [timeLeft]);
   
   // Handle time up separately to avoid infinite loops
+  // Handle time up separately to avoid infinite loops
   useEffect(() => {
     if (timeLeft === 0) {
       if (answerRef.current.trim()) {
@@ -60,7 +61,7 @@ export default function Timer({
       }
       onTimeUp();
     }
-  }, [timeLeft, onSubmit, onTimeUp]);
+  }, [timeLeft, onSubmit, onTimeUp, answerRef]);
 
   // Dynamic User Experience: Determine urgency based on time remaining
   const isTimeRunningOut = timeLeft <= 10;
