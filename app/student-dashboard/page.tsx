@@ -133,6 +133,15 @@ export default function StudentDashboardPage() {
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
   const [showStudentDetails, setShowStudentDetails] = useState(false)
   const [studyTime, setStudyTime] = useState(0)
+  const formatStudyTime = () => {
+      const hours = Math.floor(studyTime / 60)
+      const minutes = studyTime % 60
+
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}`
+}
+
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [breakMessage, setBreakMessage] = useState("")
 
@@ -144,9 +153,17 @@ export default function StudentDashboardPage() {
   }, [])
 
   useEffect(() => {
-     if (studyTime > 0 && studyTime % 45 === 0) {
-       setBreakMessage(
-          "You have been studying for 45 minutes. A short Pomodoro break may help maintain focus."
+    if (studyTime === 30) {
+      setBreakMessage(
+        "You have been studying for 30 minutes. Consider drinking water and stretching for a minute."
+      )
+
+       setShowBreakSuggestion(true)
+    }
+
+    if (studyTime === 45) {
+      setBreakMessage(
+         "You have been studying for 45 minutes. A short Pomodoro break may help maintain focus."
       )
 
        setShowBreakSuggestion(true)
@@ -1009,6 +1026,24 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Daily Challenge */}
+        <Card className="border-red-300">
+           <CardHeader>
+             <CardTitle className="flex items-center gap-2">
+                 🍅 Pomodoro Study Timer
+             </CardTitle>
+           </CardHeader>
+
+           <CardContent>
+             <p className="text-3xl font-bold">
+                {formatStudyTime()}
+            </p>
+
+            <p className="text-sm text-muted-foreground mt-2">
+               Study session tracking is active.
+           </p>
+          </CardContent>
+        </Card>
+
         {
           showBreakSuggestion && (
            <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
