@@ -34,7 +34,7 @@ export default function Timer({
   }, [question, initialTime]);
 
   // Timer logic and auto-submit
-// Timer logic and auto-submit
+  // Timer logic and auto-submit
   useEffect(() => {
     if (timeLeft <= 0) {
       return;
