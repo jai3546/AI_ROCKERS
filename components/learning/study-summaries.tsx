@@ -134,6 +134,14 @@ export function StudySummaries({
     }
 
     const filename = selectedFile.name.toLowerCase()
+    
+    // Validate file size (15MB limit)
+    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      setUploadError(`File size exceeds 15MB limit. Your file is ${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB`)
+      return
+    }
+    
     if (!filename.endsWith('.pdf') && !filename.endsWith('.pptx') && !filename.endsWith('.ppt') && !filename.endsWith('.txt')) {
       setUploadError("Unsupported format. Please upload a PDF, PPT, PPTX or TXT file.")
       return
