@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 // @ts-ignore
-import { PDFParse } from 'pdf-parse';
+import pdfParse from 'pdf-parse';
 // @ts-ignore
 import officeParser from 'officeparser';
 // Using default pdf-parse worker configuration which is safer for serverless environments
