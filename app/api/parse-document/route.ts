@@ -26,10 +26,8 @@ export async function POST(request: Request) {
     let text = '';
 
     if (filename.endsWith('.pdf')) {
-      const parser = new PDFParse({ data: buffer });
-      const parsed = await parser.getText();
+      const parsed = await pdfParse(buffer);
       text = parsed.text || '';
-      await parser.destroy();
     } else if (filename.endsWith('.pptx') || filename.endsWith('.ppt')) {
       text = await new Promise<string>((resolve, reject) => {
         officeParser.parseBuffer(buffer, (err: any, data: any) => {
