@@ -53,7 +53,8 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
       } else {
         setSessions(SAMPLE_SESSIONS)
       }
-    } catch {
+    } catch (error) {
+      console.error("Failed to load study sessions from localStorage:", error)
       setSessions(SAMPLE_SESSIONS)
     }
   }, [])
