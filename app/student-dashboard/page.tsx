@@ -714,8 +714,8 @@ export default function StudentDashboardPage() {
     // Update last emotion data
     setLastEmotionData(emotionData)
     if (
-       emotionData.fatigueScore > 75 ||
-       emotionData.attentionScore < 30
+       (emotionData.fatigueScore !== undefined && emotionData.fatigueScore > 75) ||
+       (emotionData.attentionScore !== undefined && emotionData.attentionScore < 30)
     ) {
        setBreakMessage(
           "You seem tired. Consider taking a short break, stretching, or drinking water."
