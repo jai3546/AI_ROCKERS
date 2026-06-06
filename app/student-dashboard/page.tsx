@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
   Brain,
@@ -112,6 +112,7 @@ export default function StudentDashboardPage() {
   const [showEmotionDetector, setShowEmotionDetector] = useState(false)
   const [showEmotionDisplay, setShowEmotionDisplay] = useState(false)
   const [showFloatingEmotionTracker, setShowFloatingEmotionTracker] = useState(false)
+  const [userDismissedEmotionTracker, setUserDismissedEmotionTracker] = useState(false)
   const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([])
   const [lastMotionData, setLastMotionData] = useState<MotionData | null>(null)
   const [lastEmotionData, setLastEmotionData] = useState<EmotionData | null>(null)
@@ -153,7 +154,7 @@ export default function StudentDashboardPage() {
           fatigueScore: 20,
           attentionScore: 80
         };
-        handleEmotionDetected(emotionData);
+        handleEmotionDetectedRef.current(emotionData);
       }, 100);
     }
   }, [autoEmotionTracking])
@@ -703,7 +704,8 @@ export default function StudentDashboardPage() {
       if (autoEmotionTracking &&
           emotionData.emotion !== 'unknown' &&
           emotionData.confidence > 60 &&
-          !showFloatingEmotionTracker) {
+          !showFloatingEmotionTracker &&
+          !userDismissedEmotionTracker) {
         setShowFloatingEmotionTracker(true)
       }
 
@@ -712,7 +714,8 @@ export default function StudentDashboardPage() {
           (emotionData.emotion === 'sad' ||
            emotionData.emotion === 'confused' ||
            emotionData.emotion === 'bored') &&
-          emotionData.confidence > 70) {
+          emotionData.confidence > 70 &&
+          !userDismissedEmotionTracker) {
 
         console.log('Detected negative emotion:', emotionData.emotion, 'with confidence:', emotionData.confidence);
         // Show emotion display with feedback
@@ -725,7 +728,8 @@ export default function StudentDashboardPage() {
       if (autoEmotionTracking &&
           emotionData.fatigueScore !== undefined &&
           emotionData.fatigueScore > 75 &&
-          emotionData.confidence > 60) {
+          emotionData.confidence > 60 &&
+          !userDismissedEmotionTracker) {
 
         console.log('Detected high fatigue:', emotionData.fatigueScore, 'with confidence:', emotionData.confidence);
         // Show emotion display with feedback
@@ -737,7 +741,8 @@ export default function StudentDashboardPage() {
       // Handle attention level
       if (emotionData.attentionScore !== undefined &&
           emotionData.attentionScore < 30 &&
-          emotionData.confidence > 60) {
+          emotionData.confidence > 60 &&
+          !userDismissedEmotionTracker) {
 
         // Low attention might need intervention or a change of pace
         console.log('Low attention detected. Consider changing the learning activity.');
@@ -748,6 +753,11 @@ export default function StudentDashboardPage() {
       }
     }
   }
+
+  const handleEmotionDetectedRef = useRef(handleEmotionDetected)
+  useEffect(() => {
+    handleEmotionDetectedRef.current = handleEmotionDetected
+  })
   // Dynamic card content calculations based on syllabus and subject
   const getQuizDetails = () => {
     if (dashboardSubject === "all") {
@@ -1258,6 +1268,7 @@ export default function StudentDashboardPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
+                          setUserDismissedEmotionTracker(false);
                           setAutoEmotionTracking(true);
                           // Force immediate emotion detection
                           setTimeout(() => {
@@ -1269,7 +1280,7 @@ export default function StudentDashboardPage() {
                               fatigueScore: 20,
                               attentionScore: 80
                             };
-                            handleEmotionDetected(emotionData);
+                            handleEmotionDetectedRef.current(emotionData);
                           }, 100);
                         }}
                       >
@@ -1278,7 +1289,10 @@ export default function StudentDashboardPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setShowFloatingEmotionTracker(true)}
+                        onClick={() => {
+                          setUserDismissedEmotionTracker(false);
+                          setShowFloatingEmotionTracker(true);
+                        }}
                       >
                         Show Tracker
                       </Button>
@@ -1682,7 +1696,7 @@ export default function StudentDashboardPage() {
 
               <div className="p-3 flex-1 overflow-y-auto">
                 <ImprovedEmotionDetector
-                  onEmotionDetected={handleEmotionDetected}
+                  onEmotionDetected={(data) => handleEmotionDetectedRef.current(data)}
                   autoTracking={true}
                   showControls={false}
                   language={language}
@@ -1837,7 +1851,10 @@ export default function StudentDashboardPage() {
         {showFloatingEmotionTracker && (
           <FloatingEmotionTracker
             lastEmotionData={lastEmotionData}
-            onClose={() => setShowFloatingEmotionTracker(false)}
+            onClose={() => {
+              setShowFloatingEmotionTracker(false);
+              setUserDismissedEmotionTracker(true);
+            }}
             language={language}
           />
         )}
@@ -1857,7 +1874,7 @@ export default function StudentDashboardPage() {
                 fatigueScore: data.fatigueScore,
                 attentionScore: data.attentionScore
               }
-              handleEmotionDetected(emotionData)
+              handleEmotionDetectedRef.current(emotionData)
             }}
             autoTracking={true}
             showControls={false}
