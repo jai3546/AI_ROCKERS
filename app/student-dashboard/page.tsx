@@ -1944,4 +1944,3 @@ export default function StudentDashboardPage() {
     </main>
   )
 }
-}
