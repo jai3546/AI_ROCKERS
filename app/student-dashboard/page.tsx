@@ -1936,7 +1936,7 @@ export default function StudentDashboardPage() {
                 syllabus={selectedSyllabus}
               />
             </motion.div>
-          </motion.div>
+</motion.div>
         )}
       </AnimatePresence>
 
@@ -1992,7 +1992,6 @@ export default function StudentDashboardPage() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="bg-white dark:bg-card rounded-xl shadow-lg border border-border dark:border-border w-full max-w-md overflow-hidden relative"
             >
-              {/* Add explicit close button at the top right */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -2035,7 +2034,6 @@ export default function StudentDashboardPage() {
         <div style={{ position: 'fixed', bottom: '-1px', right: '-1px', width: '1px', height: '1px', overflow: 'hidden', opacity: 0.01, pointerEvents: 'none' }}>
           <SimpleEmotionDetector
             onEmotionDetected={(data) => {
-              // Convert SimpleEmotionData to EmotionData
               const emotionData: EmotionData = {
                 timestamp: data.timestamp,
                 emotion: data.emotion,
@@ -2053,60 +2051,13 @@ export default function StudentDashboardPage() {
         </div>
       )}
 
-      {/* Emotion Status Indicator - Disabled as requested */}
-      {/* <EmotionStatusIndicator emotionState={emotionState} /> */}
-
       {/* Student Details Dialog */}
-      <AnimatePresence>
-        {showStudentDetails && (
-          <StudentDetailsDialog
-            student={user ? {
-              ...user,
-              email: "student@example.com",
-              phone: "+91 9876543210",
-              joinDate: "Sep 15, 2023",
-              attendance: 92,
-              performance: 85,
-              subjects: [
-                { name: "Mathematics", progress: 90, grade: "A" },
-                { name: "Science", progress: 85, grade: "A-" },
-                { name: "English", progress: 78, grade: "B+" },
-                { name: "Social Studies", progress: 82, grade: "B+" },
-              ],
-              recentActivities: [
-                { type: "quiz", name: "Science Quiz", date: "Today", score: 85 },
-                { type: "flashcard", name: "Math Concepts", date: "Yesterday", completed: true },
-                { type: "summary", name: "History Chapter 5", date: "3 days ago", completed: true },
-                { type: "quiz", name: "English Grammar", date: "1 week ago", score: 92 },
-              ]
-            } : {
-              id: "demo-student",
-              name: "Demo Student",
-              class: "Class 8",
-              avatar: "👨‍🎓",
-              email: "student@example.com",
-              phone: "+91 9876543210",
-              joinDate: "Sep 15, 2023",
-              attendance: 92,
-              performance: 85,
-              subjects: [
-                { name: "Mathematics", progress: 90, grade: "A" },
-                { name: "Science", progress: 85, grade: "A-" },
-                { name: "English", progress: 78, grade: "B+" },
-                { name: "Social Studies", progress: 82, grade: "B+" },
-              ],
-              recentActivities: [
-                { type: "quiz", name: "Science Quiz", date: "Today", score: 85 },
-                { type: "flashcard", name: "Math Concepts", date: "Yesterday", completed: true },
-                { type: "summary", name: "History Chapter 5", date: "3 days ago", completed: true },
-                { type: "quiz", name: "English Grammar", date: "1 week ago", score: 92 },
-              ]
-            }}
-            onClose={() => setShowStudentDetails(false)}
-            language={language}
-          />
-        )}
-      </AnimatePresence>
+      <StudentDetailsDialog 
+        open={showStudentDetails} 
+        onOpenChange={setShowStudentDetails} 
+        initialProfile={learningStyle} 
+        onProfileUpdate={setLearningStyle} 
+      />
 
       {/* Out of Frame Warning */}
       <AnimatePresence>
@@ -2137,17 +2088,35 @@ export default function StudentDashboardPage() {
       </AnimatePresence>
 
       {/* Reward Popup */}
-      <RewardPopup
-        isOpen={showReward}
-        onClose={() => {
-          setShowReward(false);
-          setSelectedBadge(null);
-        }}
-        title={selectedBadge ? `${selectedBadge.name} Badge Unlocked!` : "You've mastered a new concept!"}
-        description={selectedBadge ? selectedBadge.description : "Keep up the great work and continue learning to earn more rewards."}
-        xpAmount={selectedBadge ? selectedBadge.xpReward : 50}
-        language={language}
-      />
+      {showReward && (
+        <RewardPopup 
+          open={showReward} 
+          onOpenChange={setShowReward} 
+          xpEarned={quizScore.earned * 5} 
+          badgeUnlocked={selectedBadge} 
+        />
+      )}
+
+      {/* Mobile Sticky Tab Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-border shadow-lg flex justify-around items-center h-16 md:hidden z-30 px-2">
+        <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <Home size={20} />
+          <span className="text-xs">Home</span>
+        </Button>
+        <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => { setActiveQuizSubject(undefined); setShowQuiz(true); }}>
+          <BookOpen size={20} />
+          <span className="text-xs">Learn</span>
+        </Button>
+        <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => setShowAiTutor(true)}>
+          <MessageSquare size={20} />
+          <span className="text-xs">Chat</span>
+        </Button>
+        <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => router.push("/session-history")}>
+          <TrendingUp size={20} />
+          <span className="text-xs">History</span>
+        </Button>
+      </nav>
     </main>
   )
+}
 }
