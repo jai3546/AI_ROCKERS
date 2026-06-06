@@ -1435,7 +1435,7 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Voice Command Component */}
-     <div className="fixed bottom-20 left-4 z-30">
+     <div className="fixed bottom-36 right-4 z-30">
         <VoiceCommand
           onCommand={handleVoiceCommand}
           language={language}
