@@ -161,8 +161,6 @@ export default function StudentDashboardPage() {
     const interval = setInterval(() => {
        setTimeLeft((prev) => {
          if (prev <= 1) {
-           clearInterval(interval)
-
            setIsRunning(false)
 
            setBreakMessage(
