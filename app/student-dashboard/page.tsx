@@ -133,6 +133,21 @@ export default function StudentDashboardPage() {
   const [showOutOfFrameWarning, setShowOutOfFrameWarning] = useState(false)
   const [quizScore, setQuizScore] = useState({ earned: 0, total: 0 })
   const [showStudentDetails, setShowStudentDetails] = useState(false)
+  const [studyTime, setStudyTime] = useState(0)
+  const [sessionLength, setSessionLength] = useState(25)
+  const [timeLeft, setTimeLeft] = useState(25 * 60)
+  const [isRunning, setIsRunning] = useState(false)
+  const formatStudyTime = () => {
+     const minutes = Math.floor(timeLeft / 60)
+     const seconds = timeLeft % 60
+
+     return `${minutes.toString().padStart(2, "0")}:${seconds
+       .toString()
+       .padStart(2, "0")}`
+  }
+
+  const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
+  const [breakMessage, setBreakMessage] = useState("")
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem("preferredLanguage") as "en" | "hi" | "te" | null
@@ -140,6 +155,37 @@ export default function StudentDashboardPage() {
       setLanguage(storedLanguage)
     }
   }, [])
+
+  useEffect(() => {
+    if (!isRunning) return
+
+    const interval = setInterval(() => {
+    const interval = setInterval(() => {
+       setTimeLeft((prev) => {
+         if (prev <= 1) {
+           setIsRunning(false)
+
+           setBreakMessage(
+              `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
+           )
+
+           setShowBreakSuggestion(true)
+
+           return 0
+         }
+
+         setStudyTime((prevStudy) => prevStudy + 1)
+
+         return prev - 1
+       })
+     }, 1000)
+     }, 1000)
+
+    return () => clearInterval(interval)
+   }, [isRunning, sessionLength])
+
+
+ 
 
   // Auto-start emotion tracking immediately
   useEffect(() => {
@@ -672,6 +718,16 @@ export default function StudentDashboardPage() {
   const handleEmotionDetected = (emotionData: EmotionData) => {
     // Update last emotion data
     setLastEmotionData(emotionData)
+    if (
+       (emotionData?.fatigueScore ?? 0) > 75 ||
+       (emotionData?.attentionScore ?? 100) < 30
+    ) {
+       setBreakMessage(
+          "You seem tired. Consider taking a short break, stretching, or drinking water."
+       )
+
+       setShowBreakSuggestion(true)
+       }
     console.log('Emotion detected:', emotionData)
 
     // Update emotion history
@@ -987,6 +1043,109 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Daily Challenge */}
+        <Card className="border-red-300">
+           <CardHeader>
+             <CardTitle className="flex items-center gap-2">
+                 🍅 Pomodoro Study Timer
+             </CardTitle>
+           </CardHeader>
+
+           <CardContent>
+             <div className="flex gap-2 mb-4">
+
+               <Button
+                  variant="outline"
+                  onClick={() => {
+                      setIsRunning(false)
+                      setSessionLength(25)
+                      setTimeLeft(25 * 60)
+                   }}
+              >
+                   25 Min
+              </Button>
+
+               <Button
+                  variant="outline"
+                  onClick={() => {
+                      setIsRunning(false)
+                      setSessionLength(30)
+                      setTimeLeft(30 * 60)
+                  }}
+               >
+                   30 Min
+              </Button>
+
+              <Button
+                  variant="outline"
+                  onClick={() => {
+                      setIsRunning(false)
+                      setSessionLength(45)
+                      setTimeLeft(45 * 60)
+                   }}
+              >
+                   45 Min
+               </Button>
+
+            </div>
+
+              <p className="text-3xl font-bold">
+                 {formatStudyTime()}
+              </p>
+             
+
+             <Button
+                 className="mt-4"
+                 onClick={() => setIsRunning(true)}
+             >
+                 Start Session
+             </Button>
+             <Button
+                   variant="outline"
+                   className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
+                   onClick={() => setIsRunning(false)}
+             >
+                   Stop Session
+             </Button>
+             <Button
+                    variant="outline"
+                    className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
+                    onClick={() => {
+                       setIsRunning(false)
+                       setTimeLeft(sessionLength * 60)
+                       setStudyTime(0)
+                       setShowBreakSuggestion(false)
+
+                  }}
+             >
+                 Reset Session
+             </Button>
+             
+          </CardContent>
+        </Card>
+
+        {
+          showBreakSuggestion && (
+           <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <AlertTriangle size={18} />
+                  Smart Break Suggestion
+                </CardTitle>
+             </CardHeader>
+
+            <CardContent>
+               <p>{breakMessage}</p>
+
+               <Button
+                 className="mt-3"
+                 onClick={() => setShowBreakSuggestion(false)}
+               >
+                 Got It
+                </Button>
+             </CardContent>
+           </Card>
+          )
+       }
         <DailyChallenge
           title="Science Challenge"
           description="Complete a quiz about photosynthesis and earn bonus XP!"
