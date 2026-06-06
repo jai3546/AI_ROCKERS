@@ -755,7 +755,6 @@ export default function StudentDashboardPage() {
   }
 
   const handleEmotionDetectedRef = useRef(handleEmotionDetected)
-const handleEmotionDetectedRef = useRef(handleEmotionDetected)
   useEffect(() => {
     handleEmotionDetectedRef.current = handleEmotionDetected
   })
