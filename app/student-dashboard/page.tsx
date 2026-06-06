@@ -1042,6 +1042,7 @@ export default function StudentDashboardPage() {
                <Button
                   variant="outline"
                   onClick={() => {
+                      setIsRunning(false)
                       setSessionLength(25)
                       setTimeLeft(25 * 60)
                    }}
@@ -1052,6 +1053,7 @@ export default function StudentDashboardPage() {
                <Button
                   variant="outline"
                   onClick={() => {
+                      setIsRunning(false)
                       setSessionLength(30)
                       setTimeLeft(30 * 60)
                   }}
@@ -1062,6 +1064,7 @@ export default function StudentDashboardPage() {
               <Button
                   variant="outline"
                   onClick={() => {
+                      setIsRunning(false)
                       setSessionLength(45)
                       setTimeLeft(45 * 60)
                    }}
