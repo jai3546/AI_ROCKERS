@@ -1089,14 +1089,14 @@ export default function StudentDashboardPage() {
              </Button>
              <Button
                    variant="outline"
-                   className="bg-pink-500 hover:bg-pink-600 text-white"
+                   className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
                    onClick={() => setIsRunning(false)}
              >
                    Stop Session
              </Button>
              <Button
                     variant="outline"
-                    className="bg-pink-500 hover:bg-pink-600 text-white"
+                    className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
                     onClick={() => {
                        setIsRunning(false)
                        setTimeLeft(sessionLength * 60)
