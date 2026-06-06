@@ -1607,12 +1607,14 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Voice Command Component */}
-      <VoiceCommand
-        onCommand={handleVoiceCommand}
-        language={language}
-        availableCommands={translations.voiceCommands[language]}
-        hideCommands={true}
-      />
+     <div className="fixed bottom-20 right-4 z-30">
+        <VoiceCommand
+          onCommand={handleVoiceCommand}
+          language={language}
+          availableCommands={translations.voiceCommands[language]}
+          hideCommands={true}
+        />
+      </div>
 
       {/* AI Tutor Modal */}
       <AnimatePresence>
