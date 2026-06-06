@@ -137,13 +137,13 @@ export default function StudentDashboardPage() {
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const formatStudyTime = () => {
-      const hours = Math.floor(studyTime / 60)
-      const minutes = studyTime % 60
+     const minutes = Math.floor(timeLeft / 60)
+     const seconds = timeLeft % 60
 
-      return `${hours.toString().padStart(2, "0")}:${minutes
-        .toString()
-        .padStart(2, "0")}`
-}
+     return `${minutes.toString().padStart(2, "0")}:${seconds
+       .toString()
+       .padStart(2, "0")}`
+  }
 
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [breakMessage, setBreakMessage] = useState("")
@@ -171,6 +171,8 @@ export default function StudentDashboardPage() {
 
            return 0
          } 
+
+       setStudyTime((prevStudy) => prevStudy + 1)
 
        return prev - 1
        })
@@ -714,8 +716,8 @@ export default function StudentDashboardPage() {
     // Update last emotion data
     setLastEmotionData(emotionData)
     if (
-       (emotionData.fatigueScore !== undefined && emotionData.fatigueScore > 75) ||
-       (emotionData.attentionScore !== undefined && emotionData.attentionScore < 30)
+       (emotionData?.fatigueScore ?? 0) > 75 ||
+       (emotionData?.attentionScore ?? 100) < 30
     ) {
        setBreakMessage(
           "You seem tired. Consider taking a short break, stretching, or drinking water."
@@ -1074,21 +1076,36 @@ export default function StudentDashboardPage() {
 
             </div>
 
-             <p className="text-3xl font-bold">
-                 {Math.floor(timeLeft / 60)
-                    .toString()
-                    .padStart(2, "0")}
-                :
-                {(timeLeft % 60)
-                    .toString()
-                    .padStart(2, "0")}
-             </p>
+              <p className="text-3xl font-bold">
+                 {formatStudyTime()}
+              </p>
+             
 
              <Button
                  className="mt-4"
                  onClick={() => setIsRunning(true)}
              >
                  Start Session
+             </Button>
+             <Button
+                   variant="outline"
+                   className="bg-pink-500 hover:bg-pink-600 text-white"
+                   onClick={() => setIsRunning(false)}
+             >
+                   Stop Session
+             </Button>
+             <Button
+                    variant="outline"
+                    className="bg-pink-500 hover:bg-pink-600 text-white"
+                    onClick={() => {
+                       setIsRunning(false)
+                       setTimeLeft(sessionLength * 60)
+                       setStudyTime(0)
+                       setShowBreakSuggestion(false)
+
+                  }}
+             >
+                 Reset Session
              </Button>
              
           </CardContent>
