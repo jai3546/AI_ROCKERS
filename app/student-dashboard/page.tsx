@@ -755,9 +755,10 @@ export default function StudentDashboardPage() {
   }
 
   const handleEmotionDetectedRef = useRef(handleEmotionDetected)
+const handleEmotionDetectedRef = useRef(handleEmotionDetected)
   useEffect(() => {
     handleEmotionDetectedRef.current = handleEmotionDetected
-  }, [handleEmotionDetected])
+  })
   // Dynamic card content calculations based on syllabus and subject
   const getQuizDetails = () => {
     if (dashboardSubject === "all") {
