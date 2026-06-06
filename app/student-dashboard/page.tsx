@@ -1385,10 +1385,19 @@ export default function StudentDashboardPage() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-border dark:border-border shadow-md">
         <div className="container flex items-center justify-around h-16 px-4">
+         <Button
+            variant="ghost"
+            className="flex flex-col items-center gap-1 h-auto py-2"
+            onClick={() => router.push("/learn")}
+          >
+            <BookOpen size={20} />
+            <span className="text-xs">Learn</span>
+          </Button>
+
           <Button
             variant="ghost"
             className="flex flex-col items-center gap-1 h-auto py-2"
-            onClick={() => setShowLearningOptions(true)
+            onClick={() => setShowLearningOptions(true)}
           >
             <BookOpen size={20} />
             <span className="text-xs">Learn</span>
@@ -1414,7 +1423,8 @@ export default function StudentDashboardPage() {
             <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
             <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
           </Button>
-<Button
+
+          <Button
             variant="ghost"
             className="flex flex-col items-center gap-1 h-auto py-2"
             onClick={() => router.push("/session-history")}
