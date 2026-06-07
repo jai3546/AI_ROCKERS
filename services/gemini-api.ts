@@ -171,8 +171,9 @@ export async function getMockGeminiResponse(
   subject: Subject = 'general',
   language: 'en' | 'hi' | 'te' = 'en',
   learningStyle?: LearningStyleProfile,
-  emotionState?: EmotionState
-): GeminiResponse {
+  emotionState?: EmotionState,
+  generalQueryCount: number = 0
+): Promise<GeminiResponse & { newCount?: number }> {
   const emotionalResponses = {
     en: {
       sad: [
@@ -321,7 +322,7 @@ export async function getMockGeminiResponse(
         : 'neutral';
       const responsesList = emotionalResponses[language][currentEmotion];
       const randomFriendlyText = responsesList[Math.floor(Math.random() * responsesList.length)];
-      return { text: `${randomFriendlyText} (How can I help you learn today?)` };
+      return { text: `${randomFriendlyText} (How can I help you learn today?)`, newCount: generalQueryCount + 1 };
     } else {
       return { text: "Let's get back to studying! 📚" };
     }

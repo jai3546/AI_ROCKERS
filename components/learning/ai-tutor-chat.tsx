@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
-import { getGeminiResponse, getMockGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
+import { getGeminiResponse, getMockGeminiResponse, getApiKey, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
 
 interface Message {
@@ -56,7 +56,9 @@ export function AiTutorChat({
   const [showLearningStyleInfo, setShowLearningStyleInfo] = useState(false)
   const [activeTab, setActiveTab] = useState<"chat" | "mentor">("chat")
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null)
+  const [generalQueryCount, setGeneralQueryCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
 
   const translations = {
     askQuestion: {
@@ -167,8 +169,13 @@ export function AiTutorChat({
         currentSubject,
         language,
         currentLearningStyle,
-        currentEmotionState
+        currentEmotionState,
+        generalQueryCount
       )
+
+      if (response.newCount !== undefined) {
+        setGeneralQueryCount(response.newCount)
+      }
     }
 
     const botMessage: Message = {
