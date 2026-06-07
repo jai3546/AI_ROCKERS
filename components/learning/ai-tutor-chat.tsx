@@ -152,7 +152,7 @@ export function AiTutorChat({
   }
 
   try {
-    const apiKey = getApiKey()
+import { getGeminiResponse, getMockGeminiResponse, type Subject, type EmotionState, getApiKey } from "@/services/gemini-api"
     let response
 
     if (apiKey && apiKey !== 'your-api-key-here') {
