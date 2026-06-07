@@ -49,7 +49,22 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
     try {
       const stored = localStorage.getItem("studySessions")
       if (stored) {
-        setSessions(JSON.parse(stored))
+        const parsed = JSON.parse(stored)
+        // Validate the parsed data structure
+        if (Array.isArray(parsed) && parsed.every(session => 
+          session && 
+          typeof session.id === 'string' &&
+          typeof session.date === 'string' &&
+          typeof session.duration === 'number' &&
+          typeof session.dominantEmotion === 'string' &&
+          typeof session.focusScore === 'number' &&
+          typeof session.activitiesCompleted === 'number'
+        )) {
+          setSessions(parsed)
+        } else {
+          console.warn("Invalid session data structure in localStorage, using sample data")
+          setSessions(SAMPLE_SESSIONS)
+        }
       } else {
         setSessions(SAMPLE_SESSIONS)
       }
