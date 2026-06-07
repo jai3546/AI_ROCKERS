@@ -186,7 +186,7 @@ export async function getMockGeminiResponse(
   language: 'en' | 'hi' | 'te' = 'en',
   learningStyle?: LearningStyleProfile,
   emotionState?: EmotionState
-): GeminiResponse {
+): Promise<GeminiResponse> {
   const emotionalResponses = {
     en: {
       sad: [
