@@ -669,10 +669,12 @@ export default function StudentDashboardPage() {
 
     // Show reward popup
     setTimeout(() => {
-      if (badgeUnlocked && unlockedBadge) {
-        setSelectedBadge(unlockedBadge);
+      if (percentageScore >= 50) {
+        if (badgeUnlocked && unlockedBadge) {
+          setSelectedBadge(unlockedBadge);
+        }
+        setShowReward(true);
       }
-      setShowReward(true);
     }, 1000);
   }
 
