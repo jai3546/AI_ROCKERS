@@ -314,8 +314,10 @@ export async function getMockGeminiResponse(
   }
 
   if (isCasual) {
-    if (generalQueryCount < 10) {
-      generalQueryCount++;
+    const currentUserId = userId || 'default';
+    const currentCount = getUserQueryCount(currentUserId);
+    if (currentCount < 10) {
+      incrementUserQueryCount(currentUserId);
       const currentEmotion = (emotionState?.emotion && ['sad', 'angry', 'fearful', 'happy'].includes(emotionState.emotion.toLowerCase())) 
         ? emotionState.emotion.toLowerCase() as 'sad' | 'angry' | 'fearful' | 'happy' | 'neutral'
         : 'neutral';
