@@ -19,7 +19,21 @@ export type EmotionState = {
   fatigueScore?: number;
   attentionScore?: number;
 };
-let generalQueryCount = 0;
+const userQueryCounters = new Map<string, number>();
+
+export function resetUserQueryCount(userId: string) {
+  userQueryCounters.delete(userId);
+}
+
+function getUserQueryCount(userId: string): number {
+  return userQueryCounters.get(userId) || 0;
+}
+
+function incrementUserQueryCount(userId: string): number {
+  const count = getUserQueryCount(userId) + 1;
+  userQueryCounters.set(userId, count);
+  return count;
+}
 /**
  * Send a prompt to the Gemini API and get a response
  * @param prompt The user's prompt/question
