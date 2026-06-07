@@ -161,7 +161,6 @@ export default function StudentDashboardPage() {
     if (!isRunning) return
 
     const interval = setInterval(() => {
-    const interval = setInterval(() => {
        setTimeLeft((prev) => {
          if (prev <= 1) {
            setIsRunning(false)
@@ -179,7 +178,6 @@ export default function StudentDashboardPage() {
 
          return prev - 1
        })
-     }, 1000)
      }, 1000)
 
     return () => clearInterval(interval)
