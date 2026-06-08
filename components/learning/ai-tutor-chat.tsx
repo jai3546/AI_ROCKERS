@@ -154,8 +154,6 @@ export function AiTutorChat({
   try {
     const apiKey = getApiKey()
     let response
-    const apiKey = getApiKey()
-    let response
     if (apiKey && apiKey !== 'your-api-key-here') {
       response = await getGeminiResponse(
         userMessage.content,
