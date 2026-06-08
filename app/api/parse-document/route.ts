@@ -1,6 +1,8 @@
+if (typeof global.DOMMatrix === 'undefined') {
+  (global as any).DOMMatrix = class {};
+}
+
 import { NextResponse } from 'next/server';
-// @ts-ignore
-import pdfParse from 'pdf-parse';
 // @ts-ignore
 import officeParser from 'officeparser';
 // Using default pdf-parse worker configuration which is safer for serverless environments
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
     let text = '';
 
     if (filename.endsWith('.pdf')) {
+      const pdfParse = require('pdf-parse');
       const parsed = await pdfParse(buffer);
       text = parsed.text || '';
     } else if (filename.endsWith('.pptx') || filename.endsWith('.ppt')) {

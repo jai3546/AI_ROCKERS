@@ -561,7 +561,7 @@ export async function generateAiSummaryAndMindmap(
       const systemPrompt = `You are a high-quality educational content creator. The user will specify a topic. 
 You must respond with a JSON object containing:
 1. "title": The name of the topic (capitalized).
-2. "summary": A detailed, clear educational summary of the topic suitable for K-12 students. Use paragraphs and bullet points.
+2. "summary": A VERY LONG, comprehensive, and detailed educational summary of the topic suitable for K-12 students. It MUST be at least 500-1000 words. Use extensive paragraphs, detailed explanations, examples, and multiple bullet points. Do not write a short summary.
 3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the topic.
    Each node in the tree MUST have this exact interface:
    interface MindMapNode {
@@ -840,7 +840,7 @@ export async function generateAiSummaryFromDocument(
       const systemPrompt = `You are a high-quality educational content creator. The user has uploaded a document named "${documentName}". 
 You must respond with a JSON object containing:
 1. "title": A short, capitalized, descriptive title of the document or its core topic.
-2. "summary": A detailed, clear educational summary of the document's contents suitable for K-12 students. Use paragraphs and bullet points.
+2. "summary": A VERY LONG, comprehensive, and detailed educational summary of the document's contents suitable for K-12 students. It MUST be at least 500-1000 words. Extract as much detail as possible. Use extensive paragraphs, detailed explanations, examples, and multiple bullet points. Do not write a short summary.
 3. "mindMapData": A hierarchical tree structure of the concepts in the document. The root node is the main title.
    Each node in the tree MUST have this exact interface:
    interface MindMapNode {
@@ -924,9 +924,17 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
             mindMapData: mindMapData || { id: "root", label: title }
           };
         }
+      } else {
+        const errorData = await response.json();
+        if (errorData.error?.message?.includes("API key")) {
+          throw new Error(errorData.error.message);
+        }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to generate AI summary from document, falling back to mock:", e);
+      if (e.message && e.message.includes("API key")) {
+        throw e;
+      }
     }
   }
 
