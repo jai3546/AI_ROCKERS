@@ -64,18 +64,19 @@ export async function POST(request: Request) {
 
     // Sanitize and limit output text content size to protect token limits
     const sanitized = text.replace(/\r\n/g, '\n').replace(/\n\s*\n/g, '\n\n');
-    const words = sanitized.split(/\s+/);
-    const maxWords = 10000;
-    
-    let processedText = sanitized;
-    if (words.length > maxWords) {
-      processedText = words.slice(0, maxWords).join(' ') + '\n\n... [Document content truncated to 10,000 words]';
-    }
+const words = sanitized.split(/\s+/).filter(word => word.length > 0);
+const maxWords = 10000;
 
-    return NextResponse.json({ 
-      text: processedText, 
-      filename: file.name,
-      wordCount: words.length
+let processedText = sanitized;
+if (words.length > maxWords) {
+  processedText = words.slice(0, maxWords).join(' ') + '\n\n... [Document content truncated to 10,000 words]';
+}
+
+return NextResponse.json({ 
+  text: processedText, 
+  filename: file.name,
+  wordCount: words.length
+});
     });
   } catch (error: any) {
     console.error('[parse-document] Document parsing failed:', error);
