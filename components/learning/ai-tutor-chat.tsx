@@ -152,6 +152,7 @@ export function AiTutorChat({
   }
 
   try {
+    const apiKey = getApiKey()
     let response
     const apiKey = getApiKey()
     let response
