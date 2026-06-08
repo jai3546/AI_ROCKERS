@@ -331,15 +331,14 @@ export async function getMockGeminiResponse(
 
   if (isCasual) {
     const currentUserId = userId || 'default';
-    const currentCount = getUserQueryCount(currentUserId);
-    if (currentCount < 10) {
-      incrementUserQueryCount(currentUserId);
+    const newCount = incrementUserQueryCount(currentUserId);
+    if (newCount <= 10) {
       const currentEmotion = (emotionState?.emotion && ['sad', 'angry', 'fearful', 'happy'].includes(emotionState.emotion.toLowerCase())) 
         ? emotionState.emotion.toLowerCase() as 'sad' | 'angry' | 'fearful' | 'happy' | 'neutral'
         : 'neutral';
       const responsesList = emotionalResponses[language][currentEmotion];
       const randomFriendlyText = responsesList[Math.floor(Math.random() * responsesList.length)];
-      return { text: `${randomFriendlyText} (How can I help you learn today?)`, newCount: generalQueryCount + 1 };
+      return { text: `${randomFriendlyText} (How can I help you learn today?)`, newCount };
     } else {
       return { text: "Let's get back to studying! 📚" };
     }
