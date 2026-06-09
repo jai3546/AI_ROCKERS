@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Brain, Workflow } from "lucide-react"
+import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Brain, Workflow, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -13,6 +13,7 @@ interface LearningOptionsMenuProps {
   onSelectSummaries: () => void
   onSelectTextbooks: () => void
   onSelectMindMap: () => void
+  onSelectUploadMaterial: () => void
   language?: "en" | "hi" | "te"
 }
 
@@ -23,6 +24,7 @@ export function LearningOptionsMenu({
   onSelectSummaries,
   onSelectTextbooks,
   onSelectMindMap,
+  onSelectUploadMaterial,
   language = "en"
 }: LearningOptionsMenuProps) {
   const translations = {
@@ -80,6 +82,16 @@ export function LearningOptionsMenu({
       en: "Visualize concepts and connect topics interactively",
       hi: "अवधारणाओं की कल्पना करें और विषयों को परस्पर जोड़ें",
       te: "భావనలను దృశ్యమానం చేయండి మరియు అంశాలను ఇంటరాక్టివ్‌గా కనెక్ట్ చేయండి",
+    },
+    uploadMaterial: {
+      en: "Upload Learning Material",
+      hi: "अध्ययन सामग्री अपलोड करें",
+      te: "అధ్యయన మెటీరియల్ అప్లోడ్ చేయండి",
+    },
+    uploadMaterialDesc: {
+      en: "Upload notes, PDFs, YouTube links or websites",
+      hi: "नोट्स, PDF, YouTube लिंक या वेबसाइट अपलोड करें",
+      te: "నోట్స్, PDFలు, YouTube లింకులు లేదా వెబ్‌సైట్లను అప్లోడ్ చేయండి",
     },
   }
 
@@ -179,6 +191,25 @@ export function LearningOptionsMenu({
                 <div>
                   <h3 className="font-bold text-foreground dark:text-foreground">{translations.mindmaps[language]}</h3>
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground">{translations.mindmapsDesc[language]}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="cursor-pointer bg-card dark:bg-card hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors"
+              onClick={onSelectUploadMaterial}
+            >
+              <CardContent className="p-4 flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                  <Upload size={24} className="text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground dark:text-foreground">
+                    {translations.uploadMaterial[language]}
+                  </h3>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
+                    {translations.uploadMaterialDesc[language]}
+                  </p>
                 </div>
               </CardContent>
             </Card>
