@@ -41,19 +41,9 @@ export async function POST(request: Request) {
     let text = '';
 
     if (filename.endsWith('.pdf')) {
-      const pdfParse = require('pdf-parse');
-      const parsed = await pdfParse(buffer);
-      text = parsed.text || '';
+      text = await officeParser.parseOffice(buffer, { fileType: 'pdf' });
     } else if (filename.endsWith('.pptx') || filename.endsWith('.ppt')) {
-      text = await new Promise<string>((resolve, reject) => {
-        officeParser.parseBuffer(buffer, (err: any, data: any) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
+      text = await officeParser.parseOffice(buffer, { fileType: filename.endsWith('.pptx') ? 'pptx' : 'ppt' });
     } else if (filename.endsWith('.txt')) {
       text = buffer.toString('utf-8');
     } else {
@@ -64,19 +54,18 @@ export async function POST(request: Request) {
 
     // Sanitize and limit output text content size to protect token limits
     const sanitized = text.replace(/\r\n/g, '\n').replace(/\n\s*\n/g, '\n\n');
-const words = sanitized.split(/\s+/).filter(word => word.length > 0);
-const maxWords = 10000;
+    const words = sanitized.split(/\s+/);
+    const maxWords = 10000;
+    
+    let processedText = sanitized;
+    if (words.length > maxWords) {
+      processedText = words.slice(0, maxWords).join(' ') + '\n\n... [Document content truncated to 10,000 words]';
+    }
 
-let processedText = sanitized;
-if (words.length > maxWords) {
-  processedText = words.slice(0, maxWords).join(' ') + '\n\n... [Document content truncated to 10,000 words]';
-}
-
-return NextResponse.json({ 
-  text: processedText, 
-  filename: file.name,
-  wordCount: words.length
-});
+    return NextResponse.json({ 
+      text: processedText, 
+      filename: file.name,
+      wordCount: words.length
     });
   } catch (error: any) {
     console.error('[parse-document] Document parsing failed:', error);
