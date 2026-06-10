@@ -129,7 +129,8 @@ export function ReviewForm({ onClose, onSubmit, language = "en" }: ReviewFormPro
         exit={{ opacity: 0, scale: 0.9 }}
         className="w-full max-w-md"
       >
-        <Card className="border border-border dark:border-border shadow-lg">
+        {/* <Card className="border border-border dark:border-border shadow-lg"> */}
+          <Card className="border-[#E9D5FF] shadow-[0_8px_24px_rgba(124,58,237,0.08)]">
           <CardHeader className="pb-3 relative">
             <Button
               variant="ghost"
@@ -139,19 +140,28 @@ export function ReviewForm({ onClose, onSubmit, language = "en" }: ReviewFormPro
             >
               <X size={18} />
             </Button>
-            <CardTitle>{translations.writeReview[language]}</CardTitle>
+            <CardTitle className="text-[#7C3AED]">{translations.writeReview[language]}</CardTitle>
+            {/* <CardTitle ></CardTitle> */}
           </CardHeader>
           
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{translations.yourName[language]}</Label>
-                <Input
+                {/* <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={errors.name ? "border-destructive" : ""}
-                />
+                /> */}
+                <Input
+  id="name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+  className={`focus-visible:ring-[#7C3AED] focus-visible:border-[#7C3AED] ${
+    errors.name ? "border-destructive" : ""
+  }`}
+/>
                 {errors.name && (
                   <p className="text-xs text-destructive">{errors.name}</p>
                 )}
@@ -184,11 +194,16 @@ export function ReviewForm({ onClose, onSubmit, language = "en" }: ReviewFormPro
                     >
                       <Star
                         size={24}
+                        // className={
+                        //   (hoveredRating ? star <= hoveredRating : star <= rating)
+                        //     ? "text-yellow-500 fill-yellow-500"
+                        //     : "text-gray-300 dark:text-gray-600"
+                        // }
                         className={
-                          (hoveredRating ? star <= hoveredRating : star <= rating)
-                            ? "text-yellow-500 fill-yellow-500"
-                            : "text-gray-300 dark:text-gray-600"
-                        }
+  (hoveredRating ? star <= hoveredRating : star <= rating)
+    ? "text-[#A855F7] fill-[#A855F7]"
+    : "text-[#E9D5FF] dark:text-[#4C1D95]"
+}
                       />
                     </button>
                   ))}
@@ -197,13 +212,22 @@ export function ReviewForm({ onClose, onSubmit, language = "en" }: ReviewFormPro
               
               <div className="space-y-2">
                 <Label htmlFor="comment">{translations.yourReview[language]}</Label>
-                <Textarea
+                {/* <Textarea
                   id="comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={4}
                   className={errors.comment ? "border-destructive" : ""}
-                />
+                /> */}
+                <Textarea
+  id="comment"
+  value={comment}
+  onChange={(e) => setComment(e.target.value)}
+  rows={4}
+  className={`focus-visible:ring-[#7C3AED] focus-visible:border-[#7C3AED] ${
+    errors.comment ? "border-destructive" : ""
+  }`}
+/>
                 {errors.comment && (
                   <p className="text-xs text-destructive">{errors.comment}</p>
                 )}
@@ -211,16 +235,28 @@ export function ReviewForm({ onClose, onSubmit, language = "en" }: ReviewFormPro
             </CardContent>
             
             <CardFooter className="flex justify-between">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
               >
                 {translations.cancel[language]}
-              </Button>
-              <Button type="submit">
+              </Button> */}
+              <Button
+  type="button"
+  variant="outline"
+  onClick={onClose}
+  className="border-[#E9D5FF] hover:bg-[#E9D5FF]/40"
+></Button>
+              {/* <Button type="submit">
                 {translations.submit[language]}
-              </Button>
+              </Button> */}
+              <Button
+  type="submit"
+  className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white"
+>
+  {translations.submit[language]}
+</Button>
             </CardFooter>
           </form>
         </Card>

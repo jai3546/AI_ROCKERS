@@ -25,22 +25,41 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        // primary: {
+        //   DEFAULT: "#f72585",
+        //   foreground: "hsl(var(--primary-foreground))",
+        // },
+        // secondary: {
+        //   DEFAULT: "#4895ef",
+        //   foreground: "hsl(var(--secondary-foreground))",
+        // },
+        // accent: {
+        //   DEFAULT: "#4cc9f0",
+        //   foreground: "hsl(var(--accent-foreground))",
+        // },
+        // highlight: {
+        //   DEFAULT: "#b5179e",
+        //   foreground: "hsl(var(--highlight-foreground))",
+        // },
         primary: {
-          DEFAULT: "#f72585",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "#4895ef",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        accent: {
-          DEFAULT: "#4cc9f0",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        highlight: {
-          DEFAULT: "#b5179e",
-          foreground: "hsl(var(--highlight-foreground))",
-        },
+  DEFAULT: "#7C3AED",
+  foreground: "hsl(var(--primary-foreground))",
+},
+
+secondary: {
+  DEFAULT: "#A855F7",
+  foreground: "hsl(var(--secondary-foreground))",
+},
+
+accent: {
+  DEFAULT: "#6B7280",
+  foreground: "hsl(var(--accent-foreground))",
+},
+
+highlight: {
+  DEFAULT: "#E9D5FF",
+  foreground: "hsl(var(--highlight-foreground))",
+},
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
