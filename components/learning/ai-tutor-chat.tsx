@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
-import { getGeminiResponse, getMockGeminiResponse, getApiKey, type Subject, type EmotionState } from "@/services/gemini-api"
+import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
 
 interface Message {
@@ -56,7 +56,7 @@ export function AiTutorChat({
   const [showLearningStyleInfo, setShowLearningStyleInfo] = useState(false)
   const [activeTab, setActiveTab] = useState<"chat" | "mentor">("chat")
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null)
-  const [generalQueryCount, setGeneralQueryCount] = useState(0)
+   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
 
@@ -152,30 +152,13 @@ export function AiTutorChat({
   }
 
   try {
-    const apiKey = getApiKey()
-    let response
-    if (apiKey && apiKey !== 'your-api-key-here') {
-      response = await getGeminiResponse(
-        userMessage.content,
-        currentSubject,
-        language,
-        currentLearningStyle,
-        currentEmotionState
-      )
-    } else {
-      response = await getMockGeminiResponse(
-        userMessage.content,
-        currentSubject,
-        language,
-        currentLearningStyle,
-        currentEmotionState,
-        generalQueryCount
-      )
-
-      if (response.newCount !== undefined) {
-        setGeneralQueryCount(response.newCount)
-      }
-    }
+    const response = await getGeminiResponse(
+      userMessage.content,
+      currentSubject,
+      language,
+      currentLearningStyle,
+      currentEmotionState
+    )
 
     const botMessage: Message = {
       id: Date.now().toString(),
