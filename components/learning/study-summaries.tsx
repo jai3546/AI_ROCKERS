@@ -201,6 +201,7 @@ export function StudySummaries({
       }
 
       setActiveSubject(capitalizedSubject)
+      setShowSubjectSelect(false)
       setUploadStep("complete")
       
       setTimeout(() => {
