@@ -107,7 +107,7 @@ export async function getGeminiResponse(
       }
     }
 
-    // Prepare the request body for Gemini 1.5 Flash
+    // Prepare the request body for Gemini 2.5 Flash
     const requestBody = {
       contents: [
         {
@@ -127,7 +127,7 @@ export async function getGeminiResponse(
     };
 
     // Make the API request
-    const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+    const response = await fetch("/api/gemini", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -590,7 +590,7 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
         }
       };
 
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+      const response = await fetch("/api/gemini", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1029,7 +1029,7 @@ Respond ONLY with a valid JSON block containing the array of questions. Do not w
         }
       };
 
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+      const response = await fetch("/api/gemini", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1160,7 +1160,7 @@ Respond ONLY with a valid JSON block containing the array of flashcards. Do not 
         }
       };
 
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+      const response = await fetch("/api/gemini", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

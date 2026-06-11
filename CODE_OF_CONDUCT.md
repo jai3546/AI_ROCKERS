@@ -38,7 +38,7 @@ This Code of Conduct applies across all community and project spaces, including 
 
 If you encounter or experience behavior that violates this Code of Conduct, please report it to the community administrators. All reports will be handled with strict care, urgency, and confidentiality.
 
-*   **How to report:** Send an email to `[YOUR EMAIL ADDRESS]` with details of the incident, links to the workspace/issue where it occurred, and any relevant screenshots.
+*   **How to report:** Send an email to `jaideep0546@gmail.com` with details of the incident, links to the workspace/issue where it occurred, and any relevant screenshots.
 
 ## 🧩 Possible Actions
 
