@@ -225,32 +225,33 @@ export async function generateAiSummaryAndMindmap(
   subject: string = "Science",
   syllabus: string = "General"
 ): Promise<AiSummaryResult> {
-  const apiKey = getApiKey();
 
-  if (apiKey) {
+
+  
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
-      const systemPrompt = `You are a high-quality educational content creator. The user will specify a topic. 
-You must respond with a JSON object containing:
-1. "title": The name of the topic (capitalized).
-2. "summary": A detailed, clear educational summary of the topic suitable for K-12 students. Use paragraphs and bullet points.
-3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the topic.
-   Each node in the tree MUST have this exact interface:
-   interface MindMapNode {
-     id: string;
-     label: string; // 1-3 words max
-     color?: string; // Hex color string corresponding to branch theme
-     children?: MindMapNode[];
-   }
-   Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
-Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
+
+      const systemPrompt = 
+      `You are a high-quality educational content creator. The user will specify a topic. 
+      You must respond with a JSON object containing:
+      1. "title": The name of the topic (capitalized).
+      2. "summary": A detailed, clear educational summary of the topic suitable for K-12 students. Use paragraphs and bullet points.
+      3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the topic.
+        Each node in the tree MUST have this exact interface:
+        interface MindMapNode {
+          id: string;
+          label: string; // 1-3 words max
+          color?: string; // Hex color string corresponding to branch theme
+          children?: MindMapNode[];
+        }
+        Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
+      Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
 
       const requestBody = {
         contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nTopic: " + topic }] }],
         generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json" }
       };
 
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+      const response = await fetch('/api/gemini', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody),
       });
 
@@ -270,7 +271,7 @@ Respond ONLY with a valid JSON block matching the above description. Do not wrap
         if (summary) return { title, summary, mindMapData: mindMapData || { id: "root", label: title } };
       }
     } catch (e) { console.error("Failed to generate AI summary, falling back to mock:", e); }
-  }
+  
 
   const mockSummariesDb: Record<string, { summary: string; mindMapData: any }> = {
     "python": {
@@ -310,10 +311,10 @@ export function extractArray(parsed: any): any[] | null {
 }
 
 export async function generateAiQuiz(subject: string, syllabus: string = "General", numQuestions: number = 5): Promise<any[]> {
-  const apiKey = getApiKey();
-  if (apiKey) {
+
+  
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+
       const systemPrompt = `You are an expert school teacher creating educational quizzes for K-12 students. 
 You must respond with a JSON array containing ${numQuestions} multiple-choice questions for the subject "${subject}" under the "${syllabus}" syllabus.
 Each question object must match:
@@ -325,7 +326,7 @@ interface QuizQuestion {
 }
 Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
       const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numQuestions} questions for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+      const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {
         const data = await response.json();
         let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
@@ -355,22 +356,23 @@ Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
         if (arrayData && arrayData.length > 0) return arrayData.map((q, idx) => ({ id: `ai-quiz-${idx}-${Date.now()}`, question: q.question, options: q.options, points: q.points || 20, subject, syllabus: syllabus as any, topic: q.topic || subject }));
       }
     } catch (e) { console.error("Failed to generate AI quiz:", e); }
-  }
+  
   return [];
 }
 
 export async function generateAiFlashcards(subject: string, syllabus: string = "General", numFlashcards: number = 5): Promise<any[]> {
-  const apiKey = getApiKey();
-  if (apiKey) {
+
+  
+    
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+
       const systemPrompt = `You are a high-quality educational flashcard generator.
-You must respond with a JSON array containing ${numFlashcards} flashcards for the subject "${subject}" under the "${syllabus}" syllabus.
-Each flashcard must match:
-interface Flashcard { front: string; back: string; }
-Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
+        You must respond with a JSON array containing ${numFlashcards} flashcards for the subject "${subject}" under the "${syllabus}" syllabus.
+        Each flashcard must match:
+        interface Flashcard { front: string; back: string; }
+        Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
       const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numFlashcards} flashcards for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
-      const response = await fetch(`${apiUrl}?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+      const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {
         const data = await response.json();
         let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
@@ -389,6 +391,6 @@ Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
         if (arrayData && arrayData.length > 0) return arrayData.map((card, idx) => ({ id: `ai-card-${idx}-${Date.now()}`, front: card.front, back: card.back, subject, syllabus: syllabus as any }));
       }
     } catch (e) { console.error("Failed to generate AI flashcards:", e); }
-  }
+  
   return [];
 }
