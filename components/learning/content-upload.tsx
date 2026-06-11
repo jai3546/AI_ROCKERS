@@ -26,32 +26,30 @@ export default function ContentUpload() {
       if (notes.trim()) {
         content = notes
       } else if (pdfFile) {
-		const formData = new FormData()
-		formData.append("file", pdfFile)
+        const formData = new FormData()
+        formData.append("file", pdfFile)
 
-		const response = await fetch("/api/extract-pdf", {
-		method: "POST",
-		body: formData,
-		})
+        const response = await fetch("/api/extract-pdf", {
+          method: "POST",
+          body: formData,
+        })
 
-		const data = await response.json()
+        const data = await response.json()
 
-		if (!response.ok) {
-		throw new Error(
-			data.error ||
-			"Unable to extract text from this PDF. It may be scanned or image-based."
-			)
-		}
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+            "Unable to extract text from this PDF. It may be scanned or image-based."
+          )
+        }
 
-content = data.text || ""
+        content = data.text || ""
 
-		content = data.text
+        console.log("PDF Pages:", data.pages)
+        console.log("Extracted Text:")
+        console.log(content.substring(0, 2000))
 
-		console.log("PDF Pages:", data.pages)
-		console.log("Extracted Text:")
-		console.log(content.substring(0, 2000))
-		
-		} else if (imageFile) {
+      } else if (imageFile) {
         const formData = new FormData()
         formData.append("file", imageFile)
 
