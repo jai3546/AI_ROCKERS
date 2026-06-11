@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+
 import { motion } from "framer-motion"
 import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
-
+import { useState, useRef, useEffect } from "react"
 interface Message {
   id: string
   content: string
@@ -29,7 +29,44 @@ interface AiTutorChatProps {
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
 }
+function MessageContent({ content }: { content: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const mermaidBlocks = el.querySelectorAll('.mermaid-block')
+    if (mermaidBlocks.length === 0) return
+
+    import('mermaid').then((m) => {
+      m.default.initialize({ startOnLoad: false, theme: 'neutral' })
+      mermaidBlocks.forEach(async (block) => {
+        const code = block.getAttribute('data-code') || ''
+        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9)
+        try {
+          const { svg } = await m.default.render(id, code)
+          block.innerHTML = svg
+        } catch {
+          block.innerHTML = `<pre>${code}</pre>`
+        }
+      })
+    })
+  }, [content])
+
+  const parts = content.split(/(```mermaid[\s\S]*?```)/g)
+  return (
+    <div ref={containerRef} className="text-sm space-y-2">
+      {parts.map((part, i) => {
+        if (part.startsWith('```mermaid')) {
+          const code = part.replace(/```mermaid\n?/, '').replace(/```$/, '').trim()
+          return <div key={i} className="mermaid-block w-full overflow-x-auto" data-code={code} />
+        }
+        return <p key={i} className="whitespace-pre-wrap">{part}</p>
+      })}
+    </div>
+  )
+}
 export function AiTutorChat({
   language = "en",
   onClose,
@@ -373,7 +410,7 @@ export function AiTutorChat({
                   message.sender === "user" ? "bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground" : "bg-muted dark:bg-muted/70 text-foreground dark:text-foreground"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
+                <MessageContent content={message.content} />
                 <div className="text-xs opacity-70 mt-1 text-right">
                   {new Intl.DateTimeFormat(language === "en" ? "en-US" : language === "hi" ? "hi-IN" : "te-IN", {
                     hour: "2-digit",
