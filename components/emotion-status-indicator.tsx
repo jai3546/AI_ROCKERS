@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Smile, Frown, Meh, AlertTriangle, Activity, Brain } from "lucide-react"
+import { Smile, Frown, Meh, AlertTriangle, Activity } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -162,7 +162,7 @@ export function EmotionStatusIndicator({
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <div className="flex items-center gap-1 text-xs">
-                          <Brain size={12} />
+                          <Activity size={12} />
                           <span>Attention Level: {getAttentionLevel()}</span>
                         </div>
                         <span className="text-xs">{emotionState.attentionScore}%</span>

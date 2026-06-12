@@ -95,14 +95,14 @@ export async function getGeminiResponse(
 
       // Add fatigue and attention considerations
       if (emotionState.fatigueScore !== undefined && emotionState.fatigueScore > 60) {
-        systemPrompt += ` The student appears fatigued (${emotionState.fatigueScore}% fatigue detected). Keep explanations concise and consider suggesting breaks.`;
+        systemPrompt += ` The student appears fatigued. Keep explanations concise and consider suggesting breaks.`;
       }
 
       if (emotionState.attentionScore !== undefined) {
         if (emotionState.attentionScore < 40) {
-          systemPrompt += ` Their attention level is low (${emotionState.attentionScore}%). Use engaging examples and shorter explanations.`;
+          systemPrompt += ` Their attention level is low. Use engaging examples and shorter explanations.`;
         } else if (emotionState.attentionScore > 70) {
-          systemPrompt += ` Their attention level is high (${emotionState.attentionScore}%). You can provide more detailed explanations.`;
+          systemPrompt += ` Their attention level is high. You can provide more detailed explanations.`;
         }
       }
     }

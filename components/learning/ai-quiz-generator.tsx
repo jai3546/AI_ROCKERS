@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Brain, Loader2, RefreshCw, Sparkles } from "lucide-react"
+import { BookOpen, Loader2, RefreshCw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -849,7 +849,7 @@ export function AiQuizGenerator({
             </>
           ) : (
             <>
-              <Brain size={16} className="mr-2" />
+              <BookOpen size={16} className="mr-2" />
               {translations.generateQuiz[language]}
             </>
           )}

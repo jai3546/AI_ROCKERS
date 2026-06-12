@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { LearningMemoryService, TimelinePoint } from "../../services/learning-memory-service";
 import { ConceptNode } from "../../data/learning-graph";
 import { Recommendations } from "../../services/recommendation-engine";
@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useRouter } from "next/navigation";
-import { Brain, Sparkles, RefreshCw, Undo, Award, Target, Flame, ChevronLeft } from "lucide-react";
+import { BookOpen, Sparkles, RefreshCw, Undo, Award, Target, Flame, ChevronLeft } from "lucide-react";
 
 interface LearningBrainDashboardProps {
   studentId?: string;
@@ -36,7 +36,7 @@ export function LearningBrainDashboard({
   const [isSimulating, setIsSimulating] = useState<string | null>(null);
 
   // Load and refresh state
-  const loadMemoryProfile = () => {
+  const loadMemoryProfile = useCallback(() => {
     // 1. Load concept graph (will automatically apply forgetting curve retention decay)
     const graphData = LearningMemoryService.getConceptGraph(studentId);
     setGraph(graphData);
@@ -48,11 +48,11 @@ export function LearningBrainDashboard({
     // 3. Load timeline history
     const timeline = LearningMemoryService.getTimelineHistory(studentId);
     setTimelineData(timeline);
-  };
+  }, [studentId]);
 
   useEffect(() => {
     loadMemoryProfile();
-  }, [studentId]);
+  }, [loadMemoryProfile]);
 
   // Reset progress handler
   const handleResetGraph = () => {
@@ -132,7 +132,7 @@ export function LearningBrainDashboard({
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-              <span>🧠</span> My Learning Brain
+              <span>📚</span> My Learning Brain
             </h1>
             <p className="text-sm text-muted-foreground">
               Student Cognitive Profile & Spaced Repetition Memory Graph for <span className="font-semibold text-foreground">{studentName}</span>
@@ -172,7 +172,7 @@ export function LearningBrainDashboard({
               <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{averages.average}%</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <Brain size={20} />
+              <BookOpen size={20} />
             </div>
           </CardContent>
         </Card>
