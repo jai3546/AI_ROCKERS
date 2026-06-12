@@ -1,0 +1,127 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                String                 @id
+  name              String
+  email             String?                @unique
+  passwordHash      String?
+  role              String                 @default("student")
+  avatar            String                 @default("👦🏽")
+  preferredLanguage String                 @default("en")
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  learningProfiles  LearningProfile[]
+  masteries         UserConceptMastery[]
+  activities        LearningActivity[]
+  history           MasteryHistory[]
+  recommendations   CachedRecommendation[]
+}
+
+model LearningProfile {
+  id                 String    @id @default(uuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domainType         String    // "SCHOOL", "COLLEGE", "CERTIFICATION", "INTERVIEW_PREP", "PROFESSIONAL"
+  currentLevel       Int       @default(1)
+  currentXP          Int       @default(0)
+  dailyStreak        Int       @default(0)
+  lastLoginDate      DateTime?
+  syllabusPreference String    @default("General")
+  targetGoal         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([userId, domainType])
+}
+
+model Concept {
+  id                   String                 @id
+  name                 String
+  description          String?
+  subject              String
+  domainType           String                 // "SCHOOL", "COLLEGE", "CERTIFICATION", "INTERVIEW_PREP", "PROFESSIONAL"
+  levelGroup           String?                // "Class 10", "Semester 1", etc.
+  metadata             String?                // JSON string for extra attributes
+  createdAt            DateTime               @default(now())
+  masteries            UserConceptMastery[]
+  activities           LearningActivity[]
+  recommendations      CachedRecommendation[]
+  prerequisitesOf      ConceptRelationship[]  @relation("FromConcept")
+  prerequisites        ConceptRelationship[]  @relation("ToConcept")
+}
+
+model ConceptRelationship {
+  fromConceptId   String
+  toConceptId     String
+  relationType    String   @default("STRICT_PREREQUISITE")
+  fromConcept     Concept  @relation("FromConcept", fields: [fromConceptId], references: [id], onDelete: Cascade)
+  toConcept       Concept  @relation("ToConcept", fields: [toConceptId], references: [id], onDelete: Cascade)
+
+  @@id([fromConceptId, toConceptId])
+}
+
+model UserConceptMastery {
+  id            String   @id @default(uuid())
+  userId        String
+  conceptId     String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept       Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  mastery       Int      @default(0)
+  confidence    Int      @default(0)
+  retention     Int      @default(0)
+  accuracy      Int      @default(0)
+  engagement    Int      @default(0)
+  lastPracticed DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, conceptId])
+}
+
+model LearningActivity {
+  id                String   @id @default(uuid())
+  userId            String
+  conceptId         String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept           Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  activityType      String   // "quiz", "flashcard", "tutor", "textbook"
+  score             Int?
+  totalScore        Int?
+  responseTime      Int?
+  confusionDetected Boolean  @default(false)
+  engagementScore   Int      @default(50)
+  timestamp         DateTime @default(now())
+}
+
+model MasteryHistory {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date               String   // "MM/DD" or "YYYY-MM-DD"
+  averageMastery     Int      @default(0)
+  mathMastery        Int      @default(0)
+  scienceMastery     Int      @default(0)
+  socialMastery      Int      @default(0)
+  englishMastery     Int      @default(0)
+  customMasteryData  String?  // JSON string
+  createdAt          DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model CachedRecommendation {
+  id          String   @id @default(uuid())
+  userId      String
+  conceptId   String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept     Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  recType     String   // "weak_concept", "revision_priority", "next_topic"
+  reason      String?
+  generatedAt DateTime @default(now())
+}

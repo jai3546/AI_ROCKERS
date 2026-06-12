@@ -34,7 +34,7 @@ export function LearningRecommendations({
         <CardHeader className="bg-indigo-50/20 dark:bg-indigo-950/10 pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
             <Sparkles size={18} />
-            Next Topic Suggestions
+            Your Next Adventures
           </CardTitle>
           <CardDescription>
             Unlocked learning paths ready for you to explore.
@@ -99,7 +99,7 @@ export function LearningRecommendations({
         <CardHeader className="bg-amber-50/20 dark:bg-amber-950/10 pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-amber-600 dark:text-amber-500">
             <BookOpen size={18} />
-            Revision Priorities
+            Topics to Review
           </CardTitle>
           <CardDescription>
             Keep your retention high by practicing these concepts.
@@ -164,7 +164,7 @@ export function LearningRecommendations({
         <CardHeader className="bg-rose-50/20 dark:bg-rose-950/10 pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-rose-600 dark:text-rose-400">
             <AlertTriangle size={18} />
-            Mastery Alerts (Weak Concepts)
+            Needs Extra Love
           </CardTitle>
           <CardDescription>
             Foundational concepts with mastery scores below 50%.

@@ -4,15 +4,17 @@ import React, { useState } from "react";
 import { ConceptNode } from "../../data/learning-graph";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Treemap, Tooltip } from "recharts";
 import { BookOpen, Star, Clock, AlertCircle, RefreshCw } from "lucide-react";
 
 interface KnowledgeGraphProps {
   graph: ConceptNode[];
   onSelectConcept?: (conceptId: string) => void;
+  onActionClick?: (conceptId: string, actionType: "quiz" | "flashcard" | "tutor") => void;
 }
 
-export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ graph, onSelectConcept, onActionClick }: KnowledgeGraphProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Find the selected node details
@@ -373,7 +375,7 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
                   {/* Retention Progress Bar */}
                   <div>
                     <div className="flex justify-between text-xs font-medium mb-1">
-                      <span>Cognitive Retention</span>
+                      <span>Memory Strength</span>
                       <span>{selectedNode.retention}%</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
@@ -398,6 +400,38 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
                       : "Never"}
                   </span>
                 </div>
+
+                {onActionClick && (
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border mt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "flashcard")}
+                    >
+                      <span>🔄</span>
+                      <span>Revise Topic</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "quiz")}
+                    >
+                      <span>📝</span>
+                      <span>Take Quiz</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "tutor")}
+                    >
+                      <span>🤖</span>
+                      <span>Ask AI Tutor</span>
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground gap-2">
