@@ -12,6 +12,8 @@ import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, getMockGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
+import { detectConceptFromText } from "@/services/concept-tagging-service"
+import { LearningMemoryService } from "@/services/learning-memory-service"
 
 interface Message {
   id: string
@@ -153,15 +155,47 @@ export function AiTutorChat({
       onLearningStyleUpdate(updatedLearningStyle)
     }
 
+    // Detect concept, retrieve mastery, customize response and update learning memory
+    let detectedConceptId = "";
+    let personalizationInstructions = "";
+    const detectedConcept = detectConceptFromText(userMessage.content);
+    if (detectedConcept) {
+      detectedConceptId = detectedConcept.id;
+      const graph = LearningMemoryService.getConceptGraph(studentId);
+      const node = graph.find(n => n.id === detectedConceptId);
+      
+      if (node) {
+        if (node.mastery < 50) {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has LOW mastery (${node.mastery}%) in this topic. Provide an extremely simple, basic explanation with extra examples, broken down step-by-step.]`;
+        } else if (node.mastery > 75) {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has HIGH mastery (${node.mastery}%) in this topic. Provide an advanced explanation with deep insights and challenge them with a tough question.]`;
+        } else {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has MODERATE mastery (${node.mastery}%) in this topic. Reinforce their understanding and check for clarity.]`;
+        }
+      }
+
+      // Record tutor interaction in memory graph
+      const confusion = currentEmotionState?.emotion === "confused";
+      LearningMemoryService.recordActivity(studentId, detectedConceptId, {
+        activityType: "tutor",
+        confusionDetected: confusion,
+        engagement: 80
+      });
+    }
+
     try {
       // Try to get response from Gemini API
       const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
       let response
 
+      const finalPrompt = personalizationInstructions 
+        ? `${personalizationInstructions}\n\n${userMessage.content}` 
+        : userMessage.content;
+
       if (apiKey && apiKey !== 'your-api-key-here') {
         // Use the real API if key is available
         response = await getGeminiResponse(
-          userMessage.content,
+          finalPrompt,
           currentSubject,
           language,
           currentLearningStyle,
@@ -170,7 +204,7 @@ export function AiTutorChat({
       } else {
         // Fall back to mock responses if no API key
         response = getMockGeminiResponse(
-          userMessage.content,
+          finalPrompt,
           currentSubject,
           language,
           currentLearningStyle,
