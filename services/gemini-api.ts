@@ -22,8 +22,7 @@ export async function getGeminiResponse(
   emotionState?: EmotionState
 ): Promise<GeminiResponse> {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
-    if (!apiKey) throw new Error('Groq API key is not configured');
+    
 
     // --- Build system prompt ---
     let systemPrompt = `You are VidyAI, a friendly and encouraging AI tutor for school students (classes 6–12).
@@ -83,11 +82,10 @@ graph TD
       }
     }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch('/api/groq', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
