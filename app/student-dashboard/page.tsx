@@ -355,6 +355,9 @@ export default function StudentDashboardPage() {
           const parsedUser = JSON.parse(userData)
           console.log("Loaded user data:", parsedUser)
           setUser(parsedUser)
+          if (parsedUser.isDemo === false) {
+            LearningMemoryService.syncLocalStorageToCloud(parsedUser.id);
+          }
         } else {
           // If no user data, redirect to login
           router.push("/student-login")
@@ -378,38 +381,42 @@ export default function StudentDashboardPage() {
       const conceptId = searchParams.get("conceptId");
       const subject = searchParams.get("subject");
 
-      if (startQuiz === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveQuizSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveQuizTopic(node.name);
-            setShowQuizAi(true);
+      const handleRedirects = async () => {
+        if (startQuiz === "true") {
+          if (subject && subject !== "general" && subject !== "all") {
+            setActiveQuizSubject(subject);
           }
-        }
-        setShowQuiz(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startTutor === "true") {
-        setShowAiTutor(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startFlashcards === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveFlashcardSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveFlashcardTopic(node.name);
-            setShowFlashcardAi(true);
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveQuizTopic(node.name);
+              setShowQuizAi(true);
+            }
           }
+          setShowQuiz(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startTutor === "true") {
+          setShowAiTutor(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startFlashcards === "true") {
+          if (subject && subject !== "general" && subject !== "all") {
+            setActiveFlashcardSubject(subject);
+          }
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveFlashcardTopic(node.name);
+              setShowFlashcardAi(true);
+            }
+          }
+          setShowFlashcards(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
-        setShowFlashcards(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+      };
+
+      handleRedirects();
     }
   }, [user]);
 
@@ -635,7 +642,7 @@ export default function StudentDashboardPage() {
       const conceptId = tagQuizTopicToConcept(quizTopic, activeQuizSubject || quizDetails.subject || "General");
       if (conceptId) {
         const confusion = emotionState?.emotion === "confused";
-        LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
+        await LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
           activityType: "quiz",
           score: earned,
           total: total,
@@ -1814,7 +1821,7 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
-                  onClose={() => {
+                  onClose={async () => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
                     setActiveFlashcardTopic(undefined)
@@ -1826,7 +1833,7 @@ export default function StudentDashboardPage() {
                         const conceptId = tagFlashcardToConcept(activeFlashcardTopic || subj, subj);
                         if (conceptId) {
                           const confusion = emotionState?.emotion === "confused";
-                          LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
+                          await LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
                             activityType: "flashcard",
                             isKnown: true,
                             confusionDetected: confusion,

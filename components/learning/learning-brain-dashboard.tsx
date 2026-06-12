@@ -36,18 +36,22 @@ export function LearningBrainDashboard({
   const [isSimulating, setIsSimulating] = useState<string | null>(null);
 
   // Load and refresh state
-  const loadMemoryProfile = useCallback(() => {
-    // 1. Load concept graph (will automatically apply forgetting curve retention decay)
-    const graphData = LearningMemoryService.getConceptGraph(studentId);
-    setGraph(graphData);
+  const loadMemoryProfile = useCallback(async () => {
+    try {
+      // 1. Load concept graph (will automatically apply forgetting curve retention decay)
+      const graphData = await LearningMemoryService.getConceptGraph(studentId);
+      setGraph(graphData);
 
-    // 2. Load recommendations
-    const recs = LearningMemoryService.getRecommendations(studentId);
-    setRecommendations(recs);
+      // 2. Load recommendations
+      const recs = await LearningMemoryService.getRecommendations(studentId);
+      setRecommendations(recs);
 
-    // 3. Load timeline history
-    const timeline = LearningMemoryService.getTimelineHistory(studentId);
-    setTimelineData(timeline);
+      // 3. Load timeline history
+      const timeline = await LearningMemoryService.getTimelineHistory(studentId);
+      setTimelineData(timeline);
+    } catch (error) {
+      console.error("Failed to load learning memory profile:", error);
+    }
   }, [studentId]);
 
   useEffect(() => {
@@ -55,9 +59,9 @@ export function LearningBrainDashboard({
   }, [loadMemoryProfile]);
 
   // Reset progress handler
-  const handleResetGraph = () => {
+  const handleResetGraph = async () => {
     if (confirm("Are you sure you want to reset your learning progress data? This will clear local history.")) {
-      const fresh = LearningMemoryService.resetGraph(studentId);
+      const fresh = await LearningMemoryService.resetGraph(studentId);
       setGraph(fresh);
       loadMemoryProfile();
     }
@@ -85,11 +89,11 @@ export function LearningBrainDashboard({
     setIsSimulating(conceptId);
     
     // Simulate positive activity on selected concept
-    setTimeout(() => {
+    setTimeout(async () => {
       const isQuiz = Math.random() > 0.4;
       if (isQuiz) {
         // Log quiz success
-        LearningMemoryService.recordActivity(studentId, conceptId, {
+        await LearningMemoryService.recordActivity(studentId, conceptId, {
           activityType: "quiz",
           score: 8,
           total: 10,
@@ -99,7 +103,7 @@ export function LearningBrainDashboard({
         });
       } else {
         // Log tutor chat success
-        LearningMemoryService.recordActivity(studentId, conceptId, {
+        await LearningMemoryService.recordActivity(studentId, conceptId, {
           activityType: "tutor",
           engagement: 90
         });
@@ -168,7 +172,7 @@ export function LearningBrainDashboard({
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Avg Cognitive Score</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Overall Learning Progress</span>
               <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{averages.average}%</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -181,7 +185,7 @@ export function LearningBrainDashboard({
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Concepts Locked</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Mastered Topics</span>
               <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {masteredConcepts} <span className="text-xs font-normal text-muted-foreground">/ {totalConcepts}</span>
               </p>
@@ -196,7 +200,7 @@ export function LearningBrainDashboard({
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Paths Improving</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Improving Areas</span>
               <p className="text-2xl font-black text-amber-600 dark:text-amber-500">{inProgressConcepts}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500">
@@ -209,7 +213,7 @@ export function LearningBrainDashboard({
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Foundations Deficit</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Topics to Strengthen</span>
               <p className="text-2xl font-black text-rose-600 dark:text-rose-400">{criticalConcepts}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
@@ -261,7 +265,11 @@ export function LearningBrainDashboard({
         </div>
 
         <TabsContent value="network" className="mt-0 outline-none space-y-6">
-          <KnowledgeGraph graph={graph} onSelectConcept={(id) => console.log("Selected node:", id)} />
+          <KnowledgeGraph 
+            graph={graph} 
+            onSelectConcept={(id) => console.log("Selected node:", id)} 
+            onActionClick={handleActionClick}
+          />
           <LearningTimeline timelineData={timelineData} />
         </TabsContent>
 

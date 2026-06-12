@@ -161,7 +161,7 @@ export function AiTutorChat({
     const detectedConcept = detectConceptFromText(userMessage.content);
     if (detectedConcept) {
       detectedConceptId = detectedConcept.id;
-      const graph = LearningMemoryService.getConceptGraph(studentId);
+      const graph = await LearningMemoryService.getConceptGraph(studentId);
       const node = graph.find(n => n.id === detectedConceptId);
       
       if (node) {
@@ -176,7 +176,7 @@ export function AiTutorChat({
 
       // Record tutor interaction in memory graph
       const confusion = currentEmotionState?.emotion === "confused";
-      LearningMemoryService.recordActivity(studentId, detectedConceptId, {
+      await LearningMemoryService.recordActivity(studentId, detectedConceptId, {
         activityType: "tutor",
         confusionDetected: confusion,
         engagement: 80
