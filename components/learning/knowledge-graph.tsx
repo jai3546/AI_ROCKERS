@@ -5,7 +5,7 @@ import { ConceptNode } from "../../data/learning-graph";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Treemap, Tooltip } from "recharts";
-import { Brain, Star, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import { BookOpen, Star, Clock, AlertCircle, RefreshCw } from "lucide-react";
 
 interface KnowledgeGraphProps {
   graph: ConceptNode[];
@@ -135,7 +135,7 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
       <Card className="lg:col-span-2 border-border shadow-sm bg-card overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2">
-            <Brain className="text-indigo-500" />
+            <BookOpen className="text-indigo-500" />
             Interactive Knowledge Graph
           </CardTitle>
           <CardDescription>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2, Brain } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -893,7 +893,7 @@ ${summary.content}
                               className="flex-1 sm:flex-initial h-7 text-[10px] border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 flex items-center gap-1"
                               onClick={() => onTriggerQuiz && onTriggerQuiz(summary.subject, summary.title)}
                             >
-                              <Brain size={12} />
+                              <BookOpen size={12} />
                               Generate Quiz
                             </Button>
                             <Button

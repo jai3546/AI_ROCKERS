@@ -4,7 +4,7 @@ import type React from "react"
 
 
 import { motion } from "framer-motion"
-import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
+import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -232,11 +232,11 @@ export function AiTutorChat({
       
       if (node) {
         if (node.mastery < 50) {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has LOW mastery (${node.mastery}%) in this topic. Provide an extremely simple, basic explanation with extra examples, broken down step-by-step.]`;
+          personalizationInstructions = `[PERSONALIZATION INFO: Provide a beginner-friendly explanation with extra examples, broken down step-by-step.]`;
         } else if (node.mastery > 75) {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has HIGH mastery (${node.mastery}%) in this topic. Provide an advanced explanation with deep insights and challenge them with a tough question.]`;
+          personalizationInstructions = `[PERSONALIZATION INFO: Provide a detailed, advanced explanation with deep insights and challenge them with a tough question.]`;
         } else {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has MODERATE mastery (${node.mastery}%) in this topic. Reinforce their understanding and check for clarity.]`;
+          personalizationInstructions = `[PERSONALIZATION INFO: Reinforce understanding and check for clarity.]`;
         }
       }
 
@@ -449,7 +449,7 @@ export function AiTutorChat({
             className="h-8 px-2"
             onClick={() => setCurrentSubject("math")}
           >
-            <Brain size={16} className="mr-1" />
+            <BookOpen size={16} className="mr-1" />
             Math
           </Button>
           <Button

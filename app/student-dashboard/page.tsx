@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
-  Brain,
   CheckCircle,
   Clock,
   FileText,
@@ -1079,7 +1078,7 @@ export default function StudentDashboardPage() {
             className="relative group text-indigo-600 dark:text-indigo-400"
             onClick={() => router.push('/learning-brain')}
           >
-            <Brain size={20} />
+            <BookOpen size={20} />
             <span className="sr-only">My Learning Brain</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
               My Learning Brain
@@ -1265,7 +1264,7 @@ export default function StudentDashboardPage() {
             {/* Subject Selection */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Brain size={14} className="text-secondary" />
+                <BookOpen size={14} className="text-secondary" />
                 Subject Selection
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -1292,7 +1291,7 @@ export default function StudentDashboardPage() {
         {/* Learning Section */}
         <section>
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Brain size={20} className="text-secondary" />
+            <BookOpen size={20} className="text-secondary" />
             {translations.startLearning[language]}
           </h2>
 
@@ -1665,7 +1664,7 @@ export default function StudentDashboardPage() {
             className="flex flex-col items-center gap-1 h-auto py-2 text-indigo-600 dark:text-indigo-400"
             onClick={() => router.push('/learning-brain')}
           >
-            <Brain size={20} />
+            <BookOpen size={20} />
             <span className="text-xs">Brain</span>
           </Button>
           <Button
@@ -2209,7 +2208,7 @@ export default function StudentDashboardPage() {
           <span className="text-xs">Learn</span>
         </Button>
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1 text-indigo-600 dark:text-indigo-400" onClick={() => router.push("/learning-brain")}>
-          <Brain size={20} />
+          <BookOpen size={20} />
           <span className="text-xs">Brain</span>
         </Button>
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => setShowAiTutor(true)}>
