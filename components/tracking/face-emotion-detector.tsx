@@ -281,7 +281,7 @@ export function FaceEmotionDetector({
           let highestScore = 0
           let dominantEmotion: Emotion = "none"
 
-          Object.entries(expressions).forEach(([emotion, score]) => {
+          Object.entries(expressions).forEach(([emotion, score]: [string, any]) => {
             if (score > highestScore && emotion !== "neutral") {
               highestScore = score
               dominantEmotion = emotion as Emotion

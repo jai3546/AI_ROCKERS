@@ -43,8 +43,8 @@ export function MotionTracker({
 
   // Initialize speech recognition
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = true
       recognitionRef.current.interimResults = false

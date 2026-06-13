@@ -256,10 +256,10 @@ export function ImprovedEmotionDetector({
       let cumulativeProbability = 0
       let selectedEmotion: EmotionType = 'unknown'
 
-      for (const emotion of Object.keys(transitions) as EmotionType[]) {
-        cumulativeProbability += transitions[emotion]
+      for (const emotion of Object.keys(transitions)) {
+        cumulativeProbability += (transitions as any)[emotion]
         if (random < cumulativeProbability) {
-          selectedEmotion = emotion
+          selectedEmotion = emotion as EmotionType
           break
         }
       }

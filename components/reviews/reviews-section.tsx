@@ -165,7 +165,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap())
     emblaApi.on("select", onSelect)
     onSelect()
-    return () => emblaApi.off("select", onSelect)
+    return () => { emblaApi.off("select", onSelect) }
   }, [emblaApi])
 
   const handleSubmitReview = (review: { name: string; role: string; rating: number; comment: string }) => {

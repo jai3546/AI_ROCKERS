@@ -158,8 +158,9 @@ export function AiTutorChat({
   const handleSendMessage = async () => {
   if (!inputValue.trim()) return
 
+  // Add user message
   const userMessage: Message = {
-    id: Date.now().toString(),
+    id: `${Date.now()}-user-${Math.random().toString(36).substr(2, 9)}`,
     content: inputValue,
     sender: "user",
     timestamp: new Date(),
@@ -198,7 +199,7 @@ export function AiTutorChat({
     )
 
     const botMessage: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-bot-${Math.random().toString(36).substr(2, 9)}`,
       content: response.text,
       sender: "bot",
       timestamp: new Date(),
@@ -209,7 +210,7 @@ export function AiTutorChat({
     console.error('Error getting AI response:', error)
 
     const errorMessage: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-error-${Math.random().toString(36).substr(2, 9)}`,
       content: language === 'en'
         ? "I'm sorry, I couldn't process your request right now. Please try again later."
         : language === 'hi'
@@ -223,7 +224,7 @@ export function AiTutorChat({
   } finally {
     setIsTyping(false)
   }
-}
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

@@ -235,7 +235,7 @@ export function WeeklyProgress({ language = "en" }: WeeklyProgressProps) {
       // Add daily activity
       csvContent += "Day,Activity Level\n"
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-      progressData.overview.dailyActivity.forEach((value, index) => {
+      progressData.overview.dailyActivity.forEach((value: number, index: number) => {
         csvContent += `${days[index]},${value}\n`
       })
     } else if (activeTab === "quizzes") {
@@ -246,7 +246,7 @@ export function WeeklyProgress({ language = "en" }: WeeklyProgressProps) {
 
       csvContent += "\nDay,Quizzes Completed\n"
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-      progressData.quizzes.dailyCompleted.forEach((value, index) => {
+      progressData.quizzes.dailyCompleted.forEach((value: number, index: number) => {
         csvContent += `${days[index]},${value}\n`
       })
     } else if (activeTab === "flashcards") {
@@ -257,7 +257,7 @@ export function WeeklyProgress({ language = "en" }: WeeklyProgressProps) {
 
       csvContent += "\nDay,Cards Reviewed\n"
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-      progressData.flashcards.dailyReviewed.forEach((value, index) => {
+      progressData.flashcards.dailyReviewed.forEach((value: number, index: number) => {
         csvContent += `${days[index]},${value}\n`
       })
     } else if (activeTab === "engagement") {
@@ -267,7 +267,7 @@ export function WeeklyProgress({ language = "en" }: WeeklyProgressProps) {
 
       csvContent += "Day,Engagement Level\n"
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-      progressData.engagement.dailyEngagement.forEach((value, index) => {
+      progressData.engagement.dailyEngagement.forEach((value: number, index: number) => {
         csvContent += `${days[index]},${value}\n`
       })
     }

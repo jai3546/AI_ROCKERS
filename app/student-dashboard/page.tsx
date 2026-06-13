@@ -53,6 +53,7 @@ import { QuizContainer } from "@/components/learning/quiz-container"
 import { FlashcardDeck } from "@/components/learning/flashcard-deck"
 import { StudySummaries } from "@/components/learning/study-summaries"
 import { LearningOptionsMenu } from "@/components/learning/learning-options-menu"
+import { CourseHub } from "@/components/learning/course-hub"
 import { Textbooks } from "@/components/learning/textbooks"
 import { MindMap } from "@/components/learning/mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
@@ -104,6 +105,7 @@ export default function StudentDashboardPage() {
   const [showFlashcardAi, setShowFlashcardAi] = useState<boolean>(false)
   const [activeFlashcardSubject, setActiveFlashcardSubject] = useState<string | undefined>(undefined)
   const [showLearningOptions, setShowLearningOptions] = useState(false)
+  const [showCourses, setShowCourses] = useState(false)
   const [showTextbooks, setShowTextbooks] = useState(false)
   const [showMindMap, setShowMindMap] = useState(false)
   const [activeMindMapTopic, setActiveMindMapTopic] = useState<string>("Photosynthesis")
@@ -1905,9 +1907,38 @@ export default function StudentDashboardPage() {
                 setActiveMindMapSubject("Science")
                 setShowMindMap(true)
               }}
+              onSelectCourses={() => {
+                setShowLearningOptions(false)
+                setShowCourses(true)
+              }}
               language={language}
             />
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Course Builder */}
+      <AnimatePresence>
+        {showCourses && (
+          <CourseHub
+            onClose={() => setShowCourses(false)}
+            syllabus={selectedSyllabus}
+            language={language}
+            onTriggerQuiz={(subject, topic) => {
+              setShowCourses(false)
+              setActiveQuizSubject(subject)
+              setActiveQuizTopic(topic)
+              setShowQuizAi(true)
+              setShowQuiz(true)
+            }}
+            onTriggerFlashcards={(subject, topic) => {
+              setShowCourses(false)
+              setActiveFlashcardSubject(subject)
+              setActiveFlashcardTopic(topic)
+              setShowFlashcardAi(true)
+              setShowFlashcards(true)
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -2087,10 +2118,12 @@ export default function StudentDashboardPage() {
       {/* Reward Popup */}
       {showReward && (
         <RewardPopup 
-          open={showReward} 
-          onOpenChange={setShowReward} 
-          xpEarned={quizScore.earned * 5} 
-          badgeUnlocked={selectedBadge} 
+          isOpen={showReward} 
+          onClose={() => setShowReward(false)} 
+          title={selectedBadge?.title || "Achievement Unlocked!"}
+          description={selectedBadge?.description || "You earned a new reward."}
+          xpAmount={quizScore?.earned ? quizScore.earned * 5 : 50} 
+          language={language}
         />
       )}
 

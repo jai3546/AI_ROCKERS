@@ -96,7 +96,7 @@ export function RealTimeEmotionDetector({
       }
     } catch (err) {
       console.error("Error accessing camera:", err)
-      setError(`Could not access camera: ${err.message || 'Unknown error'}. Please check permissions.`)
+      setError(`Could not access camera: ${(err as any).message || 'Unknown error'}. Please check permissions.`)
       setIsLoading(false)
 
       // Fall back to simulated emotions if camera access fails
@@ -295,7 +295,7 @@ export function RealTimeEmotionDetector({
         let highestScore = 0
 
         // Find the dominant emotion
-        for (const [emotion, score] of Object.entries(expressions)) {
+        for (const [emotion, score] of Object.entries(expressions) as [string, any][]) {
           if (score > highestScore && emotion !== "neutral") {
             highestScore = score
             dominantEmotion = emotion as Emotion
@@ -556,7 +556,7 @@ export function RealTimeEmotionDetector({
               <p className="text-xs text-center mt-2 max-w-[80%]">Please allow camera access when prompted</p>
               <div className="flex flex-col gap-2 mt-4 w-full max-w-[80%]">
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   className="bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={() => {
@@ -652,7 +652,7 @@ export function RealTimeEmotionDetector({
 
           {error && (
             <div className="mt-4 p-3 bg-destructive/10 text-destructive rounded-md flex items-center">
-              <AlertCircle size={16} className="mr-2" />
+              <AlertTriangle size={16} className="mr-2" />
               {error}
             </div>
           )}
