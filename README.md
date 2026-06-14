@@ -274,7 +274,7 @@ VidyAi uses a PostgreSQL database layer managed by Prisma ORM.
 1. **Configure Database Connection (`DATABASE_URL`)**:
    Create or update the `DATABASE_URL` environment variable in your `.env` file at the project root to match your PostgreSQL provider connection string:
    ```env
-   DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<dbname>?schema=public"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
    ```
    
    VidyAi is compatible with modern serverless PostgreSQL providers:

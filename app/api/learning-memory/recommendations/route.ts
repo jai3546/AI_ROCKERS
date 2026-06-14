@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { decayRetention } from "@/services/mastery-engine";
 import { generateRecommendations } from "@/services/recommendation-engine";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);

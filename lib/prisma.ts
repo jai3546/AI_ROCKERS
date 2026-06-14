@@ -6,7 +6,12 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 const getPrisma = () => {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/vidyai?schema=public";
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    console.warn("DATABASE_URL is not set. Using a fallback PrismaClient instance.");
+    return new PrismaClient();
+  }
 
   const isAccelerate = connectionString.startsWith("prisma://") || connectionString.startsWith("prisma+postgres://");
 

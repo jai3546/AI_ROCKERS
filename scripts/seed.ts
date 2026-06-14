@@ -7,7 +7,11 @@ import * as fs from "fs";
 import * as path from "path";
 
 // Initialize Prisma client with adapter-pg for PostgreSQL compatibility in scripts
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/vidyai?schema=public";
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("Error: DATABASE_URL environment variable is required to run the seed script.");
+  process.exit(1);
+}
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
