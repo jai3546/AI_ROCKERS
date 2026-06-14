@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+
 import { motion } from "framer-motion"
 import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
-import { getGeminiResponse, getMockGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
+import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
@@ -31,7 +31,44 @@ interface AiTutorChatProps {
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
 }
+function MessageContent({ content }: { content: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const mermaidBlocks = el.querySelectorAll('.mermaid-block')
+    if (mermaidBlocks.length === 0) return
+
+    import('mermaid').then((m) => {
+      m.default.initialize({ startOnLoad: false, theme: 'neutral' })
+      mermaidBlocks.forEach(async (block) => {
+        const code = block.getAttribute('data-code') || ''
+        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9)
+        try {
+          const { svg } = await m.default.render(id, code)
+          block.innerHTML = svg
+        } catch {
+          block.innerHTML = `<pre>${code}</pre>`
+        }
+      })
+    })
+  }, [content])
+
+  const parts = content.split(/(```mermaid[\s\S]*?```)/g)
+  return (
+    <div ref={containerRef} className="text-sm space-y-2">
+      {parts.map((part, i) => {
+        if (part.startsWith('```mermaid')) {
+          const code = part.replace(/```mermaid\n?/, '').replace(/```$/, '').trim()
+          return <div key={i} className="mermaid-block w-full overflow-x-auto" data-code={code} />
+        }
+        return <p key={i} className="whitespace-pre-wrap">{part}</p>
+      })}
+    </div>
+  )
+}
 export function AiTutorChat({
   language = "en",
   onClose,
@@ -58,7 +95,9 @@ export function AiTutorChat({
   const [showLearningStyleInfo, setShowLearningStyleInfo] = useState(false)
   const [activeTab, setActiveTab] = useState<"chat" | "mentor">("chat")
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null)
+   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
 
   const translations = {
     askQuestion: {
@@ -119,40 +158,67 @@ export function AiTutorChat({
   }, [learningStyle])
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
+  if (!inputValue.trim()) return
 
-    // Add user message
-    const userMessage: Message = {
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: inputValue,
+    sender: "user",
+    timestamp: new Date(),
+  }
+
+  setMessages((prev) => [...prev, userMessage])
+  setInputValue("")
+  setIsTyping(true)
+
+  const updatedLearningStyle = updateLearningStyleProfile(currentLearningStyle, {
+    textInteractions: 1,
+    videoInteractions: userMessage.content.toLowerCase().includes('video') ||
+                      userMessage.content.toLowerCase().includes('see') ||
+                      userMessage.content.toLowerCase().includes('show') ? 1 : 0,
+    audioInteractions: userMessage.content.toLowerCase().includes('audio') ||
+                       userMessage.content.toLowerCase().includes('hear') ||
+                       userMessage.content.toLowerCase().includes('listen') ? 1 : 0,
+    practicalInteractions: userMessage.content.toLowerCase().includes('practice') ||
+                           userMessage.content.toLowerCase().includes('try') ||
+                           userMessage.content.toLowerCase().includes('do') ? 1 : 0
+  })
+
+  setCurrentLearningStyle(updatedLearningStyle)
+
+  if (onLearningStyleUpdate) {
+    onLearningStyleUpdate(updatedLearningStyle)
+  }
+
+  try {
+    const response = await getGeminiResponse(
+      userMessage.content,
+      currentSubject,
+      language,
+      currentLearningStyle,
+      currentEmotionState
+    )
+
+    const botMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
+      content: response.text,
+      sender: "bot",
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
-    setIsTyping(true)
+    setMessages((prev) => [...prev, botMessage])
+  } catch (error) {
+    console.error('Error getting AI response:', error)
 
-    // Update learning style based on interaction
-    const updatedLearningStyle = updateLearningStyleProfile(currentLearningStyle, {
-      textInteractions: 1,
-      // Detect if the message contains indicators of learning style preference
-      videoInteractions: userMessage.content.toLowerCase().includes('video') ||
-                        userMessage.content.toLowerCase().includes('see') ||
-                        userMessage.content.toLowerCase().includes('show') ? 1 : 0,
-      audioInteractions: userMessage.content.toLowerCase().includes('audio') ||
-                         userMessage.content.toLowerCase().includes('hear') ||
-                         userMessage.content.toLowerCase().includes('listen') ? 1 : 0,
-      practicalInteractions: userMessage.content.toLowerCase().includes('practice') ||
-                             userMessage.content.toLowerCase().includes('try') ||
-                             userMessage.content.toLowerCase().includes('do') ? 1 : 0
-    })
-
-    setCurrentLearningStyle(updatedLearningStyle)
-
-    // Notify parent component of learning style update
-    if (onLearningStyleUpdate) {
-      onLearningStyleUpdate(updatedLearningStyle)
+    const errorMessage: Message = {
+      id: Date.now().toString(),
+      content: language === 'en'
+        ? "I'm sorry, I couldn't process your request right now. Please try again later."
+        : language === 'hi'
+        ? "मुझे खेद है, मैं अभी आपके अनुरोध को प्रोसेस नहीं कर सका। कृपया बाद में पुनः प्रयास करें।"
+        : "క్షమించండి, నేను ప్రస్తుతం మీ అభ్యర్థనను ప్రాసెస్ చేయలేకపోయాను. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.",
+      sender: "bot",
+      timestamp: new Date(),
     }
 
     // Detect concept, retrieve mastery, customize response and update learning memory
@@ -241,6 +307,7 @@ export function AiTutorChat({
       setIsTyping(false)
     }
   }
+}
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -427,7 +494,7 @@ export function AiTutorChat({
                   message.sender === "user" ? "bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground" : "bg-muted dark:bg-muted/70 text-foreground dark:text-foreground"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
+                <MessageContent content={message.content} />
                 <div className="text-xs opacity-70 mt-1 text-right">
                   {new Intl.DateTimeFormat(language === "en" ? "en-US" : language === "hi" ? "hi-IN" : "te-IN", {
                     hour: "2-digit",
