@@ -99,6 +99,8 @@ export default function StudentDashboardPage() {
   const [activeQuizSubject, setActiveQuizSubject] = useState<string | undefined>(undefined)
   const [showFlashcards, setShowFlashcards] = useState(false)
   const [showSummaries, setShowSummaries] = useState(false)
+  const [tutorPrefilledPrompt, setTutorPrefilledPrompt] = useState<string | undefined>(undefined)
+  const [activeSummaryTopic, setActiveSummaryTopic] = useState<string | undefined>(undefined)
   const [activeQuizTopic, setActiveQuizTopic] = useState<string | undefined>(undefined)
   const [showQuizAi, setShowQuizAi] = useState<boolean>(false)
   const [activeFlashcardTopic, setActiveFlashcardTopic] = useState<string | undefined>(undefined)
@@ -378,8 +380,10 @@ export default function StudentDashboardPage() {
       const startQuiz = searchParams.get("startQuiz");
       const startTutor = searchParams.get("startTutor");
       const startFlashcards = searchParams.get("startFlashcards");
+      const startSummaries = searchParams.get("startSummaries");
       const conceptId = searchParams.get("conceptId");
       const subject = searchParams.get("subject");
+      const prefill = searchParams.get("prefill");
 
       const handleRedirects = async () => {
         if (startQuiz === "true") {
@@ -397,6 +401,15 @@ export default function StudentDashboardPage() {
           setShowQuiz(true);
           window.history.replaceState({}, document.title, window.location.pathname);
         } else if (startTutor === "true") {
+          if (prefill) {
+            setTutorPrefilledPrompt(prefill);
+          } else if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setTutorPrefilledPrompt(`Can you explain the concept of "${node.name}" to me in a simple way?`);
+            }
+          }
           setShowAiTutor(true);
           window.history.replaceState({}, document.title, window.location.pathname);
         } else if (startFlashcards === "true") {
@@ -412,6 +425,21 @@ export default function StudentDashboardPage() {
             }
           }
           setShowFlashcards(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startSummaries === "true") {
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveSummaryTopic(node.name);
+            }
+          } else {
+            const query = searchParams.get("query") || searchParams.get("topic");
+            if (query) {
+              setActiveSummaryTopic(query);
+            }
+          }
+          setShowSummaries(true);
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       };
@@ -1725,18 +1753,25 @@ export default function StudentDashboardPage() {
                 variant="ghost"
                 size="icon"
                 className="absolute right-6 top-6 z-50 bg-white rounded-full"
-                onClick={() => setShowAiTutor(false)}
+                onClick={() => {
+                  setShowAiTutor(false);
+                  setTutorPrefilledPrompt(undefined);
+                }}
               >
                 <X size={18} />
               </Button>
 
               <AiTutorChat
                 language={language}
-                onClose={() => setShowAiTutor(false)}
+                onClose={() => {
+                  setShowAiTutor(false);
+                  setTutorPrefilledPrompt(undefined);
+                }}
                 emotionState={emotionState}
                 learningStyle={learningStyle}
                 onLearningStyleUpdate={setLearningStyle}
                 studentId={user?.id || "S001"}
+                prefilledPrompt={tutorPrefilledPrompt}
               />
             </motion.div>
           </motion.div>
@@ -1871,7 +1906,10 @@ export default function StudentDashboardPage() {
                 variant="ghost"
                 size="icon"
                 className="absolute right-6 top-6 z-50 bg-white dark:bg-slate-800 text-foreground dark:text-white rounded-full hover:bg-muted dark:hover:bg-slate-700"
-                onClick={() => setShowSummaries(false)}
+                onClick={() => {
+                  setShowSummaries(false);
+                  setActiveSummaryTopic(undefined);
+                }}
               >
                 <X size={18} />
               </Button>
@@ -1882,9 +1920,14 @@ export default function StudentDashboardPage() {
                   language={language}
                   syllabus={selectedSyllabus}
                   subject={summaryDetails.subject === "all" ? undefined : summaryDetails.subject}
-                  onClose={() => setShowSummaries(false)}
+                  initialSearchQuery={activeSummaryTopic}
+                  onClose={() => {
+                    setShowSummaries(false);
+                    setActiveSummaryTopic(undefined);
+                  }}
                   onTriggerQuiz={(subject, topic) => {
                     setShowSummaries(false)
+                    setActiveSummaryTopic(undefined)
                     setActiveQuizSubject(subject)
                     setActiveQuizTopic(topic)
                     setShowQuizAi(true)
@@ -1892,6 +1935,7 @@ export default function StudentDashboardPage() {
                   }}
                   onTriggerFlashcards={(subject, topic) => {
                     setShowSummaries(false)
+                    setActiveSummaryTopic(undefined)
                     setActiveFlashcardSubject(subject)
                     setActiveFlashcardTopic(topic)
                     setShowFlashcardAi(true)

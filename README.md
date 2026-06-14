@@ -92,6 +92,26 @@ Gives teachers a complete view of student performance, progress summaries, and e
 
 ---
 
+## Adaptive Learning Brain & Concept Visualizations
+
+VidyAi provides an interactive learning dashboard containing the student's cognitive map (represented as an SVG knowledge network graph):
+
+* **Prioritized AI Recommendations**: Positioned prominently at the top of the learning dashboard, highlighting "Next Topics", "Revision Priorities", and "Needs Revision" with accent headers and badges (`⭐ Recommended Next Step`).
+* **Interactive Concept Actions**: Click on any concept node to open a beautiful action overlay menu offering single-click options:
+  - **📖 Read Notes & Summaries** (filters summaries dashboard to the topic).
+  - **🔄 Practice Flashcards** (launches review cards for the concept).
+  - **📝 Take Practice Quiz** (starts a concept-specific assessment).
+  - **🤖 Ask AI Tutor** (opens the chatbot pre-filled with the concept explanation request).
+* **Student-Friendly Vocabulary**: Technical cognitive analytics are translated into student-friendly labels:
+  - `"Foundations Deficit"` → `"Needs More Practice"`
+  - `"Paths Improving"` → `"Getting Better"`
+  - `"Strong Mastery"` → `"Well Learned"`
+  - `"Knowledge Gap"` → `"Topic to Review"`
+  - `"Weak Concept"` → `"Needs Revision"`
+  - `"Learning Deficit"` → `"Learning Area to Improve"`
+
+---
+
 ## Tech Stack
 
 * **Frontend Framework**: Next.js 15 (App Router)
@@ -251,23 +271,38 @@ NEXT_PUBLIC_GEMINI_API_KEY=your_actual_gemini_api_key_here
 #### 5. Database Setup (PostgreSQL)
 VidyAi uses a PostgreSQL database layer managed by Prisma ORM.
 
-1. **Configure Database Connection**:
-   Update the `DATABASE_URL` environment variable in the `.env` file at the project root to match your local or hosted PostgreSQL connection string:
+1. **Configure Database Connection (`DATABASE_URL`)**:
+   Create or update the `DATABASE_URL` environment variable in your `.env` file at the project root to match your PostgreSQL provider connection string:
    ```env
    DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<dbname>?schema=public"
    ```
+   
+   VidyAi is compatible with modern serverless PostgreSQL providers:
+   * **Neon**: Use the connection string provided in your Neon dashboard. Make sure to use the pooled database connection string (`-pooler`) if you are deploying to serverless platforms like Vercel.
+   * **Supabase**: Use the connection string from your Supabase Project Settings (Database tab). Ensure you use port `6543` for connection pooling (PgBouncer/Supavisor) in serverless environments, or port `5432` for direct connection in development.
+   * **Vercel Postgres**: If deploying to Vercel, link your Vercel project to a Vercel Postgres database, and the environment variables (`POSTGRES_PRISMA_URL` / `POSTGRES_URL`) will automatically be loaded. You can set `DATABASE_URL` to point to it.
 
-2. **Run Migrations**:
-   Run the Prisma migration command to set up the tables on your PostgreSQL database:
-   ```bash
-   npx prisma migrate dev --name init
-   ```
+2. **Run Database Migrations**:
+   Prisma migrations manage the database schema over time.
+   * **Development**: To apply migrations and generate client:
+     ```bash
+     npx prisma migrate dev
+     ```
+   * **Production / Deployment**: To apply pending migrations without resetting the database:
+     ```bash
+     npx prisma migrate deploy
+     ```
 
 3. **Seed the Database**:
-   Populate your database with demo student and teacher accounts, topics, quizzes, flashcards, and achievements:
+   Populate your database with initial data (demo student & teacher accounts, achievements, topics, quizzes, and flashcards) using either:
+   ```bash
+   npx prisma db seed
+   ```
+   or directly:
    ```bash
    npx tsx scripts/seed.ts
    ```
+
 
 #### 6. Start the application
 ```bash

@@ -68,7 +68,7 @@ export function LearningBrainDashboard({
   };
 
   // Helper action click: redirects to student-dashboard with search queries
-  const handleActionClick = (conceptId: string, actionType: "quiz" | "flashcard" | "tutor") => {
+  const handleActionClick = (conceptId: string, actionType: "quiz" | "flashcard" | "tutor" | "summaries") => {
     const node = graph.find(n => n.id === conceptId);
     const subject = node ? node.subject : "general";
 
@@ -79,6 +79,8 @@ export function LearningBrainDashboard({
       path += `?startTutor=true&conceptId=${conceptId}&subject=${subject}`;
     } else if (actionType === "flashcard") {
       path += `?startFlashcards=true&conceptId=${conceptId}&subject=${subject}`;
+    } else if (actionType === "summaries") {
+      path += `?startSummaries=true&conceptId=${conceptId}&subject=${subject}`;
     }
 
     router.push(path);
@@ -181,11 +183,11 @@ export function LearningBrainDashboard({
           </CardContent>
         </Card>
 
-        {/* Mastered Topics */}
+        {/* Well Learned Topics */}
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Mastered Topics</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Well Learned Topics</span>
               <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {masteredConcepts} <span className="text-xs font-normal text-muted-foreground">/ {totalConcepts}</span>
               </p>
@@ -196,11 +198,11 @@ export function LearningBrainDashboard({
           </CardContent>
         </Card>
 
-        {/* In Progress */}
+        {/* Getting Better Areas */}
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Improving Areas</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Getting Better Areas</span>
               <p className="text-2xl font-black text-amber-600 dark:text-amber-500">{inProgressConcepts}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500">
@@ -209,11 +211,11 @@ export function LearningBrainDashboard({
           </CardContent>
         </Card>
 
-        {/* Needs Attention */}
+        {/* Needs More Practice */}
         <Card className="border border-border/80 shadow-sm bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Topics to Strengthen</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Needs More Practice</span>
               <p className="text-2xl font-black text-rose-600 dark:text-rose-400">{criticalConcepts}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
@@ -222,6 +224,25 @@ export function LearningBrainDashboard({
           </CardContent>
         </Card>
       </div>
+
+      {/* Adaptive Recommendations Dashboard */}
+      <section className="space-y-4 bg-gradient-to-r from-indigo-50/30 to-purple-50/30 dark:from-indigo-950/10 dark:to-purple-950/10 p-5 rounded-2xl border border-indigo-100/40 dark:border-indigo-900/30 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <Sparkles size={80} className="text-indigo-600" />
+        </div>
+        <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+          <Sparkles className="text-indigo-500 animate-pulse" size={20} />
+          Recommended Next Steps for You
+        </h2>
+        <p className="text-xs text-muted-foreground -mt-2">
+          AI-driven personalized study paths to maximize your learning speed and memory retention.
+        </p>
+        <LearningRecommendations
+          recommendations={recommendations}
+          onSelectConcept={(id) => console.log("Inspect concept:", id)}
+          onActionClick={handleActionClick}
+        />
+      </section>
 
       {/* Main Graph Area / Subject Heatmap */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -237,7 +258,7 @@ export function LearningBrainDashboard({
               value="heatmap"
               className="bg-transparent border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-1 py-2 font-bold text-sm text-muted-foreground data-[state=active]:text-foreground h-auto"
             >
-              Subject Mastery Heatmap
+              Subject Progress Heatmap
             </TabsTrigger>
           </TabsList>
 
@@ -277,19 +298,6 @@ export function LearningBrainDashboard({
           <MasteryHeatmap graph={graph} onSelectConcept={(id) => console.log("Selected node:", id)} />
         </TabsContent>
       </Tabs>
-
-      {/* Adaptive Recommendations Dashboard */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Sparkles className="text-indigo-500" />
-          Adaptive Cognitive Recommendations
-        </h2>
-        <LearningRecommendations
-          recommendations={recommendations}
-          onSelectConcept={(id) => console.log("Inspect concept:", id)}
-          onActionClick={handleActionClick}
-        />
-      </section>
     </div>
   );
 }

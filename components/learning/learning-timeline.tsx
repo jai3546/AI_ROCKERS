@@ -19,7 +19,7 @@ export function LearningTimeline({ timelineData }: LearningTimelineProps) {
           Cognitive Growth Timeline
         </CardTitle>
         <CardDescription>
-          Mastery improvement tracked across subjects over time.
+          Learning progress tracked across subjects over time.
         </CardDescription>
       </CardHeader>
       <CardContent className="h-80 pt-2">
@@ -60,7 +60,7 @@ export function LearningTimeline({ timelineData }: LearningTimelineProps) {
             <Line
               type="monotone"
               dataKey="averageMastery"
-              name="Overall Mastery"
+              name="Overall Progress"
               stroke="#4f46e5"
               strokeWidth={3}
               dot={{ r: 4 }}

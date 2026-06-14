@@ -37,3 +37,13 @@ next-env.d.ts
 
 # misc
 *.exe
+# prisma / generated files
+/lib/generated/prisma
+
+# SQLite local databases
+/dev.db
+/prisma/dev.db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

@@ -30,6 +30,7 @@ interface AiTutorChatProps {
   learningStyle?: LearningStyleProfile
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
+  prefilledPrompt?: string
 }
 function MessageContent({ content }: { content: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -76,7 +77,8 @@ export function AiTutorChat({
   emotionState,
   learningStyle = initialLearningStyleProfile,
   onLearningStyleUpdate,
-  studentId = "S001"
+  studentId = "S001",
+  prefilledPrompt
 }: AiTutorChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -156,6 +158,13 @@ export function AiTutorChat({
       setCurrentLearningStyle(learningStyle)
     }
   }, [learningStyle])
+
+  // Prefill prompt when supplied
+  useEffect(() => {
+    if (prefilledPrompt) {
+      setInputValue(prefilledPrompt)
+    }
+  }, [prefilledPrompt])
 
   const handleSendMessage = async () => {
   if (!inputValue.trim()) return
