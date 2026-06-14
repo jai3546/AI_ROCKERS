@@ -218,7 +218,7 @@ export function QuizCard({ question, options, timeLimit = 45, points, onAnswer, 
                 )}
               </div>
               <textarea
-                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary ${isAnswered || !isActive ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`w-full p-2 border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary ${isAnswered || !isActive ? "opacity-50 cursor-not-allowed" : ""}`}
                 rows={2}
                 placeholder="Type your answer here..."
                 value={customAnswerText}
