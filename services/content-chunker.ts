@@ -43,7 +43,8 @@ export function chunkContent(
     }
 
     if (end >= normalized.length) break
-    start = Math.max(end - overlap, start + 1)
+    const nextStart = end - overlap
+    start = nextStart > start ? nextStart : end
   }
 
   return chunks
