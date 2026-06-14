@@ -119,7 +119,9 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
   }
 
   const sorted = topologicalSort(lessonIds, prereqMap)
-  return sorted.sort((a, b) => {
+  const sortedWithStableOrder = [...sorted].sort((a, b) => {
+    const idxA = sorted.indexOf(a)
+    const idxB = sorted.indexOf(b)
     const prereqsA = (prereqMap.get(a) || []).length
     const prereqsB = (prereqMap.get(b) || []).length
     if (prereqsA !== prereqsB) return prereqsA - prereqsB
@@ -128,8 +130,10 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
     if (compA !== compB) return compA - compB
     const lessonA = allLessons.find((l) => l.id === a)
     const lessonB = allLessons.find((l) => l.id === b)
-    return (lessonA?.order ?? 0) - (lessonB?.order ?? 0)
+    if ((lessonA?.order ?? 0) !== (lessonB?.order ?? 0)) return (lessonA?.order ?? 0) - (lessonB?.order ?? 0)
+    return idxA - idxB
   })
+  return sortedWithStableOrder
 }
 
 export function findEssentialTopics(modules: CourseModule[]): string[] {
