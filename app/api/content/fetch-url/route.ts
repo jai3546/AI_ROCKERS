@@ -37,6 +37,12 @@ export async function POST(req: Request) {
       return Response.json({ error: "Only http and https URLs are supported" }, { status: 400 })
     }
 
+    const hostname = parsed.hostname
+    const isPrivateIp = /^(10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|127\.|169\.254\.|::1|localhost)/i.test(hostname)
+    if (isPrivateIp) {
+      return Response.json({ error: "Access to private network addresses is not allowed" }, { status: 400 })
+    }
+
     const response = await fetch(url, {
       headers: {
         "User-Agent": "VidyAI-CourseGenerator/1.0",
