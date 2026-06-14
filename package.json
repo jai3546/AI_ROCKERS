@@ -12,6 +12,7 @@
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
@@ -54,6 +55,7 @@
     "mermaid": "^11.15.0",
     "next": "^16.2.3",
     "next-themes": "^0.4.4",
+    "pg": "^8.21.0",
     "react": "^19.2.5",
     "react-day-picker": "^9.4.3",
     "react-dom": "^19.2.5",
@@ -68,6 +70,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",

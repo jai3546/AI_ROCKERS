@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 generator client {
@@ -16,18 +16,180 @@ model User {
   preferredLanguage String                 @default("en")
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
+
+  // Existing sqlite compatibility relations
   learningProfiles  LearningProfile[]
   masteries         UserConceptMastery[]
   activities        LearningActivity[]
   history           MasteryHistory[]
   recommendations   CachedRecommendation[]
+
+  // New PostgreSQL profile relations
+  studentProfile    StudentProfile?
+  teacherProfile    TeacherProfile?
 }
+
+model StudentProfile {
+  userId            String                 @id
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grade             String
+  school            String
+  streakCount       Int                    @default(0)
+  xpPoints          Int                    @default(0)
+  currentLevel      Int                    @default(1)
+
+  // Fields to support mock students.json and match-mentor data
+  emotionalState    String?
+  subjectNeed       String?
+  availableTime     String?
+  region            String?
+  language          String?
+  performanceLevel  String?
+  behavior          String?
+  learningStyle     String?
+  class             String?
+
+  // Relations
+  emotionLogs       EmotionLog[]
+  learningSessions  LearningSession[]
+  topicProgress     StudentTopicProgress[]
+  quizAttempts      QuizAttempt[]
+  conversations     AITutorConversation[]
+  achievements      StudentAchievement[]
+}
+
+model TeacherProfile {
+  userId            String                 @id
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school            String
+  department        String
+
+  // Fields to support mock mentors.json and match-mentor data
+  expertise               String[]               @default([])
+  availableTime           String[]               @default([])
+  region                  String[]               @default([])
+  language                String[]               @default([])
+  specialization          String[]               @default([])
+  experienceYears         Int                    @default(0)
+  teachingStyle           String?
+  studentPerformanceFocus String?
+  behaviorManagement      String?
+  bio                     String?
+  avatar                  String?
+}
+
+model EmotionLog {
+  id             String         @id @default(uuid())
+  studentId      String
+  student        StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  emotion        String
+  confidence     Float
+  attentionScore Float
+  createdAt      DateTime       @default(now())
+}
+
+model LearningSession {
+  id                String         @id @default(uuid())
+  studentId         String
+  student           StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  startTime         DateTime
+  endTime           DateTime?
+  averageAttention  Float
+  averageEngagement Float
+}
+
+model Topic {
+  id              String                 @id @default(uuid())
+  name            String
+  description     String?
+  difficultyLevel String
+
+  // Relations
+  studentProgress StudentTopicProgress[]
+  quizzes         Quiz[]
+  flashcards      Flashcard[]
+}
+
+model StudentTopicProgress {
+  studentId        String
+  student          StudentProfile       @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  topicId          String
+  topic            Topic                @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  masteryScore     Float
+  revisionPriority Int                  @default(0)
+  lastReviewedAt   DateTime             @default(now())
+
+  @@id([studentId, topicId])
+}
+
+model Quiz {
+  id        String        @id @default(uuid())
+  title     String
+  topicId   String
+  topic     Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions String?
+
+  // Relations
+  attempts  QuizAttempt[]
+}
+
+model QuizAttempt {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  quizId      String
+  quiz        Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score       Float
+  completedAt DateTime       @default(now())
+}
+
+model Flashcard {
+  id       String @id @default(uuid())
+  topicId  String
+  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  question String
+  answer   String
+}
+
+model AITutorConversation {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  sessionId String
+  prompt    String
+  response  String
+  createdAt DateTime       @default(now())
+}
+
+model Achievement {
+  id          String               @id @default(uuid())
+  title       String
+  description String
+  xpReward    Int
+
+  // Relations
+  unlockedBy  StudentAchievement[]
+}
+
+model StudentAchievement {
+  studentId     String
+  student       StudentProfile     @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement        @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime           @default(now())
+
+  @@id([studentId, achievementId])
+}
+
+// ----------------------------------------------------
+// BACKWARDS COMPATIBILITY MODELS (FROM SQLITE SCHEMA)
+// ----------------------------------------------------
 
 model LearningProfile {
   id                 String    @id @default(uuid())
   userId             String
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  domainType         String    // "SCHOOL", "COLLEGE", "CERTIFICATION", "INTERVIEW_PREP", "PROFESSIONAL"
+  domainType         String
   currentLevel       Int       @default(1)
   currentXP          Int       @default(0)
   dailyStreak        Int       @default(0)
@@ -45,9 +207,9 @@ model Concept {
   name                 String
   description          String?
   subject              String
-  domainType           String                 // "SCHOOL", "COLLEGE", "CERTIFICATION", "INTERVIEW_PREP", "PROFESSIONAL"
-  levelGroup           String?                // "Class 10", "Semester 1", etc.
-  metadata             String?                // JSON string for extra attributes
+  domainType           String
+  levelGroup           String?
+  metadata             String?
   createdAt            DateTime               @default(now())
   masteries            UserConceptMastery[]
   activities           LearningActivity[]
@@ -90,7 +252,7 @@ model LearningActivity {
   conceptId         String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   concept           Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  activityType      String   // "quiz", "flashcard", "tutor", "textbook"
+  activityType      String
   score             Int?
   totalScore        Int?
   responseTime      Int?
@@ -103,13 +265,13 @@ model MasteryHistory {
   id                 String   @id @default(uuid())
   userId             String
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date               String   // "MM/DD" or "YYYY-MM-DD"
+  date               String
   averageMastery     Int      @default(0)
   mathMastery        Int      @default(0)
   scienceMastery     Int      @default(0)
   socialMastery      Int      @default(0)
   englishMastery     Int      @default(0)
-  customMasteryData  String?  // JSON string
+  customMasteryData  String?
   createdAt          DateTime @default(now())
 
   @@unique([userId, date])
@@ -121,7 +283,7 @@ model CachedRecommendation {
   conceptId   String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   concept     Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  recType     String   // "weak_concept", "revision_priority", "next_topic"
+  recType     String
   reason      String?
   generatedAt DateTime @default(now())
 }

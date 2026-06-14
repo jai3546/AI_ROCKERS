@@ -248,7 +248,28 @@ Create a file named `.env.local` in the root folder, and paste your Gemini API k
 NEXT_PUBLIC_GEMINI_API_KEY=your_actual_gemini_api_key_here
 ```
 
-#### 5. Start the application
+#### 5. Database Setup (PostgreSQL)
+VidyAi uses a PostgreSQL database layer managed by Prisma ORM.
+
+1. **Configure Database Connection**:
+   Update the `DATABASE_URL` environment variable in the `.env` file at the project root to match your local or hosted PostgreSQL connection string:
+   ```env
+   DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<dbname>?schema=public"
+   ```
+
+2. **Run Migrations**:
+   Run the Prisma migration command to set up the tables on your PostgreSQL database:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+3. **Seed the Database**:
+   Populate your database with demo student and teacher accounts, topics, quizzes, flashcards, and achievements:
+   ```bash
+   npx tsx scripts/seed.ts
+   ```
+
+#### 6. Start the application
 ```bash
 npm run dev
 ```

@@ -1,16 +1,22 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 const getPrisma = () => {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-  // Connection URL matching prisma.config.ts/env
-  const rawDbUrl = process.env.DATABASE_URL || "file:./prisma/dev.db";
+  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/vidyai?schema=public";
 
-  const adapter = new PrismaBetterSqlite3({ url: rawDbUrl });
-  const client = new PrismaClient({ adapter });
+  const isAccelerate = connectionString.startsWith("prisma://") || connectionString.startsWith("prisma+postgres://");
+
+  let client: PrismaClient;
+  if (isAccelerate) {
+    client = new PrismaClient();
+  } else {
+    const adapter = new PrismaPg({ connectionString });
+    client = new PrismaClient({ adapter });
+  }
 
   if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = client;
