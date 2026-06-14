@@ -13,7 +13,7 @@ function titlesAreSimilar(a: string, b: string): boolean {
   const wordsB = new Set(nb.split(" "))
   const intersection = [...wordsA].filter((w) => wordsB.has(w) && w.length > 3)
   const union = new Set([...wordsA, ...wordsB])
-  return intersection.length / union.size > 0.6
+  return union.size > 0 && intersection.length / union.size > 0.6
 }
 
 export function dedupeLessons(lessons: CourseLesson[]): CourseLesson[] {
