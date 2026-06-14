@@ -12,6 +12,8 @@ import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
+import { detectConceptFromText } from "@/services/concept-tagging-service"
+import { LearningMemoryService } from "@/services/learning-memory-service"
 import { useState, useRef, useEffect } from "react"
 interface Message {
   id: string
@@ -219,9 +221,91 @@ export function AiTutorChat({
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, errorMessage])
-  } finally {
-    setIsTyping(false)
+    // Detect concept, retrieve mastery, customize response and update learning memory
+    let detectedConceptId = "";
+    let personalizationInstructions = "";
+    const detectedConcept = detectConceptFromText(userMessage.content);
+    if (detectedConcept) {
+      detectedConceptId = detectedConcept.id;
+      const graph = LearningMemoryService.getConceptGraph(studentId);
+      const node = graph.find(n => n.id === detectedConceptId);
+      
+      if (node) {
+        if (node.mastery < 50) {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has LOW mastery (${node.mastery}%) in this topic. Provide an extremely simple, basic explanation with extra examples, broken down step-by-step.]`;
+        } else if (node.mastery > 75) {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has HIGH mastery (${node.mastery}%) in this topic. Provide an advanced explanation with deep insights and challenge them with a tough question.]`;
+        } else {
+          personalizationInstructions = `[PERSONALIZATION INFO: The student has MODERATE mastery (${node.mastery}%) in this topic. Reinforce their understanding and check for clarity.]`;
+        }
+      }
+
+      // Record tutor interaction in memory graph
+      const confusion = currentEmotionState?.emotion === "confused";
+      LearningMemoryService.recordActivity(studentId, detectedConceptId, {
+        activityType: "tutor",
+        confusionDetected: confusion,
+        engagement: 80
+      });
+    }
+
+    try {
+      // Try to get response from Gemini API
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      let response
+
+      const finalPrompt = personalizationInstructions 
+        ? `${personalizationInstructions}\n\n${userMessage.content}` 
+        : userMessage.content;
+
+      if (apiKey && apiKey !== 'your-api-key-here') {
+        // Use the real API if key is available
+        response = await getGeminiResponse(
+          finalPrompt,
+          currentSubject,
+          language,
+          currentLearningStyle,
+          currentEmotionState
+        )
+      } else {
+        // Fall back to mock responses if no API key
+        response = getMockGeminiResponse(
+          finalPrompt,
+          currentSubject,
+          language,
+          currentLearningStyle,
+          currentEmotionState
+        )
+      }
+
+      // Create bot message from response
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        content: response.text,
+        sender: "bot",
+        timestamp: new Date(),
+      }
+
+      setMessages((prev) => [...prev, botMessage])
+    } catch (error) {
+      console.error('Error getting AI response:', error)
+
+      // Fallback message on error
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: language === 'en'
+          ? "I'm sorry, I couldn't process your request right now. Please try again later."
+          : language === 'hi'
+          ? "मुझे खेद है, मैं अभी आपके अनुरोध को प्रोसेस नहीं कर सका। कृपया बाद में पुनः प्रयास करें।"
+          : "క్షమించండి, నేను ప్రస్తుతం మీ అభ్యర్థనను ప్రాసెస్ చేయలేకపోయాను. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.",
+        sender: "bot",
+        timestamp: new Date(),
+      }
+
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsTyping(false)
+    }
   }
 }
 
