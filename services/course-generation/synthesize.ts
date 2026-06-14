@@ -28,9 +28,13 @@ async function callGeminiJson(prompt: string): Promise<unknown | null> {
 
   if (!response.ok) return null
 
-  const data = await response.json()
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}"
-  return safeJsonParse(rawText)
+  try {
+    const data = await response.json()
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}"
+    return safeJsonParse(rawText)
+  } catch {
+    return null
+  }
 }
 
 function generateId(): string {
