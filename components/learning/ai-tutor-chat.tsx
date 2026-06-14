@@ -14,7 +14,7 @@ import { getGeminiResponse, type Subject, type EmotionState } from "@/services/g
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile } from "@/services/learning-style-service"
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
-
+import { useState, useRef, useEffect } from "react"
 interface Message {
   id: string
   content: string
