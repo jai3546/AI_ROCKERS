@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import Optional, List, Any
 from datetime import datetime
 from enum import Enum
+from passlib.context import CryptContext
 
 app = FastAPI(
     title="API Template",
@@ -18,20 +19,22 @@ app = FastAPI(
     docs_url="/api/docs"
 )
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 # Security Middleware
 # Trusted Host: Prevents HTTP Host Header attacks
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"] # TODO: Configure this in production, e.g. ["api.example.com"]
+    allowed_hosts=["localhost", "127.0.0.1", "api.example.com"]
 )
 
 # CORS: Configures Cross-Origin Resource Sharing
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # TODO: Update this with specific origins in production
-    allow_credentials=False, # TODO: Set to True if you need cookies/auth headers, but restrict origins
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["http://localhost:3000", "https://api.example.com"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Models
@@ -128,7 +131,7 @@ async def list_users(
 @app.post("/api/users", response_model=User, status_code=status.HTTP_201_CREATED, tags=["Users"])
 async def create_user(user: UserCreate):
     """Create a new user."""
-    # Mock implementation
+    hashed_password = pwd_context.hash(user.password)
     return User(
         id="123",
         email=user.email,

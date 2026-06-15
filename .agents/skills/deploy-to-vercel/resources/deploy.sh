@@ -236,7 +236,7 @@ fi
 
 # Deploy
 echo "Deploying..." >&2
-RESPONSE=$(curl -s -X POST "$DEPLOY_ENDPOINT" -F "file=@$TARBALL" -F "framework=$FRAMEWORK")
+RESPONSE=$(curl -s -X POST "$DEPLOY_ENDPOINT" -F "file=@\"$TARBALL\"" -F "framework=$FRAMEWORK") || { echo "Error: Deployment request failed" >&2; exit 1; }
 
 # Check for error in response
 if echo "$RESPONSE" | grep -q '"error"'; then
