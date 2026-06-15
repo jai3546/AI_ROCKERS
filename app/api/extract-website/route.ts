@@ -84,6 +84,7 @@ export async function POST(req: Request) {
     }
 
     const response = await fetch(validation.parsed.toString(), {
+	 redirect: "manual",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0 Safari/537.36",

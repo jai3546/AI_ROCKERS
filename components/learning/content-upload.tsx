@@ -17,8 +17,7 @@ export default function ContentUpload() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [documentFile, setDocumentFile] = useState<File | null>(null)
-  const [analysis, setAnalysis] =
-  useState<any>(null)
+  const [analysis, setAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -124,39 +123,30 @@ export default function ContentUpload() {
         content = data.text || ""
       }
 
-     if (!content.trim()) {
-	setError("No content available for analysis.")
-	return
-	}
+      if (!content.trim()) {
+        setError("No content available for analysis.")
+        return
+      }
 
-	console.log(content.substring(0, 3000))
+      console.log(content.substring(0, 3000))
 
-const cleanedContent = content
-  .replace(/\s+/g, " ")
-  .trim()
-  .slice(0, 18000)
+      const cleanedContent = content
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 18000)
 
-console.log("Characters:", cleanedContent.length)
-console.log("Words:", cleanedContent.split(/\s+/).length)
+      console.log("Characters:", cleanedContent.length)
+      console.log("Words:", cleanedContent.split(/\s+/).length)
 
-	
+      const summary = await generateAiSummaryAndMindmap(cleanedContent)
+      const flashcards = await generateAiFlashcards(cleanedContent)
+      const quiz = await generateAiQuiz(cleanedContent)
 
-const summary =
-  await generateAiSummaryAndMindmap(cleanedContent)
-
-const flashcards =
-  await generateAiFlashcards(cleanedContent)
-
-const quiz =
-  await generateAiQuiz(cleanedContent)
-
-setAnalysis({
-  ...summary,
-  flashcards,
-  quiz,
-})
-
-
+      setAnalysis({
+        ...summary,
+        flashcards,
+        quiz,
+      })
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to analyze learning material."
       console.error(err)
@@ -193,206 +183,206 @@ setAnalysis({
         </div>
       )}
 
-	{analysis && (
-  <div className="space-y-6 mb-6">
+      {analysis && (
+        <div className="space-y-6 mb-6">
 
-    {/* Title & Summary */}
-    <div className="border rounded-lg p-4">
-      <h2 className="text-2xl font-bold mb-3">
-        📚 {analysis.title}
-      </h2>
+          {/* Title & Summary */}
+          <div className="border rounded-lg p-4">
+            <h2 className="text-2xl font-bold mb-3">
+              📚 {analysis.title}
+            </h2>
 
-      <div className="whitespace-pre-wrap text-sm">
-        {analysis.summary}
-      </div>
-    </div>
+            <div className="whitespace-pre-wrap text-sm">
+              {analysis.summary}
+            </div>
+          </div>
 
-    {/* Important Points */}
-    {analysis.importantPoints?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          ⭐ Important Points
-        </h3>
+          {/* Important Points */}
+          {analysis.importantPoints?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                ⭐ Important Points
+              </h3>
 
-        <ul className="list-disc ml-6 space-y-2">
-          {analysis.importantPoints.map(
-            (point: string, index: number) => (
-              <li key={index}>{point}</li>
-            )
-          )}
-        </ul>
-      </div>
-    )}
-
-    {/* Key Concepts */}
-    {analysis.keyConcepts?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          🧠 Key Concepts
-        </h3>
-
-        <ul className="list-disc ml-6 space-y-2">
-          {analysis.keyConcepts.map(
-            (concept: string, index: number) => (
-              <li key={index}>{concept}</li>
-            )
-          )}
-        </ul>
-      </div>
-    )}
-
-    {/* Formulae */}
-    {analysis.formulas?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          📐 Formulae
-        </h3>
-
-        <ul className="list-disc ml-6 space-y-2 font-mono text-sm">
-          {analysis.formulas.map(
-            (formula: string, index: number) => (
-              <li key={index}>{formula}</li>
-            )
-          )}
-        </ul>
-      </div>
-    )}
-
-    {/* Flowcharts */}
-    {analysis.flowcharts?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          🔄 Flowcharts / Processes
-        </h3>
-
-        <div className="space-y-3">
-          {analysis.flowcharts.map(
-            (flow: string, index: number) => (
-              <div
-                key={index}
-                className="whitespace-pre-wrap rounded bg-muted p-3 text-sm"
-              >
-                {flow}
-              </div>
-            )
-          )}
-        </div>
-      </div>
-    )}
-
-    {/* Exam Tips */}
-    {analysis.examTips?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          🎯 Exam Tips
-        </h3>
-
-        <ul className="list-disc ml-6 space-y-2">
-          {analysis.examTips.map(
-            (tip: string, index: number) => (
-              <li key={index}>{tip}</li>
-            )
-          )}
-        </ul>
-      </div>
-    )}
-
-    {/* Memory Tricks */}
-    {analysis.memoryTricks?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          💡 Memory Tricks
-        </h3>
-
-        <ul className="list-disc ml-6 space-y-2">
-          {analysis.memoryTricks.map(
-            (trick: string, index: number) => (
-              <li key={index}>{trick}</li>
-            )
-          )}
-        </ul>
-      </div>
-    )}
-
-    {/* Flashcards */}
-    {analysis.flashcards?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          🃏 Flashcards
-        </h3>
-
-        <div className="space-y-3">
-          {analysis.flashcards.map(
-            (card: any, index: number) => (
-              <div
-                key={index}
-                className="border rounded p-3"
-              >
-                <p className="font-semibold">
-                  Q: {card.front}
-                </p>
-
-                <p className="mt-2 text-sm">
-                  A: {card.back}
-                </p>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-    )}
-
-    {/* Practice Questions */}
-    {analysis.quiz?.length > 0 && (
-      <div className="border rounded-lg p-4">
-        <h3 className="font-bold text-lg mb-3">
-          ❓ Practice Questions
-        </h3>
-
-        {analysis.quiz.map(
-          (q: any, index: number) => (
-            <div
-              key={index}
-              className="mb-6"
-            >
-              <p className="font-semibold mb-2">
-                {index + 1}. {q.question}
-              </p>
-
-              <ul className="list-disc ml-6">
-                {q.options?.map(
-                  (option: any, i: number) => (
-                    <li key={i}>
-                      {option.text}
-
-                      {option.correct && (
-                        <span className="text-green-600 font-semibold ml-2">
-                          ✅ Correct
-                        </span>
-                      )}
-                    </li>
+              <ul className="list-disc ml-6 space-y-2">
+                {analysis.importantPoints.map(
+                  (point: string, index: number) => (
+                    <li key={index}>{point}</li>
                   )
                 )}
               </ul>
             </div>
-          )
-        )}
-      </div>
-    )}
+          )}
 
-    {/* Mind Map */}
-    {analysis.mindMapData && (
-      <div className="border rounded-lg p-4">
-       <h3 className="font-bold text-lg mb-3">
-		🗺 Mind Map
-	  </h3>
+          {/* Key Concepts */}
+          {analysis.keyConcepts?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                🧠 Key Concepts
+              </h3>
 
-<MindMapTree node={analysis.mindMapData} />
-      </div>
-    )}
+              <ul className="list-disc ml-6 space-y-2">
+                {analysis.keyConcepts.map(
+                  (concept: string, index: number) => (
+                    <li key={index}>{concept}</li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
 
-  </div>
-)}
+          {/* Formulae */}
+          {analysis.formulas?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                📐 Formulae
+              </h3>
+
+              <ul className="list-disc ml-6 space-y-2 font-mono text-sm">
+                {analysis.formulas.map(
+                  (formula: string, index: number) => (
+                    <li key={index}>{formula}</li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
+
+          {/* Flowcharts */}
+          {analysis.flowcharts?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                🔄 Flowcharts / Processes
+              </h3>
+
+              <div className="space-y-3">
+                {analysis.flowcharts.map(
+                  (flow: string, index: number) => (
+                    <div
+                      key={index}
+                      className="whitespace-pre-wrap rounded bg-muted p-3 text-sm"
+                    >
+                      {flow}
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Exam Tips */}
+          {analysis.examTips?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                🎯 Exam Tips
+              </h3>
+
+              <ul className="list-disc ml-6 space-y-2">
+                {analysis.examTips.map(
+                  (tip: string, index: number) => (
+                    <li key={index}>{tip}</li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
+
+          {/* Memory Tricks */}
+          {analysis.memoryTricks?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                💡 Memory Tricks
+              </h3>
+
+              <ul className="list-disc ml-6 space-y-2">
+                {analysis.memoryTricks.map(
+                  (trick: string, index: number) => (
+                    <li key={index}>{trick}</li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
+
+          {/* Flashcards */}
+          {analysis.flashcards?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                🃏 Flashcards
+              </h3>
+
+              <div className="space-y-3">
+                {analysis.flashcards.map(
+                  (card: any, index: number) => (
+                    <div
+                      key={index}
+                      className="border rounded p-3"
+                    >
+                      <p className="font-semibold">
+                        Q: {card.front}
+                      </p>
+
+                      <p className="mt-2 text-sm">
+                        A: {card.back}
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Practice Questions */}
+          {analysis.quiz?.length > 0 && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                ❓ Practice Questions
+              </h3>
+
+              {analysis.quiz.map(
+                (q: any, index: number) => (
+                  <div
+                    key={index}
+                    className="mb-6"
+                  >
+                    <p className="font-semibold mb-2">
+                      {index + 1}. {q.question}
+                    </p>
+
+                    <ul className="list-disc ml-6">
+                      {q.options?.map(
+                        (option: any, i: number) => (
+                          <li key={i}>
+                            {option.text}
+
+                            {option.correct && (
+                              <span className="text-green-600 font-semibold ml-2">
+                                ✅ Correct
+                              </span>
+                            )}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          {/* Mind Map */}
+          {analysis.mindMapData && (
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-3">
+                🗺 Mind Map
+              </h3>
+
+              <MindMapTree node={analysis.mindMapData} />
+            </div>
+          )}
+
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Notes */}
