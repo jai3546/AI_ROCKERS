@@ -519,15 +519,27 @@ export function extractBalancedObject(str: string): string | null {
   return null;
 }
 
-export interface AiSummaryResult {
-  title: string;
-  summary: string;
-  mindMapData: {
-    id: string;
-    label: string;
-    color?: string;
-    children?: any[];
-  };
+export interface AnalysisResult {
+  title: string
+  summary: string
+
+  importantPoints: string[]
+
+  keyConcepts: string[]
+
+  formulas: string[]
+
+  flowcharts: string[]
+
+  examTips: string[]
+
+  memoryTricks: string[]
+
+  flashcards: any[]
+
+  quiz: any[]
+
+  mindMapData: any
 }
 
 export function getApiKey(): string | null {
@@ -547,282 +559,330 @@ export function getApiKey(): string | null {
   return trimmed;
 }
 
+// ============================================================
+// generateAiSummaryAndMindmap — clean rewrite
+// ============================================================
+
 export async function generateAiSummaryAndMindmap(
   topic: string,
   subject: string = "Science",
   syllabus: string = "General"
 ): Promise<AiSummaryResult> {
+
+  // ── 1. Try Gemini API ──────────────────────────────────────
   const apiKey = getApiKey();
 
   if (apiKey) {
     try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+      const apiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
 
-      const systemPrompt = `You are a high-quality educational content creator. The user will specify a topic. 
-You must respond with a JSON object containing:
-1. "title": The name of the topic (capitalized).
-2. "summary": A detailed, clear educational summary of the topic suitable for K-12 students. Use paragraphs and bullet points.
-3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the topic.
-   Each node in the tree MUST have this exact interface:
-   interface MindMapNode {
-     id: string;
-     label: string; // 1-3 words max
-     color?: string; // Hex color string corresponding to branch theme
-     children?: MindMapNode[];
-   }
-   Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
-   
-Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
+      const prompt = `
+You are an expert study assistant.
+
+Analyze the following study material and return ONLY valid JSON with this exact structure:
+
+{
+  "title": "",
+  "summary": "",
+  "importantPoints": [],
+  "keyConcepts": [],
+  "formulas": [],
+  "flowcharts": [],
+  "examTips": [],
+  "memoryTricks": [],
+  "flashcards": [
+    { "front": "", "back": "" }
+  ],
+  "quiz": [
+    {
+      "question": "",
+      "options": ["", "", "", ""],
+      "answer": ""
+    }
+  ],
+  "mindMapData": {
+    "id": "root",
+    "label": "",
+    "children": []
+  }
+}
+
+Rules:
+- summary: maximum 200 words
+- importantPoints: exactly 8 bullet points (plain strings)
+- keyConcepts: exactly 6 concepts (plain strings)
+- formulas: only mathematical/scientific formulas (plain strings)
+- flowcharts: short text flowcharts (plain strings, use → between steps)
+- examTips: exactly 5 tips (plain strings)
+- memoryTricks: exactly 5 memory tricks (plain strings)
+- flashcards: exactly 10 cards
+- quiz: exactly 10 MCQs; "answer" must be one of the four options
+- mindMapData.label MUST be the topic name only
+- Do NOT wrap output in markdown code fences
+
+Study material:
+${topic}
+`;
 
       const requestBody = {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: systemPrompt + "\n\nTopic: " + topic }
-            ]
-          }
-        ],
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.3,
           maxOutputTokens: 4096,
-          responseMimeType: "application/json"
-        }
+          responseMimeType: "application/json",
+        },
       };
 
       const response = await fetch(`${apiUrl}?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
         const data = await response.json();
-        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        
-        let title = topic;
-        let summary = "";
-        let mindMapData = null;
+        const rawText: string =
+          data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+
+        console.log("============== GEMINI RAW ==============");
+        console.log(rawText);
+        console.log("========================================");
 
         const parsed = safeJsonParse(rawText);
+
         if (parsed) {
-          title = parsed.title || topic;
-          summary = parsed.summary || "";
-          mindMapData = parsed.mindMapData || null;
-        } else {
-          console.warn("safeJsonParse failed for summary, attempting regex extraction on raw text");
-          
-          // Regex extraction of title
-          const titleVal = extractStringField(rawText, "title");
-          if (titleVal) {
-            title = titleVal;
-          }
-
-          // Regex extraction of summary
-          const summaryVal = extractStringField(rawText, "summary");
-          if (summaryVal) {
-            summary = summaryVal;
-          }
-
-          // Regex extraction of mindMapData
-          const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
-          if (mindMapMatch) {
-            try {
-              const block = extractBalancedObject(mindMapMatch[1]);
-              if (block) {
-                mindMapData = safeJsonParse(block);
-              }
-            } catch (e) {
-              console.warn("Failed to parse extracted mindMapData JSON:", e);
-            }
-          }
-        }
-
-        if (summary) {
           return {
-            title,
-            summary,
-            mindMapData: mindMapData || { id: "root", label: title }
+            title:           parsed.title           ?? topic,
+            summary:         parsed.summary         ?? "",
+            importantPoints: parsed.importantPoints ?? [],
+            keyConcepts:     parsed.keyConcepts     ?? [],
+            formulas:        parsed.formulas        ?? [],
+            flowcharts:      parsed.flowcharts      ?? [],
+            examTips:        parsed.examTips        ?? [],
+            memoryTricks:    parsed.memoryTricks    ?? [],
+            flashcards:      parsed.flashcards      ?? [],
+            quiz:            parsed.quiz            ?? [],
+            mindMapData:     parsed.mindMapData     ?? buildFallbackMindMap(topic),
           };
         }
+
+        // safeJsonParse failed — try regex extraction as last resort
+        console.warn("safeJsonParse failed, attempting regex extraction");
+
+        // ── 3. Generic fallback ────────────────────────────────────
+
+
+		const title = subject + " - " + syllabus;
+        const summary =  `This is a study summary for ${subject} under the ${syllabus} curriculum.`;
+
+        let mindMapData = buildFallbackMindMap(topic);
+        const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
+        if (mindMapMatch) {
+          const block = extractBalancedObject(mindMapMatch[1]);
+          if (block) {
+            mindMapData = safeJsonParse(block) ?? mindMapData;
+          }
+        }
+
+        return {
+          title,
+          summary,
+          importantPoints: [],
+          keyConcepts:     [],
+          formulas:        [],
+          flowcharts:      [],
+          examTips:        [],
+          memoryTricks:    [],
+          flashcards:      [],
+          quiz:            [],
+          mindMapData,
+        };
       }
     } catch (e) {
-      console.error("Failed to generate AI summary, falling back to mock:", e);
+      console.error("Gemini API call failed, falling back to mock:", e);
     }
   }
 
-  // Fallback database of high-fidelity mock summaries for common topics
-  const mockSummariesDb: Record<string, { summary: string; mindMapData: any }> = {
-    "python": {
-      summary: "Python is a high-level, interpreted programming language known for its exceptional readability and simplicity. Created by Guido van Rossum and released in 1991, Python's design philosophy emphasizes clean code layout, specifically using indentation rather than braces to define code blocks.\n\nKey concepts of Python include:\n• Ease of Learning: Python has a simple, English-like syntax, making it highly accessible for beginners.\n• Interpreted Execution: Programs are executed line-by-line by an interpreter, allowing rapid prototyping and easy debugging.\n• Rich Standard Library: Python supports thousands of modules for tasks ranging from file handling to machine learning and game development.\n• Multi-paradigm Support: Developers can choose object-oriented, functional, or procedural styles to build applications.",
+  // ── 2. Mock database for common topics ────────────────────
+  const MOCK_DB: Record<
+    string,
+    Pick<AiSummaryResult, "summary" | "mindMapData">
+  > = {
+    python: {
+      summary:
+        "Python is a high-level, interpreted programming language known for its exceptional readability and simplicity. Created by Guido van Rossum and released in 1991, Python's design philosophy emphasizes clean code layout, specifically using indentation rather than braces to define code blocks.\n\nKey concepts of Python include:\n• Ease of Learning: Python has a simple, English-like syntax, making it highly accessible for beginners.\n• Interpreted Execution: Programs are executed line-by-line by an interpreter, allowing rapid prototyping and easy debugging.\n• Rich Standard Library: Python supports thousands of modules for tasks ranging from file handling to machine learning and game development.\n• Multi-paradigm Support: Developers can choose object-oriented, functional, or procedural styles to build applications.",
       mindMapData: {
         id: "root-python",
         label: "Python",
         color: "#3b82f6",
         children: [
           {
-            id: "py1",
-            label: "Key Features",
-            color: "#10b981",
+            id: "py1", label: "Key Features", color: "#10b981",
             children: [
               { id: "py1_1", label: "Clean Syntax", color: "#10b981" },
-              { id: "py1_2", label: "Interpreted", color: "#10b981" }
-            ]
+              { id: "py1_2", label: "Interpreted",  color: "#10b981" },
+            ],
           },
           {
-            id: "py2",
-            label: "Use Cases",
-            color: "#ea580c",
+            id: "py2", label: "Use Cases", color: "#ea580c",
             children: [
-              { id: "py2_1", label: "Web Dev", color: "#ea580c" },
-              { id: "py2_2", label: "Data Science", color: "#ea580c" },
-              { id: "py2_3", label: "AI & Automation", color: "#ea580c" }
-            ]
+              { id: "py2_1", label: "Web Dev",          color: "#ea580c" },
+              { id: "py2_2", label: "Data Science",     color: "#ea580c" },
+              { id: "py2_3", label: "AI & Automation",  color: "#ea580c" },
+            ],
           },
           {
-            id: "py3",
-            label: "Ecosystem",
-            color: "#db2777",
+            id: "py3", label: "Ecosystem", color: "#db2777",
             children: [
               { id: "py3_1", label: "Pip Packages", color: "#db2777" },
-              { id: "py3_2", label: "Libraries", color: "#db2777" }
-            ]
-          }
-        ]
-      }
+              { id: "py3_2", label: "Libraries",    color: "#db2777" },
+            ],
+          },
+        ],
+      },
     },
+
     "artificial intelligence": {
-      summary: "Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that historically required human intelligence. These tasks include learning from experience, reasoning, recognizing speech, understanding visual inputs, and making complex decisions.\n\nMain fields of AI research include:\n• Machine Learning: Teaching systems to identify patterns and make predictions from data without explicit programming.\n• Deep Learning: Using multi-layered artificial neural networks inspired by the human brain to process complex data.\n• Natural Language Processing (NLP): Enabling systems to understand, translate, and respond to human speech and text.\n• Robotics & Computer Vision: Training machines to perceive and physically interact with objects in their environment.",
+      summary:
+        "Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that historically required human intelligence. These tasks include learning from experience, reasoning, recognizing speech, understanding visual inputs, and making complex decisions.\n\nMain fields of AI research include:\n• Machine Learning: Teaching systems to identify patterns and make predictions from data without explicit programming.\n• Deep Learning: Using multi-layered artificial neural networks inspired by the human brain to process complex data.\n• Natural Language Processing (NLP): Enabling systems to understand, translate, and respond to human speech and text.\n• Robotics & Computer Vision: Training machines to perceive and physically interact with objects in their environment.",
       mindMapData: {
         id: "root-ai",
         label: "Artificial Intelligence",
         color: "#8b5cf6",
         children: [
           {
-            id: "ai1",
-            label: "Core Pillars",
-            color: "#ec4899",
+            id: "ai1", label: "Core Pillars", color: "#ec4899",
             children: [
               { id: "ai1_1", label: "Machine Learning", color: "#ec4899" },
-              { id: "ai1_2", label: "Deep Learning", color: "#ec4899" }
-            ]
+              { id: "ai1_2", label: "Deep Learning",    color: "#ec4899" },
+            ],
           },
           {
-            id: "ai2",
-            label: "User Interaction",
-            color: "#3b82f6",
+            id: "ai2", label: "User Interaction", color: "#3b82f6",
             children: [
               { id: "ai2_1", label: "Natural Language", color: "#3b82f6" },
-              { id: "ai2_2", label: "Computer Vision", color: "#3b82f6" }
-            ]
+              { id: "ai2_2", label: "Computer Vision",  color: "#3b82f6" },
+            ],
           },
           {
-            id: "ai3",
-            label: "Applications",
-            color: "#10b981",
+            id: "ai3", label: "Applications", color: "#10b981",
             children: [
               { id: "ai3_1", label: "Smart Assistants", color: "#10b981" },
-              { id: "ai3_2", label: "Automation", color: "#10b981" }
-            ]
-          }
-        ]
-      }
+              { id: "ai3_2", label: "Automation",       color: "#10b981" },
+            ],
+          },
+        ],
+      },
     },
+
     "quantum physics": {
-      summary: "Quantum Physics is the study of matter and energy at the most fundamental level, specifically at the scale of atoms and subatomic particles. Traditional laws of physics break down at this level, giving way to counter-intuitive behaviors governed by probability rather than certainty.\n\nCore phenomena include:\n• Wave-Particle Duality: Subatomic particles, such as electrons and photons, behave like both wave-like disturbances and distinct particles.\n• Superposition: An unmeasured particle exists in a combination of all possible states simultaneously.\n• Quantum Entanglement: Two or more particles become linked, so that measurements on one instantly determine the state of the other, even across huge distances.\n• Heisenberg Uncertainty Principle: The position and momentum of a particle cannot be measured simultaneously with absolute precision.",
+      summary:
+        "Quantum Physics is the study of matter and energy at the most fundamental level, specifically at the scale of atoms and subatomic particles. Traditional laws of physics break down at this level, giving way to counter-intuitive behaviors governed by probability rather than certainty.\n\nCore phenomena include:\n• Wave-Particle Duality: Subatomic particles, such as electrons and photons, behave like both wave-like disturbances and distinct particles.\n• Superposition: An unmeasured particle exists in a combination of all possible states simultaneously.\n• Quantum Entanglement: Two or more particles become linked, so that measurements on one instantly determine the state of the other, even across huge distances.\n• Heisenberg Uncertainty Principle: The position and momentum of a particle cannot be measured simultaneously with absolute precision.",
       mindMapData: {
         id: "root-quantum",
         label: "Quantum Physics",
         color: "#06b6d4",
         children: [
           {
-            id: "qp1",
-            label: "Phenomena",
-            color: "#f59e0b",
+            id: "qp1", label: "Phenomena", color: "#f59e0b",
             children: [
               { id: "qp1_1", label: "Superposition", color: "#f59e0b" },
-              { id: "qp1_2", label: "Entanglement", color: "#f59e0b" }
-            ]
+              { id: "qp1_2", label: "Entanglement",  color: "#f59e0b" },
+            ],
           },
           {
-            id: "qp2",
-            label: "Duality",
-            color: "#10b981",
+            id: "qp2", label: "Duality", color: "#10b981",
             children: [
-              { id: "qp2_1", label: "Wave behavior", color: "#10b981" },
-              { id: "qp2_2", label: "Particle behavior", color: "#10b981" }
-            ]
+              { id: "qp2_1", label: "Wave behavior",     color: "#10b981" },
+              { id: "qp2_2", label: "Particle behavior", color: "#10b981" },
+            ],
           },
           {
-            id: "qp3",
-            label: "Applications",
-            color: "#db2777",
+            id: "qp3", label: "Applications", color: "#db2777",
             children: [
-              { id: "qp3_1", label: "Quantum Computers", color: "#db2777" },
-              { id: "qp3_2", label: "Semiconductors & Lasers", color: "#db2777" }
-            ]
-          }
-        ]
-      }
-    }
+              { id: "qp3_1", label: "Quantum Computers",       color: "#db2777" },
+              { id: "qp3_2", label: "Semiconductors & Lasers", color: "#db2777" },
+            ],
+          },
+        ],
+      },
+    },
   };
 
   const normalizedTopic = topic.toLowerCase().trim();
-  if (mockSummariesDb[normalizedTopic]) {
-    const matched = mockSummariesDb[normalizedTopic];
-    await new Promise(resolve => setTimeout(resolve, 1500));
+  const mockMatch = MOCK_DB[normalizedTopic];
+
+  if (mockMatch) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const title = subject;
     return {
-      title: topic.charAt(0).toUpperCase() + topic.slice(1),
-      summary: matched.summary,
-      mindMapData: matched.mindMapData
+      title,
+      summary:         mockMatch.summary,
+      importantPoints: [],
+      keyConcepts:     [],
+      formulas:        [],
+      flowcharts:      [],
+      examTips:        [],
+      memoryTricks:    [],
+      flashcards:      [],
+      quiz:            [],
+      mindMapData:     mockMatch.mindMapData,
     };
   }
 
-  // Fallback to structured mock responses
-  const title = topic.charAt(0).toUpperCase() + topic.slice(1);
-  const content = `${title} is a key concept in ${subject}. It refers to the study and practical application of related components. Under the ${syllabus} curriculum, understanding ${title} involves looking at its history, its core components, and its interactions with other systems.\n\nKey aspects include:\n• Core Definitions: Understanding the foundational rules and concepts of ${title}.\n• Practical Applications: Real-world experiments and everyday examples where ${title} is used.\n• Future Trends: How this topic continues to evolve and affect our daily lives through modern science and research.`;
+  // ── 3. Generic fallback ────────────────────────────────────
+
+const title = subject;
+
+const summary = `Summary unavailable — Gemini API key not configured. Please add your API key in Settings to generate AI summaries from uploaded material.`;
+  await new Promise((resolve) => setTimeout(resolve, 1500));
   
-  const mindMapData = {
+
+  return {
+    title,
+    summary,
+    importantPoints: [],
+    keyConcepts:     [],
+    formulas:        [],
+    flowcharts:      [],
+    examTips:        [],
+    memoryTricks:    [],
+    flashcards:      [],
+    quiz:            [],
+    mindMapData: buildFallbackMindMap(subject),
+  };
+}
+
+function buildFallbackMindMap(label: string) {
+  return {
     id: "root",
-    label: title,
+    label,
     color: "#3b82f6",
     children: [
       {
-        id: "c1",
-        label: "Introduction",
-        color: "#10b981",
+        id: "c1", label: "Introduction", color: "#10b981",
         children: [
-          { id: "c1-1", label: "History", color: "#10b981" },
-          { id: "c1-2", label: "Foundations", color: "#10b981" }
-        ]
+          { id: "c1-1", label: "History",     color: "#10b981" },
+          { id: "c1-2", label: "Foundations", color: "#10b981" },
+        ],
       },
       {
-        id: "c2",
-        label: "Core Principles",
-        color: "#f59e0b",
+        id: "c2", label: "Core Principles", color: "#f59e0b",
         children: [
-          { id: "c2-1", label: "Rules", color: "#f59e0b" },
-          { id: "c2-2", label: "Examples", color: "#f59e0b" }
-        ]
+          { id: "c2-1", label: "Rules",    color: "#f59e0b" },
+          { id: "c2-2", label: "Examples", color: "#f59e0b" },
+        ],
       },
       {
-        id: "c3",
-        label: "Future Trends",
-        color: "#ec4899",
+        id: "c3", label: "Future Trends", color: "#ec4899",
         children: [
-          { id: "c3-1", label: "Key Points", color: "#ec4899" },
-          { id: "c3-2", label: "Applications", color: "#ec4899" }
-        ]
-      }
-    ]
+          { id: "c3-1", label: "Key Points",   color: "#ec4899" },
+          { id: "c3-2", label: "Applications", color: "#ec4899" },
+        ],
+      },
+    ],
   };
-
-  // Wait a small delay to simulate generation
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  return { title, summary: content, mindMapData };
 }
 
 export function extractArray(parsed: any): any[] | null {

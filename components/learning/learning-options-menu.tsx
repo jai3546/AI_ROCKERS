@@ -17,16 +17,20 @@ interface LearningOptionsMenuProps {
   language?: "en" | "hi" | "te"
 }
 
-export function LearningOptionsMenu({
-  onClose,
-  onSelectQuiz,
-  onSelectFlashcards,
-  onSelectSummaries,
-  onSelectTextbooks,
-  onSelectMindMap,
-  onSelectUploadMaterial,
-  language = "en"
-}: LearningOptionsMenuProps) {
+export function LearningOptionsMenu(props: LearningOptionsMenuProps) {
+
+  console.log("PROPS =", props)
+
+  const {
+    onClose,
+    onSelectQuiz,
+    onSelectFlashcards,
+    onSelectSummaries,
+    onSelectTextbooks,
+    onSelectMindMap,
+    onSelectUploadMaterial,
+    language = "en",
+  } = props
   const translations = {
     title: {
       en: "Learning Options",
@@ -196,10 +200,11 @@ export function LearningOptionsMenu({
             </Card>
 
             <Card
-              className="cursor-pointer bg-card dark:bg-card hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors"
-              onClick={onSelectUploadMaterial}
-            >
-              <CardContent className="p-4 flex items-start gap-4">
+			className="cursor-pointer bg-card dark:bg-card hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors"
+			onClick={onSelectUploadMaterial}
+			>
+
+             <CardContent className="p-4 flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
                   <Upload size={24} className="text-green-600 dark:text-green-400" />
                 </div>
