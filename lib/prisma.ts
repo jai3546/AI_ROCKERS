@@ -9,8 +9,7 @@ const getPrisma = () => {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    console.warn("DATABASE_URL is not set. Using a fallback PrismaClient instance.");
-    return new PrismaClient();
+    throw new Error("DATABASE_URL environment variable is required");
   }
 
   const isAccelerate = connectionString.startsWith("prisma://") || connectionString.startsWith("prisma+postgres://");
