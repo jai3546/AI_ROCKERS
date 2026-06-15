@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { X, User, Mail, Phone, School, BookOpen, Calendar, Award, Clock, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,9 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface StudentDetailsDialogProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onClose?: () => void
   student?: {
     id: string
     name: string
@@ -35,16 +38,101 @@ interface StudentDetailsDialogProps {
     }>
     isDemo?: boolean
   } | null
-  onClose: () => void
+  initialProfile?: any
+  onProfileUpdate?: (profile: any) => void
   language?: "en" | "hi" | "te"
 }
 
 export function StudentDetailsDialog({
-  student,
+  open = false,
+  onOpenChange,
   onClose,
+  student: propStudent,
+  initialProfile,
+  onProfileUpdate,
   language = "en"
 }: StudentDetailsDialogProps) {
   const [activeTab, setActiveTab] = useState("overview")
+  const [localStudent, setLocalStudent] = useState<any>(null)
+
+  // Load student data from localStorage if not provided as prop
+  useEffect(() => {
+    if (propStudent) {
+      setLocalStudent(propStudent)
+    } else if (open) {
+      // Try to load from localStorage
+      try {
+        const userData = localStorage.getItem("demoUser")
+        if (userData) {
+          const parsedUser = JSON.parse(userData)
+          const studentData = {
+            id: parsedUser.id || '1',
+            name: parsedUser.name || 'Riya',
+            class: parsedUser.class || '12',
+            role: 'student',
+            avatar: parsedUser.avatar || '👩‍🎓',
+            email: `${(parsedUser.name || 'student').toLowerCase().replace(' ', '.')}@example.com`,
+            phone: '+91 98765 43210',
+            joinDate: new Date().toLocaleDateString(),
+            attendance: 85,
+            performance: 75,
+            subjects: [
+              { name: 'Mathematics', progress: 80, grade: 'A' },
+              { name: 'Science', progress: 75, grade: 'B+' },
+              { name: 'English', progress: 70, grade: 'B' }
+            ],
+            recentActivities: [
+              { type: 'quiz', name: 'Photosynthesis Quiz', date: new Date().toLocaleDateString(), score: 85, completed: true }
+            ],
+            isDemo: parsedUser.isDemo || false
+          }
+          setLocalStudent(studentData)
+        } else {
+          // Create default student
+          const defaultStudent = {
+            id: 'default-1',
+            name: 'Riya',
+            class: '12',
+            role: 'student',
+            avatar: '👩‍🎓',
+            email: 'riya@example.com',
+            phone: '+91 98765 43210',
+            joinDate: new Date().toLocaleDateString(),
+            attendance: 85,
+            performance: 75,
+            subjects: [
+              { name: 'Mathematics', progress: 80, grade: 'A' },
+              { name: 'Science', progress: 75, grade: 'B+' },
+              { name: 'English', progress: 70, grade: 'B' }
+            ],
+            recentActivities: [
+              { type: 'quiz', name: 'Daily Challenge', date: new Date().toLocaleDateString(), score: 75, completed: true }
+            ],
+            isDemo: true
+          }
+          setLocalStudent(defaultStudent)
+        }
+      } catch (error) {
+        console.error("Error loading student data:", error)
+        // Set fallback student data
+        setLocalStudent({
+          id: 'fallback-1',
+          name: 'Student',
+          class: '12',
+          role: 'student',
+          avatar: '👩‍🎓',
+          email: 'student@example.com',
+          phone: '+91 98765 43210',
+          joinDate: new Date().toLocaleDateString(),
+          attendance: 80,
+          performance: 70,
+          subjects: [],
+          recentActivities: [],
+          isDemo: true
+        })
+      }
+    }
+  }, [propStudent, open])
 
   const translations = {
     studentDetails: {
@@ -159,7 +247,24 @@ export function StudentDetailsDialog({
     },
   }
 
-  // If no student data is provided, show a message
+  const handleClose = () => {
+    if (onClose) {
+      onClose()
+    }
+    if (onOpenChange) {
+      onOpenChange(false)
+    }
+  }
+
+  // If dialog is not open, don't render
+  if (!open) {
+    return null
+  }
+
+  // Get the student data to display (use localStudent or propStudent)
+  const student = propStudent || localStudent
+
+  // If still no student data, show loading/error state
   if (!student) {
     return (
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -168,10 +273,13 @@ export function StudentDetailsDialog({
             <CardTitle>{translations.studentDetails[language]}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{translations.notAvailable[language]}</p>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+            <p className="text-center text-muted-foreground">Loading student data...</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={onClose}>{translations.close[language]}</Button>
+            <Button onClick={handleClose} className="w-full">{translations.close[language]}</Button>
           </CardFooter>
         </Card>
       </div>
@@ -208,7 +316,7 @@ export function StudentDetailsDialog({
               variant="ghost"
               size="icon"
               className="absolute right-4 top-4"
-              onClick={onClose}
+              onClick={handleClose}
             >
               <X size={18} />
             </Button>
@@ -223,7 +331,7 @@ export function StudentDetailsDialog({
               <div>
                 <CardTitle className="text-xl">{student.name || 'Student'}</CardTitle>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline">{student.class || 'Class'}</Badge>
+                  <Badge variant="outline">{student.class || 'Class 12'}</Badge>
                   {student.isDemo && <Badge variant="secondary">Demo Account</Badge>}
                 </div>
               </div>
@@ -241,43 +349,37 @@ export function StudentDetailsDialog({
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  {student.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail size={16} className="text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">{translations.email[language]}</p>
-                        <p className="text-sm">{student.email}</p>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} className="text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">{translations.email[language]}</p>
+                      <p className="text-sm">{student.email || 'student@example.com'}</p>
                     </div>
-                  )}
+                  </div>
 
-                  {student.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone size={16} className="text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">{translations.phone[language]}</p>
-                        <p className="text-sm">{student.phone}</p>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Phone size={16} className="text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">{translations.phone[language]}</p>
+                      <p className="text-sm">{student.phone || '+91 98765 43210'}</p>
                     </div>
-                  )}
+                  </div>
 
                   <div className="flex items-center gap-2">
                     <School size={16} className="text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">{translations.class[language]}</p>
-                      <p className="text-sm">{student.class}</p>
+                      <p className="text-sm">{student.class || 'Class 12'}</p>
                     </div>
                   </div>
 
-                  {student.joinDate && (
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} className="text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">{translations.joinDate[language]}</p>
-                        <p className="text-sm">{student.joinDate}</p>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">{translations.joinDate[language]}</p>
+                      <p className="text-sm">{student.joinDate || new Date().toLocaleDateString()}</p>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {student.attendance !== undefined && (
@@ -313,7 +415,7 @@ export function StudentDetailsDialog({
                 {student.subjects && student.subjects.length > 0 ? (
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">{translations.subjects[language]}</h3>
-                    {student.subjects.map((subject, index) => (
+                    {student.subjects.map((subject: any, index: number) => (
                       <div key={index} className="space-y-1">
                         <div className="flex items-center justify-between">
                           <p className="text-sm">{subject.name}</p>
@@ -331,7 +433,7 @@ export function StudentDetailsDialog({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{translations.notAvailable[language]}</p>
+                  <p className="text-sm text-muted-foreground">No subject data available</p>
                 )}
               </TabsContent>
 
@@ -341,7 +443,7 @@ export function StudentDetailsDialog({
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">{translations.recentActivities[language]}</h3>
                     <div className="space-y-3">
-                      {student.recentActivities.map((activity, index) => (
+                      {student.recentActivities.map((activity: any, index: number) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -370,14 +472,14 @@ export function StudentDetailsDialog({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{translations.notAvailable[language]}</p>
+                  <p className="text-sm text-muted-foreground">No recent activities available</p>
                 )}
               </TabsContent>
             </Tabs>
           </CardContent>
 
           <CardFooter className="flex justify-end">
-            <Button onClick={onClose}>{translations.close[language]}</Button>
+            <Button onClick={handleClose}>{translations.close[language]}</Button>
           </CardFooter>
         </Card>
       </motion.div>
