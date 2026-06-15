@@ -18,9 +18,21 @@ export async function POST(req: Request) {
 
     console.log("YouTube URL:", url)
 
-    // Pass FULL URL, not video ID
-    const transcript =
-      await YoutubeTranscript.fetchTranscript(url)
+    // Pass the full YouTube URL
+    const transcript = await YoutubeTranscript.fetchTranscript(url)
+
+    // Validate transcript
+    if (!transcript || transcript.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "No transcript available for this video. It may not have captions enabled.",
+        },
+        {
+          status: 404,
+        }
+      )
+    }
 
     const text = transcript
       .map((item) => item.text)
@@ -29,6 +41,7 @@ export async function POST(req: Request) {
     console.log("Transcript length:", text.length)
 
     return NextResponse.json({
+      success: true,
       text,
     })
   } catch (error: any) {
