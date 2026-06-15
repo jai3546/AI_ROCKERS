@@ -260,17 +260,42 @@ export async function updateTopicMastery(
  * Records a quiz attempt, awards XP, and handles student leveling up.
  */
 export async function recordQuizAttempt(studentId: string, quizId: string, score: number) {
-  const attempt = await prisma.quizAttempt.create({
-    data: {
-      studentId,
-      quizId,
-      score
-    }
-  });
+  return await prisma.$transaction(async (tx) => {
+    const attempt = await tx.quizAttempt.create({
+      data: {
+        studentId,
+        quizId,
+        score
+      }
+    });
 
-  // Award XP based on quiz score (e.g. 10 * score percentage)
-  const xpReward = Math.round(score * 10);
-  await addXpToStudent(studentId, xpReward);
+    const xpReward = Math.round(score * 10);
+    const profile = await tx.studentProfile.findUnique({
+      where: { userId: studentId }
+    });
+
+    if (profile) {
+      let newXp = profile.xpPoints + xpReward;
+      let newLevel = profile.currentLevel;
+      let requiredXp = newLevel * 1000;
+
+      while (newXp >= requiredXp) {
+        newXp -= requiredXp;
+        newLevel += 1;
+        requiredXp = newLevel * 1000;
+      }
+
+      await tx.studentProfile.update({
+        where: { userId: studentId },
+        data: {
+          xpPoints: newXp,
+          currentLevel: newLevel
+        }
+      });
+    }
+
+    return attempt;
+  });
 
   return attempt;
 }
