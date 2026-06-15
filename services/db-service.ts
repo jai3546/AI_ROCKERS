@@ -309,18 +309,43 @@ export async function awardAchievement(studentId: string, achievementId: string)
     return null;
   }
 
-  const unlock = await prisma.studentAchievement.create({
-    data: {
-      studentId,
-      achievementId
-    },
-    include: {
-      achievement: true
-    }
-  });
+  return await prisma.$transaction(async (tx) => {
+    const unlock = await tx.studentAchievement.create({
+      data: {
+        studentId,
+        achievementId
+      },
+      include: {
+        achievement: true
+      }
+    });
 
-  // Award the achievement's XP reward
-  await addXpToStudent(studentId, unlock.achievement.xpReward);
+    const profile = await tx.studentProfile.findUnique({
+      where: { userId: studentId }
+    });
+
+    if (profile) {
+      let newXp = profile.xpPoints + unlock.achievement.xpReward;
+      let newLevel = profile.currentLevel;
+      let requiredXp = newLevel * 1000;
+
+      while (newXp >= requiredXp) {
+        newXp -= requiredXp;
+        newLevel += 1;
+        requiredXp = newLevel * 1000;
+      }
+
+      await tx.studentProfile.update({
+        where: { userId: studentId },
+        data: {
+          xpPoints: newXp,
+          currentLevel: newLevel
+        }
+      });
+    }
+
+    return unlock;
+  });
 
   return unlock;
 }
