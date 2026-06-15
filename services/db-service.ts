@@ -165,19 +165,22 @@ export async function saveEmotionLog(data: {
   confidence: number;
   attentionScore: number;
 }) {
-  const log = await prisma.emotionLog.create({
-    data: {
-      studentId: data.studentId,
-      emotion: data.emotion,
-      confidence: data.confidence,
-      attentionScore: data.attentionScore
-    }
-  });
+  const result = await prisma.$transaction(async (tx) => {
+    const log = await tx.emotionLog.create({
+      data: {
+        studentId: data.studentId,
+        emotion: data.emotion,
+        confidence: data.confidence,
+        attentionScore: data.attentionScore
+      }
+    });
 
-  // Update profile with latest state
-  await prisma.studentProfile.update({
-    where: { userId: data.studentId },
-    data: { emotionalState: data.emotion }
+    await tx.studentProfile.update({
+      where: { userId: data.studentId },
+      data: { emotionalState: data.emotion }
+    });
+
+    return log;
   });
 
   return log;
