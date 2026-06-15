@@ -87,6 +87,8 @@ model EmotionLog {
   confidence     Float
   attentionScore Float
   createdAt      DateTime       @default(now())
+
+  @@index([studentId, createdAt])
 }
 
 model LearningSession {
