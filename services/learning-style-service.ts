@@ -118,25 +118,25 @@ export function getContentAdaptations(
   let emotionalSupport: string | undefined;
 
   // Adapt based on primary learning style
-  switch (primaryStyle) {
-    case 'visual':
-      contentTypes = ['diagrams', 'charts', 'videos', 'infographics'];
-      presentationStyle = 'Use visual aids, color coding, and spatial organization';
-      break;
-    case 'auditory':
-      contentTypes = ['audio explanations', 'discussions', 'verbal instructions'];
-      presentationStyle = 'Use clear verbal explanations, discussions, and sound cues';
-      break;
-    case 'kinesthetic':
-      contentTypes = ['interactive exercises', 'simulations', 'hands-on activities'];
-      presentationStyle = 'Use interactive elements, physical metaphors, and practical examples';
-      break;
-    default:
-      // Balanced approach if no clear preference
-      contentTypes = ['mixed media', 'varied content types'];
-      presentationStyle = 'Use a balanced mix of visual, auditory, and interactive elements';
-  }
-
+switch (primaryStyle) {
+  case 'visual':
+    contentTypes = ['diagrams', 'charts', 'flowcharts', 'videos', 'infographics', 'spatial maps'];
+    presentationStyle = 'Prioritize "showing" over "telling." Use visual aids, color coding, bullet points for grouping, bold text for emphasis, and ASCII/Mermaid visualizations to map out relationships spatially.';
+    break;
+  case 'auditory':
+    contentTypes = ['audio explanations', 'discussions', 'conversational tone', 'verbal instructions', 'mnemonics'];
+    presentationStyle = 'Use clear and conversational verbal explanations, discussions, and sound cues. Use "read-aloud" phrasing, storytelling, and sound-based mnemonics to make information memorable.';
+    break;
+  case 'kinesthetic':
+    contentTypes = ['step-by-step challenges', 'interactive exercises', 'real-world scenarios', 'thought experiments', 'simulations', 'hands-on activities'];
+    presentationStyle = 'Focus on "doing." Use action-oriented verbs, prompt the student to perform a mini-experiment or mental simulation, and use "if-then" scenarios to demonstrate concepts.';
+    break;
+  default:
+    // Balanced approach
+    contentTypes = ['varied content types', 'mixed media', 'summaries', 'examples', 'quick visuals'];
+    presentationStyle = 'Use a "Multi-Sensory" approach: Use a balanced mix of visual, auditory, and interactive elements - provide a concise text summary, followed by one real-world analogy and a simple visual or structural breakdown.';
+}
+  
   // Include secondary style elements
   if (secondaryStyle !== 'unknown' && secondaryStyle !== primaryStyle) {
     switch (secondaryStyle) {
@@ -174,7 +174,7 @@ export function getContentAdaptations(
         emotionalSupport = 'Acknowledge frustration and offer alternative approaches';
         break;
       case 'fearful':
-        emotionalSupport = 'Provide reassurance and break down complex topics into manageable parts';
+        emotionalSupport = 'Provide reassurance and break down complex topics into concise and manageable parts';
         break;
       case 'confused':
         emotionalSupport = 'Offer simplified explanations and check for understanding frequently';
