@@ -43,6 +43,50 @@ AI-powered adaptive learning platform for students (grades 6–12). System track
 
 ---
 
+## Installed Agent Skills
+
+Helper guides installed in `.agents/skills/`. Use these when working on specific tasks. Think of them as "expert advisors" for different parts of the codebase.
+
+### Making the App Faster (Performance)
+
+| Agent | What It Does | Use When... |
+|-------|-------------|-----------|
+| **vercel-react-best-practices** | Shows best ways to write fast React code | App feels slow, need to improve loading speed |
+| **core-web-vitals** | Fixes page loading time, responsiveness, and visual stability | Page takes too long to load or feels janky |
+| **tailwind-design-system** | Helps organize colors, spacing, and design patterns consistently | Building new UI components or improving design |
+
+### Making the App Work Better (Next.js & React)
+
+| Agent | What It Does | Use When... |
+|-------|-------------|-----------|
+| **next-best-practices** | Best practices for how to structure Next.js files and features | Building new pages or routes |
+| **next-cache-components** | Shows how to reuse data and avoid fetching it repeatedly | App makes too many API calls or repeats work |
+| **vercel-composition-patterns** | Teaches how to build reusable, flexible components | Refactoring messy components with too many options |
+| **typescript-advanced-types** | Makes code type-safe to catch bugs early | Finding type errors or building type-safe systems |
+
+### Making the App Accessible (for All Users)
+
+| Agent | What It Does | Use When... |
+|-------|-------------|-----------|
+| **wcag-audit-patterns** | Checks if the app works for people with disabilities | Ensuring app works for screen readers, keyboard users |
+| **accessibility-compliance** | Shows how to make forms, navigation, and content accessible | Building accessible buttons, forms, menus |
+
+### Building & Deploying
+
+| Agent | What It Does | Use When... |
+|-------|-------------|-----------|
+| **api-design-principles** | Shows how to design good API endpoints | Building `/api/groq` or `/api/gemini` routes |
+| **github-actions-docs** | Automates testing, building, and deploying your code | Setting up automated tests or deployments |
+| **deploy-to-vercel** | Deploys the app to the internet (live server) | Sharing app with others or going live |
+
+### Keeping Code Clean
+
+| Agent | What It Does | Use When... |
+|-------|-------------|-----------|
+| **conventional-commit** | Standard way to write commit messages that everyone understands | Making clear, organized git history |
+
+---
+
 ## Architecture
 
 ### Routes & Pages (app/)
