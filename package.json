@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "install-nextjs-docs": "npx @next/codemod@canary agents-md"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
