@@ -31,7 +31,7 @@ AI-powered adaptive learning platform for students (grades 6–12). System track
 
 | Layer                | Technology                                        |
 | -------------------- | ------------------------------------------------- |
-| **Framework**        | Next.js 15 (App Router)                           |
+| **Framework**        | Next.js 16 (App Router)                           |
 | **Language**         | TypeScript (strict mode)                          |
 | **Styling**          | Tailwind CSS + Radix UI                           |
 | **Animation**        | Framer Motion                                     |
@@ -228,6 +228,7 @@ Rendered client-side by `study-summaries.tsx`.
 3. **Download ML models:** `node scripts/download-face-api-models.js`
    - Creates `public/models/tiny_face_detector_model-shard*.bin` (~10 files, 40MB total)
 4. **API key:** Create `.env.local`:
+
    ```env
    NEXT_PUBLIC_GEMINI_API_KEY=your_actual_key_here
    ```
