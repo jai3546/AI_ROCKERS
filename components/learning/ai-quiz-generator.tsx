@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { generateAiQuiz } from "@/services/gemini-api"
 
 interface QuizOption {
   id: string
@@ -22,20 +23,26 @@ interface QuizQuestion {
   points: number
   subject: string
   syllabus: "AP" | "Telangana" | "CBSE" | "General"
+  topic: string
 }
 
 interface AiQuizGeneratorProps {
   onQuestionsGenerated: (questions: QuizQuestion[]) => void
   language?: "en" | "hi" | "te"
   defaultSyllabus?: "AP" | "Telangana" | "CBSE" | "General"
+  defaultSubject?: string
+  defaultCustomSubject?: string
 }
 
 export function AiQuizGenerator({
   onQuestionsGenerated,
   language = "en",
-  defaultSyllabus = "General"
+  defaultSyllabus = "General",
+  defaultSubject = "",
+  defaultCustomSubject = ""
 }: AiQuizGeneratorProps) {
-  const [subject, setSubject] = useState("")
+  const [subject, setSubject] = useState(defaultCustomSubject ? "custom" : defaultSubject)
+  const [customSubject, setCustomSubject] = useState(defaultCustomSubject || "")
   const [numQuestions, setNumQuestions] = useState(5)
   const [syllabus, setSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">(defaultSyllabus)
 
@@ -192,6 +199,15 @@ export function AiQuizGenerator({
           { id: "d", text: "Pascal", isCorrect: false },
         ]
       },
+      {
+        question: "Which gas do plants absorb from the atmosphere for photosynthesis?",
+        options: [
+          { id: "a", text: "Carbon Dioxide", isCorrect: true },
+          { id: "b", text: "Oxygen", isCorrect: false },
+          { id: "c", text: "Nitrogen", isCorrect: false },
+          { id: "d", text: "Hydrogen", isCorrect: false },
+        ]
+      }
     ],
     "Social Studies": [
       {
@@ -230,6 +246,24 @@ export function AiQuizGenerator({
           { id: "d", text: "1950", isCorrect: false },
         ]
       },
+      {
+        question: "How many states are there in India currently?",
+        options: [
+          { id: "a", text: "28", isCorrect: true },
+          { id: "b", text: "29", isCorrect: false },
+          { id: "c", text: "25", isCorrect: false },
+          { id: "d", text: "30", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which line divides the Earth into Northern and Southern Hemispheres?",
+        options: [
+          { id: "a", text: "Equator", isCorrect: true },
+          { id: "b", text: "Prime Meridian", isCorrect: false },
+          { id: "c", text: "Tropic of Cancer", isCorrect: false },
+          { id: "d", text: "Tropic of Capricorn", isCorrect: false },
+        ]
+      }
     ],
     "English": [
       {
@@ -259,6 +293,33 @@ export function AiQuizGenerator({
           { id: "d", text: "Quickly", isCorrect: false },
         ]
       },
+      {
+        question: "What is a word that describes a verb or an adjective called?",
+        options: [
+          { id: "a", text: "Adverb", isCorrect: true },
+          { id: "b", text: "Noun", isCorrect: false },
+          { id: "c", text: "Adjective", isCorrect: false },
+          { id: "d", text: "Pronoun", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which word is a synonym of 'vibrant'?",
+        options: [
+          { id: "a", text: "Lively", isCorrect: true },
+          { id: "b", text: "Dull", isCorrect: false },
+          { id: "c", text: "Silent", isCorrect: false },
+          { id: "d", text: "Fragile", isCorrect: false },
+        ]
+      },
+      {
+        question: "Identify the conjunction in: 'I wanted to play, but it started to rain.'",
+        options: [
+          { id: "a", text: "but", isCorrect: true },
+          { id: "b", text: "wanted", isCorrect: false },
+          { id: "c", text: "rain", isCorrect: false },
+          { id: "d", text: "started", isCorrect: false },
+        ]
+      }
     ],
     "Physics": [
       {
@@ -279,6 +340,42 @@ export function AiQuizGenerator({
           { id: "d", text: "Watt", isCorrect: false },
         ]
       },
+      {
+        question: "What is the speed of light in a vacuum?",
+        options: [
+          { id: "a", text: "300,000 km/s", isCorrect: true },
+          { id: "b", text: "150,000 km/s", isCorrect: false },
+          { id: "c", text: "500,000 km/s", isCorrect: false },
+          { id: "d", text: "100,000 km/s", isCorrect: false },
+        ]
+      },
+      {
+        question: "What type of lens is used to correct myopia (short-sightedness)?",
+        options: [
+          { id: "a", text: "Concave lens", isCorrect: true },
+          { id: "b", text: "Convex lens", isCorrect: false },
+          { id: "c", text: "Bifocal lens", isCorrect: false },
+          { id: "d", text: "Cylindrical lens", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the unit of power?",
+        options: [
+          { id: "a", text: "Watt", isCorrect: true },
+          { id: "b", text: "Joule", isCorrect: false },
+          { id: "c", text: "Volt", isCorrect: false },
+          { id: "d", text: "Newton", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which of the following is a scalar quantity?",
+        options: [
+          { id: "a", text: "Speed", isCorrect: true },
+          { id: "b", text: "Velocity", isCorrect: false },
+          { id: "c", text: "Acceleration", isCorrect: false },
+          { id: "d", text: "Force", isCorrect: false },
+        ]
+      }
     ],
     "Chemistry": [
       {
@@ -299,6 +396,42 @@ export function AiQuizGenerator({
           { id: "d", text: "1", isCorrect: false },
         ]
       },
+      {
+        question: "Which gas is most abundant in Earth's atmosphere?",
+        options: [
+          { id: "a", text: "Nitrogen", isCorrect: true },
+          { id: "b", text: "Oxygen", isCorrect: false },
+          { id: "c", text: "Carbon Dioxide", isCorrect: false },
+          { id: "d", text: "Argon", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the common chemical name for Table Salt?",
+        options: [
+          { id: "a", text: "Sodium Chloride", isCorrect: true },
+          { id: "b", text: "Sodium Bicarbonate", isCorrect: false },
+          { id: "c", text: "Calcium Carbonate", isCorrect: false },
+          { id: "d", text: "Potassium Chloride", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which subatomic particle has a negative charge?",
+        options: [
+          { id: "a", text: "Electron", isCorrect: true },
+          { id: "b", text: "Proton", isCorrect: false },
+          { id: "c", text: "Neutron", isCorrect: false },
+          { id: "d", text: "Positron", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the hardest natural substance on Earth?",
+        options: [
+          { id: "a", text: "Diamond", isCorrect: true },
+          { id: "b", text: "Graphite", isCorrect: false },
+          { id: "c", text: "Quartz", isCorrect: false },
+          { id: "d", text: "Steel", isCorrect: false },
+        ]
+      }
     ],
     "Biology": [
       {
@@ -319,6 +452,42 @@ export function AiQuizGenerator({
           { id: "d", text: "Digestion", isCorrect: false },
         ]
       },
+      {
+        question: "Which green pigment in leaves helps absorb solar energy?",
+        options: [
+          { id: "a", text: "Chlorophyll", isCorrect: true },
+          { id: "b", text: "Carotene", isCorrect: false },
+          { id: "c", text: "Hemoglobin", isCorrect: false },
+          { id: "d", text: "Melanin", isCorrect: false },
+        ]
+      },
+      {
+        question: "How many bones are there in the adult human skeleton?",
+        options: [
+          { id: "a", text: "206", isCorrect: true },
+          { id: "b", text: "106", isCorrect: false },
+          { id: "c", text: "306", isCorrect: false },
+          { id: "d", text: "250", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which blood cell type is key in fighting infections?",
+        options: [
+          { id: "a", text: "White Blood Cells", isCorrect: true },
+          { id: "b", text: "Red Blood Cells", isCorrect: false },
+          { id: "c", text: "Platelets", isCorrect: false },
+          { id: "d", text: "Plasma Cells", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the largest organ inside the human body?",
+        options: [
+          { id: "a", text: "Liver", isCorrect: true },
+          { id: "b", text: "Heart", isCorrect: false },
+          { id: "c", text: "Brain", isCorrect: false },
+          { id: "d", text: "Kidney", isCorrect: false },
+        ]
+      }
     ],
     "History": [
       {
@@ -339,6 +508,42 @@ export function AiQuizGenerator({
           { id: "d", text: "Sun Yat-sen", isCorrect: false },
         ]
       },
+      {
+        question: "Who was the first Prime Minister of independent India?",
+        options: [
+          { id: "a", text: "Jawaharlal Nehru", isCorrect: true },
+          { id: "b", text: "Mahatma Gandhi", isCorrect: false },
+          { id: "c", text: "Sardar Vallabhbhai Patel", isCorrect: false },
+          { id: "d", text: "Lal Bahadur Shastri", isCorrect: false },
+        ]
+      },
+      {
+        question: "In which year did the French Revolution begin?",
+        options: [
+          { id: "a", text: "1789", isCorrect: true },
+          { id: "b", text: "1776", isCorrect: false },
+          { id: "c", text: "1812", isCorrect: false },
+          { id: "d", text: "1848", isCorrect: false },
+        ]
+      },
+      {
+        question: "Who is popularly known as the 'Iron Man of India'?",
+        options: [
+          { id: "a", text: "Sardar Vallabhbhai Patel", isCorrect: true },
+          { id: "b", text: "Subhas Chandra Bose", isCorrect: false },
+          { id: "c", text: "Bhagat Singh", isCorrect: false },
+          { id: "d", text: "Chandra Shekhar Azad", isCorrect: false },
+        ]
+      },
+      {
+        question: "Who wrote the Indian national anthem 'Jana Gana Mana'?",
+        options: [
+          { id: "a", text: "Rabindranath Tagore", isCorrect: true },
+          { id: "b", text: "Bankim Chandra Chattopadhyay", isCorrect: false },
+          { id: "c", text: "Subramania Bharati", isCorrect: false },
+          { id: "d", text: "Sarojini Naidu", isCorrect: false },
+        ]
+      }
     ],
     "Geography": [
       {
@@ -359,6 +564,42 @@ export function AiQuizGenerator({
           { id: "d", text: "Yangtze", isCorrect: false },
         ]
       },
+      {
+        question: "Which mountain peak is the tallest in the world?",
+        options: [
+          { id: "a", text: "Mount Everest", isCorrect: true },
+          { id: "b", text: "K2", isCorrect: false },
+          { id: "c", text: "Kangchenjunga", isCorrect: false },
+          { id: "d", text: "Lhotse", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which country occupies the largest total land area globally?",
+        options: [
+          { id: "a", text: "Russia", isCorrect: true },
+          { id: "b", text: "Canada", isCorrect: false },
+          { id: "c", text: "China", isCorrect: false },
+          { id: "d", text: "United States", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the capital city of Australia?",
+        options: [
+          { id: "a", text: "Canberra", isCorrect: true },
+          { id: "b", text: "Sydney", isCorrect: false },
+          { id: "c", text: "Melbourne", isCorrect: false },
+          { id: "d", text: "Brisbane", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which desert is the largest hot desert in the world?",
+        options: [
+          { id: "a", text: "Sahara Desert", isCorrect: true },
+          { id: "b", text: "Gobi Desert", isCorrect: false },
+          { id: "c", text: "Kalahari Desert", isCorrect: false },
+          { id: "d", text: "Thar Desert", isCorrect: false },
+        ]
+      }
     ],
     "Computer Science": [
       {
@@ -379,13 +620,51 @@ export function AiQuizGenerator({
           { id: "d", text: "JavaScript", isCorrect: false },
         ]
       },
+      {
+        question: "What is the binary equivalent of the decimal number 5?",
+        options: [
+          { id: "a", text: "101", isCorrect: true },
+          { id: "b", text: "110", isCorrect: false },
+          { id: "c", text: "100", isCorrect: false },
+          { id: "d", text: "011", isCorrect: false },
+        ]
+      },
+      {
+        question: "What does HTML stand for?",
+        options: [
+          { id: "a", text: "HyperText Markup Language", isCorrect: true },
+          { id: "b", text: "HyperText Modern Link", isCorrect: false },
+          { id: "c", text: "HyperTransfer Markup Language", isCorrect: false },
+          { id: "d", text: "HighText Machine Language", isCorrect: false },
+        ]
+      },
+      {
+        question: "Which of the following is a popular open-source operating system?",
+        options: [
+          { id: "a", text: "Linux", isCorrect: true },
+          { id: "b", text: "Google Chrome", isCorrect: false },
+          { id: "c", text: "Python", isCorrect: false },
+          { id: "d", text: "Windows Vista", isCorrect: false },
+        ]
+      },
+      {
+        question: "What is the main function of a router in a computer network?",
+        options: [
+          { id: "a", text: "Forward data packets between networks", isCorrect: true },
+          { id: "b", text: "Store long-term files", isCorrect: false },
+          { id: "c", text: "Display websites", isCorrect: false },
+          { id: "d", text: "Type documents", isCorrect: false },
+        ]
+      }
     ],
   }
 
   // This function generates realistic questions based on the selected subject
   const generateQuestions = async () => {
-    if (!subject.trim()) {
-      setError("Please select a subject")
+    const selectedSubject = subject === "custom" ? customSubject : subject
+
+    if (!selectedSubject.trim()) {
+      setError("Please select or enter a subject")
       return
     }
 
@@ -393,14 +672,35 @@ export function AiQuizGenerator({
     setError(null)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // First attempt to generate using Gemini AI
+      try {
+        const generated = await generateAiQuiz(selectedSubject, syllabus, numQuestions)
+        if (generated && generated.length > 0) {
+          onQuestionsGenerated(generated)
+          return
+        }
+      } catch (e) {
+        console.warn("AI generation failed, falling back to templates:", e)
+      }
 
       // Get templates for the selected subject
-      const templates = questionTemplates[subject as keyof typeof questionTemplates] || []
+      let templates = questionTemplates[selectedSubject as keyof typeof questionTemplates] || []
+
+      // If templates are fewer than requested, merge with fallback templates
+      if (templates.length < numQuestions) {
+        let fallbackSubject = "Science"
+        if (selectedSubject === "Math") fallbackSubject = "Science"
+        else if (selectedSubject === "English") fallbackSubject = "Social Studies"
+        else if (selectedSubject === "Physics" || selectedSubject === "Chemistry" || selectedSubject === "Biology") fallbackSubject = "Science"
+        else if (selectedSubject === "History" || selectedSubject === "Geography") fallbackSubject = "Social Studies"
+        else if (selectedSubject === "Computer Science") fallbackSubject = "Science"
+
+        const fallbackTemplates = questionTemplates[fallbackSubject as keyof typeof questionTemplates] || []
+        templates = [...templates, ...fallbackTemplates]
+      }
 
       if (templates.length === 0) {
-        throw new Error(`No questions available for ${subject}`)
+        throw new Error(`No questions available for ${selectedSubject}`)
       }
 
       // Select random questions from the templates
@@ -415,27 +715,29 @@ export function AiQuizGenerator({
           question: template.question,
           options: template.options,
           points: 20,
-          subject: subject,
-          syllabus: syllabus
+          subject: selectedSubject,
+          syllabus: syllabus,
+          topic: selectedSubject
         }
       })
 
-      // If we don't have enough templates, add some generic ones
+      // If we still don't have enough templates, add realistic ones dynamically
       if (questions.length < numQuestions) {
         const remaining = numQuestions - questions.length
         for (let i = 0; i < remaining; i++) {
           questions.push({
             id: `ai-${questions.length + i}`,
-            question: `${subject} question ${questions.length + i + 1}?`,
+            question: `What is a fundamental concept in ${selectedSubject} that is essential for intermediate study?`,
             options: [
-              { id: "a", text: `Answer option A`, isCorrect: true },
-              { id: "b", text: `Answer option B`, isCorrect: false },
-              { id: "c", text: `Answer option C`, isCorrect: false },
-              { id: "d", text: `Answer option D`, isCorrect: false },
+              { id: "a", text: `Concept Option A (Key detail)`, isCorrect: true },
+              { id: "b", text: `Concept Option B (Distractor)`, isCorrect: false },
+              { id: "c", text: `Concept Option C (Distractor)`, isCorrect: false },
+              { id: "d", text: `Concept Option D (Distractor)`, isCorrect: false },
             ],
             points: 20,
-            subject: subject,
-            syllabus: syllabus
+            subject: selectedSubject,
+            syllabus: syllabus,
+            topic: selectedSubject
           })
         }
       }
@@ -463,7 +765,12 @@ export function AiQuizGenerator({
           <Label htmlFor="subject">{translations.subject[language]}</Label>
           <Select
             value={subject}
-            onValueChange={setSubject}
+            onValueChange={(value) => {
+              setSubject(value)
+              if (value !== "custom") {
+                setCustomSubject("")
+              }
+            }}
           >
             <SelectTrigger id="subject">
               <SelectValue placeholder={translations.enterSubject[language]} />
@@ -472,9 +779,22 @@ export function AiQuizGenerator({
               {subjects.map((subj) => (
                 <SelectItem key={subj} value={subj}>{subj}</SelectItem>
               ))}
+              <SelectItem value="custom">Custom Subject</SelectItem>
             </SelectContent>
           </Select>
         </div>
+
+        {subject === "custom" && (
+          <div className="space-y-2">
+            <Label htmlFor="customSubject">Custom Subject / Topic</Label>
+            <Input
+              id="customSubject"
+              value={customSubject}
+              onChange={(e) => setCustomSubject(e.target.value)}
+              placeholder="Enter a subject (e.g., Python loops, Photosynthesis)"
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

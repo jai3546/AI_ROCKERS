@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Brain } from "lucide-react"
+import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Brain, Workflow } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -12,6 +12,7 @@ interface LearningOptionsMenuProps {
   onSelectFlashcards: () => void
   onSelectSummaries: () => void
   onSelectTextbooks: () => void
+  onSelectMindMap: () => void
   language?: "en" | "hi" | "te"
 }
 
@@ -21,6 +22,7 @@ export function LearningOptionsMenu({
   onSelectFlashcards,
   onSelectSummaries,
   onSelectTextbooks,
+  onSelectMindMap,
   language = "en"
 }: LearningOptionsMenuProps) {
   const translations = {
@@ -69,6 +71,16 @@ export function LearningOptionsMenu({
       hi: "डिजिटल पाठ्यपुस्तकों और कक्षा नोट्स तक पहुंचें",
       te: "డిజిటల్ పాఠ్యపుస్తకాలు మరియు తరగతి నోట్స్‌లను యాక్సెస్ చేయండి",
     },
+    mindmaps: {
+      en: "Mind Maps",
+      hi: "माइंड मैप्स",
+      te: "మైండ్ మ్యాప్స్",
+    },
+    mindmapsDesc: {
+      en: "Visualize concepts and connect topics interactively",
+      hi: "अवधारणाओं की कल्पना करें और विषयों को परस्पर जोड़ें",
+      te: "భావనలను దృశ్యమానం చేయండి మరియు అంశాలను ఇంటరాక్టివ్‌గా కనెక్ట్ చేయండి",
+    },
   }
 
   return (
@@ -87,7 +99,7 @@ export function LearningOptionsMenu({
         >
           <div className="flex items-center justify-between p-4 border-b border-border dark:border-border">
             <h2 className="text-xl font-bold flex items-center gap-2 text-foreground dark:text-foreground">
-              <BookOpen className="text-primary" size={20} />
+              <GraduationCap className="text-primary" size={20} />
               {translations.title[language]}
             </h2>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -132,7 +144,7 @@ export function LearningOptionsMenu({
             >
               <CardContent className="p-4 flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-highlight/20 flex items-center justify-center flex-shrink-0">
-                  <Download size={24} className="text-highlight" />
+                  <BookOpen size={24} className="text-highlight" />
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground dark:text-foreground">{translations.summaries[language]}</h3>
@@ -152,6 +164,21 @@ export function LearningOptionsMenu({
                 <div>
                   <h3 className="font-bold text-foreground dark:text-foreground">{translations.textbooks[language]}</h3>
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground">{translations.textbooksDesc[language]}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer bg-card dark:bg-card hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors"
+              onClick={onSelectMindMap}
+            >
+              <CardContent className="p-4 flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <Workflow size={24} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground dark:text-foreground">{translations.mindmaps[language]}</h3>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">{translations.mindmapsDesc[language]}</p>
                 </div>
               </CardContent>
             </Card>
