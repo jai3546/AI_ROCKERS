@@ -117,25 +117,25 @@ export function getContentAdaptations(
   let paceRecommendation = 'moderate';
   let emotionalSupport: string | undefined;
 
-  // Adapt based on primary learning style
-switch (primaryStyle) {
-  case 'visual':
-    contentTypes = ['diagrams', 'charts', 'flowcharts', 'videos', 'infographics', 'spatial maps'];
-    presentationStyle = 'Prioritize "showing" over "telling." Use visual aids, color coding, bullet points for grouping, bold text for emphasis, and ASCII/Mermaid visualizations to map out relationships spatially.';
-    break;
-  case 'auditory':
-    contentTypes = ['audio explanations', 'discussions', 'conversational tone', 'verbal instructions', 'mnemonics'];
-    presentationStyle = 'Use clear and conversational verbal explanations, discussions, and sound cues. Use "read-aloud" phrasing, storytelling, and sound-based mnemonics to make information memorable.';
-    break;
-  case 'kinesthetic':
-    contentTypes = ['step-by-step challenges', 'interactive exercises', 'real-world scenarios', 'thought experiments', 'simulations', 'hands-on activities'];
-    presentationStyle = 'Focus on "doing." Use action-oriented verbs, prompt the student to perform a mini-experiment or mental simulation, and use "if-then" scenarios to demonstrate concepts.';
-    break;
-  default:
-    // Balanced approach
-    contentTypes = ['varied content types', 'mixed media', 'summaries', 'examples', 'quick visuals'];
-    presentationStyle = 'Use a "Multi-Sensory" approach: Use a balanced mix of visual, auditory, and interactive elements - provide a concise text summary, followed by one real-world analogy and a simple visual or structural breakdown.';
-}
+  // Enhanced and highly targeted learning instructions prioritizing user preferences
+  switch (primaryStyle) {
+    case 'visual':
+      contentTypes = ['diagrams', 'charts', 'flowcharts', 'videos', 'infographics', 'spatial maps'];
+      presentationStyle = 'HEAVILY PREFER VISUAL PRESENTATION: Prioritize "showing" over "telling." Map out concepts spatially using videos, diagrams, explicit structural bullet points, bold key terms for emphasis, clear step-by-step numbering, and embedded ASCII layouts or Mermaid visualizations';
+      break;
+    case 'auditory':
+      contentTypes = ['audio explanations', 'discussions', 'conversational tone', 'verbal instructions', 'mnemonics'];
+      presentationStyle = 'HEAVILY PREFER AUDITORY PRESENTATION: Maintain a highly conversational, melodic, and rhythmic dialogue meant to be easily read out loud. Lean on engaging storytelling, clear conversational transitions, verbal markers, and word-sound association mnemonics';
+      break;
+    case 'kinesthetic':
+      contentTypes = ['step-by-step challenges', 'interactive exercises', 'real-world scenarios', 'thought experiments', 'simulations', 'hands-on activities'];
+      presentationStyle = 'HEAVILY PREFER KINESTHETIC PRESENTATION: Focus directly on physical action and mechanics. Use action-driven verbs, ground every description in tactical "if-then" scenarios, and immediately challenge the user with interactive thought experiments or mini-simulations';
+      break;
+    default:
+      // Balanced multi-sensory approach
+      contentTypes = ['varied content types', 'mixed media', 'summaries', 'examples', 'quick visuals'];
+      presentationStyle = 'USE A MULTI-SENSORY BALANCED APPROACH: Provide a highly concise structural overview text, followed immediately by exactly one relatable real-world physical analogy, and conclude with a quick spatial map or itemized summary breakdown';
+  }
   
   // Include secondary style elements
   if (secondaryStyle !== 'unknown' && secondaryStyle !== primaryStyle) {
@@ -165,22 +165,22 @@ switch (primaryStyle) {
       contentTypes.push('advanced content');
     }
 
-    // Provide emotional support based on detected emotion
+    // Provide detailed emotional support parameters
     switch (emotion) {
       case 'sad':
-        emotionalSupport = 'Use encouraging language and positive reinforcement';
+        emotionalSupport = 'Be extra warm, deeply encouraging, and use direct positive reinforcement to gently build up their academic confidence';
         break;
       case 'angry':
-        emotionalSupport = 'Acknowledge frustration and offer alternative approaches';
+        emotionalSupport = 'Calmly acknowledge their frustration upfront without escalating, then immediately step back and present a totally fresh, simplified conceptual approach';
         break;
       case 'fearful':
-        emotionalSupport = 'Provide reassurance and break down complex topics into concise and manageable parts';
+        emotionalSupport = 'Be intensely reassuring. Reassure them that making mistakes is a normal part of learning, and systematically deconstruct the topic into the smallest possible digestible actions';
         break;
       case 'confused':
-        emotionalSupport = 'Offer simplified explanations and check for understanding frequently';
+        emotionalSupport = 'Deploy a clear, vivid physical analogy right at the beginning, and ask exactly one gentle targeted question to help isolate what tripped them up';
         break;
       case 'happy':
-        emotionalSupport = 'Build on positive momentum with more challenging material';
+        emotionalSupport = 'Match their energetic momentum perfectly! Celebrate their enthusiasm and seamlessly integrate a fun problem-solving challenge or an intriguing deeper angle';
         break;
     }
   }
@@ -219,7 +219,7 @@ export function generateLearningStylePrompt(
   prompt += `. ${adaptations.presentationStyle}. `;
   prompt += `Focus on ${adaptations.contentTypes.join(', ')}. `;
   
-  // Directly locks in the user preference for the chatbot session
+  // Directly locks in the user preference throughout the chatbot session (Addressing Jai's comment)
   prompt += `CRITICAL: Do not default to generic text responses. The student explicitly prefers this learning style—ensure your formatting remains strictly locked to these guidelines throughout the chat. `;
   
   prompt += `Pace should be ${adaptations.paceRecommendation}. `;
