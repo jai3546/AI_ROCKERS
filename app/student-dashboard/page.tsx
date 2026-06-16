@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
   Brain,
-  FileQuestion,
+  Goal,
   CheckCircle,
   Clock,
   FileText,
@@ -1027,7 +1027,7 @@ export default function StudentDashboardPage() {
               setShowQuiz(true)
             }}
           >
-            <FileQuestion size={20} />
+            <Goal size={20} />
             <span className="sr-only">{translations.quizzes[language]}</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
               {translations.quizzes[language]}
@@ -1085,54 +1085,6 @@ export default function StudentDashboardPage() {
               My Learning Brain
             </div>
           </Button>
-           {/* <Button
-            variant="ghost"
-            className="flex flex-col items-center gap-1 h-auto py-2"
-            onClick={() => {
-              setAutoEmotionTracking(!autoEmotionTracking);
-              setShowEmotionDetector(!autoEmotionTracking);
-            }}
-          >
-            <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
-            <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
-          </Button> */}
-          {/* <Button
-            variant="ghost"
-            className="flex flex-col items-center gap-1 h-auto py-2"
-            onClick={() => router.push("/session-history")}
-          >
-            <TrendingUp size={20} />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">History</span>
-          </Button> */}
-          <Button
-  variant="ghost"
-  size="icon"
-  className="relative group"
-  onClick={() => {
-    setAutoEmotionTracking(!autoEmotionTracking);
-    setShowEmotionDetector(!autoEmotionTracking);
-  }}
->
-  <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
-  <span className="sr-only">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
-  <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap">
-    {autoEmotionTracking ? "Tracking On" : "Tracking Off"}
-  </div>
-</Button>
-
-<Button
-  variant="ghost"
-  size="icon"
-  className="relative group"
-  onClick={() => router.push("/session-history")}
->
-  <TrendingUp size={20} />
-  <span className="sr-only">History</span>
-  <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap">
-    History
-  </div>
-</Button>
-
           <Button
             variant="ghost"
             size="icon"
@@ -1370,7 +1322,7 @@ export default function StudentDashboardPage() {
               <Card className="overflow-hidden border-2 border-secondary/50 shadow-md h-full">
                 <CardHeader className="bg-secondary/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-secondary">
-                    <FileQuestion size={18} />
+                    <Goal size={18} />
                     {translations.quizzes[language]}
                   </CardTitle>
                 </CardHeader>
