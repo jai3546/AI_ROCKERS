@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to coding agents when working with code in this repository.
 
 ---
 
@@ -19,6 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 AI-powered adaptive learning platform for students (grades 6–12). System tracks emotional state via webcam, adapts curriculum difficulty, provides AI tutoring, and gamifies progress.
 
 ### Core Value Proposition
+
 - **Real-time emotion detection** → System suggests breaks if fatigued, simplifies explanations if confused
 - **Adaptive curriculum** → Content difficulty adjusts based on focus/emotion
 - **Private AI tutor** → Local face tracking (no data sent to servers); AI responses personalized by emotion state
@@ -28,18 +29,18 @@ AI-powered adaptive learning platform for students (grades 6–12). System track
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript (strict mode) |
-| **Styling** | Tailwind CSS + Radix UI |
-| **Animation** | Framer Motion |
-| **Emotion Tracking** | face-api.js (browser-local, no backend) |
-| **AI Engine** | Groq (tutor) + Google Gemini (content generation) |
-| **Charts** | Recharts |
-| **Forms/Validation** | React Hook Form + Zod |
-| **State** | React Context (hooks) |
-| **PWA Support** | Service workers + manifest.json |
+| Layer                | Technology                                        |
+| -------------------- | ------------------------------------------------- |
+| **Framework**        | Next.js 15 (App Router)                           |
+| **Language**         | TypeScript (strict mode)                          |
+| **Styling**          | Tailwind CSS + Radix UI                           |
+| **Animation**        | Framer Motion                                     |
+| **Emotion Tracking** | face-api.js (browser-local, no backend)           |
+| **AI Engine**        | Groq (tutor) + Google Gemini (content generation) |
+| **Charts**           | Recharts                                          |
+| **Forms/Validation** | React Hook Form + Zod                             |
+| **State**            | React Context (hooks)                             |
+| **PWA Support**      | Service workers + manifest.json                   |
 
 ---
 
@@ -49,40 +50,40 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 
 ### Making the App Faster (Performance)
 
-| Agent | What It Does | Use When... |
-|-------|-------------|-----------|
-| **vercel-react-best-practices** | Shows best ways to write fast React code | App feels slow, need to improve loading speed |
-| **core-web-vitals** | Fixes page loading time, responsiveness, and visual stability | Page takes too long to load or feels janky |
-| **tailwind-design-system** | Helps organize colors, spacing, and design patterns consistently | Building new UI components or improving design |
+| Agent                           | What It Does                                                     | Use When...                                    |
+| ------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------- |
+| **vercel-react-best-practices** | Shows best ways to write fast React code                         | App feels slow, need to improve loading speed  |
+| **core-web-vitals**             | Fixes page loading time, responsiveness, and visual stability    | Page takes too long to load or feels janky     |
+| **tailwind-design-system**      | Helps organize colors, spacing, and design patterns consistently | Building new UI components or improving design |
 
 ### Making the App Work Better (Next.js & React)
 
-| Agent | What It Does | Use When... |
-|-------|-------------|-----------|
-| **next-best-practices** | Best practices for how to structure Next.js files and features | Building new pages or routes |
-| **next-cache-components** | Shows how to reuse data and avoid fetching it repeatedly | App makes too many API calls or repeats work |
-| **vercel-composition-patterns** | Teaches how to build reusable, flexible components | Refactoring messy components with too many options |
-| **typescript-advanced-types** | Makes code type-safe to catch bugs early | Finding type errors or building type-safe systems |
+| Agent                           | What It Does                                                   | Use When...                                        |
+| ------------------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| **next-best-practices**         | Best practices for how to structure Next.js files and features | Building new pages or routes                       |
+| **next-cache-components**       | Shows how to reuse data and avoid fetching it repeatedly       | App makes too many API calls or repeats work       |
+| **vercel-composition-patterns** | Teaches how to build reusable, flexible components             | Refactoring messy components with too many options |
+| **typescript-advanced-types**   | Makes code type-safe to catch bugs early                       | Finding type errors or building type-safe systems  |
 
 ### Making the App Accessible (for All Users)
 
-| Agent | What It Does | Use When... |
-|-------|-------------|-----------|
-| **wcag-audit-patterns** | Checks if the app works for people with disabilities | Ensuring app works for screen readers, keyboard users |
-| **accessibility-compliance** | Shows how to make forms, navigation, and content accessible | Building accessible buttons, forms, menus |
+| Agent                        | What It Does                                                | Use When...                                           |
+| ---------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| **wcag-audit-patterns**      | Checks if the app works for people with disabilities        | Ensuring app works for screen readers, keyboard users |
+| **accessibility-compliance** | Shows how to make forms, navigation, and content accessible | Building accessible buttons, forms, menus             |
 
 ### Building & Deploying
 
-| Agent | What It Does | Use When... |
-|-------|-------------|-----------|
-| **api-design-principles** | Shows how to design good API endpoints | Building `/api/groq` or `/api/gemini` routes |
-| **github-actions-docs** | Automates testing, building, and deploying your code | Setting up automated tests or deployments |
-| **deploy-to-vercel** | Deploys the app to the internet (live server) | Sharing app with others or going live |
+| Agent                     | What It Does                                         | Use When...                                  |
+| ------------------------- | ---------------------------------------------------- | -------------------------------------------- |
+| **api-design-principles** | Shows how to design good API endpoints               | Building `/api/groq` or `/api/gemini` routes |
+| **github-actions-docs**   | Automates testing, building, and deploying your code | Setting up automated tests or deployments    |
+| **deploy-to-vercel**      | Deploys the app to the internet (live server)        | Sharing app with others or going live        |
 
 ### Keeping Code Clean
 
-| Agent | What It Does | Use When... |
-|-------|-------------|-----------|
+| Agent                   | What It Does                                                    | Use When...                         |
+| ----------------------- | --------------------------------------------------------------- | ----------------------------------- |
 | **conventional-commit** | Standard way to write commit messages that everyone understands | Making clear, organized git history |
 
 ---
@@ -91,20 +92,21 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 
 ### Routes & Pages (app/)
 
-| Path | Purpose |
-|------|---------|
-| `/` | Landing page — role selector (Student / School / Demo) |
-| `/student-dashboard` | Core learning interface: emotion tracking, AI chat, flashcards, quizzes |
-| `/admin-dashboard` | School portal: teacher analytics, student progress, fatigue alerts |
-| `/student-login`, `/school-login`, `/demo-login` | Auth gates |
-| `/learning-brain` | Study brain/mind maps (AI-generated concept maps) |
-| `/session-history` | Student session logs |
-| `/api/groq`, `/api/gemini` | LLM proxy routes |
-| `/api/match-mentor` | Recommend study partner/mentor |
+| Path                                             | Purpose                                                                 |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| `/`                                              | Landing page — role selector (Student / School / Demo)                  |
+| `/student-dashboard`                             | Core learning interface: emotion tracking, AI chat, flashcards, quizzes |
+| `/admin-dashboard`                               | School portal: teacher analytics, student progress, fatigue alerts      |
+| `/student-login`, `/school-login`, `/demo-login` | Auth gates                                                              |
+| `/learning-brain`                                | Study brain/mind maps (AI-generated concept maps)                       |
+| `/session-history`                               | Student session logs                                                    |
+| `/api/groq`, `/api/gemini`                       | LLM proxy routes                                                        |
+| `/api/match-mentor`                              | Recommend study partner/mentor                                          |
 
 ### Components by Domain
 
 **Emotion & Motion Tracking** (`components/tracking/`, `components/motion/`)
+
 - `face-emotion-detector.tsx` — Real-time facial expression analysis
 - `motion-detector.tsx` — Eye gaze + head pose estimation
 - `floating-emotion-tracker.tsx` — Overlay indicator of current emotion
@@ -112,6 +114,7 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 - **Note:** face-api models are ~40MB; stored in `public/models/`. Download via script.
 
 **Learning Core** (`components/learning/`)
+
 - `ai-tutor-chat.tsx` — Main chat interface; sends emotion state to Groq
 - `ai-quiz-generator.tsx`, `ai-flashcard-generator.tsx` — Call Gemini API to create content
 - `mentor-matching.tsx` — Match students with peers
@@ -120,6 +123,7 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 - `textbooks.tsx` — Mock content library
 
 **Gamification** (`components/gamification/`)
+
 - `achievement-badge.tsx`, `badge-collection.tsx` — Unlock badges
 - `leaderboard.tsx` — XP rankings
 - `daily-challenge.tsx` — Timed study tasks
@@ -127,26 +131,31 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 - `level-progress.tsx` — Progression tracking
 
 **School Features** (`components/school/`)
+
 - `student-management.tsx` — Admin view: student list, credentials
 - `weekly-progress.tsx` — Class analytics: focus trends, fatigue alerts
 
 **UI Primitives** (`components/ui/`)
+
 - 50+ Radix + Tailwind wrapper components (button, card, dialog, etc.)
 - All follow shadcn/ui patterns
 
 ### Services
 
 **`services/gemini-api.ts`**
+
 - `generateAiSummaryAndMindmap()` → Fetches `/api/gemini`; returns topic summary + mermaid tree
 - `generateAiQuiz()`, `generateAiFlashcards()` → JSON array of questions/cards
 - `getGeminiResponse()` → (Legacy) used before Groq switch; kept for fallback
 - Helper utilities: `safeJsonParse()`, `repairTruncatedJson()` for robust LLM output handling
 
 **`services/learning-style-service.ts`**
+
 - Builds personalized system prompts based on student learning style (visual/auditory/kinesthetic)
 - Injects emotion context (fatigue, attention level) to adapt AI responses
 
 **`services/school-portal-service.ts`**
+
 - Aggregates student analytics for teachers
 - Privacy layer: class-level stats, not individual logs exposed
 
@@ -167,6 +176,7 @@ Helper guides installed in `.agents/skills/`. Use these when working on specific
 ### 1. Emotion-Aware AI Responses
 
 System prompt in `gemini-api.ts:getGeminiResponse()` includes:
+
 - Current emotion state (confused → use analogies; tired → shorter response)
 - Fatigue score (>60% → suggest break)
 - Attention score (<40% → start with hook)
@@ -189,7 +199,8 @@ System prompt in `gemini-api.ts:getGeminiResponse()` includes:
 
 ### 4. Component Naming
 
-Multiple emotion/motion detector variants exist (simple, improved, accurate, reliable, demo). 
+Multiple emotion/motion detector variants exist (simple, improved, accurate, reliable, demo).
+
 - **Current production:** `real-time-emotion-detector.tsx`, `accurate-motion-detector.tsx`
 - **Legacy variants:** experimental versions left in codebase; check routes to see which are active
 - Clean up unused detector variants if consolidating
@@ -197,11 +208,13 @@ Multiple emotion/motion detector variants exist (simple, improved, accurate, rel
 ### 5. Mermaid Diagram Support
 
 AI tutor can return markdown with mermaid blocks:
+
 ```mermaid
 graph TD
   A[Photosynthesis] --> B[Light Reactions]
   A --> C[Calvin Cycle]
 ```
+
 Rendered client-side by `study-summaries.tsx`.
 
 ---
@@ -218,6 +231,7 @@ Rendered client-side by `study-summaries.tsx`.
    ```env
    NEXT_PUBLIC_GEMINI_API_KEY=your_actual_key_here
    ```
+
    - Needed for `/api/gemini` route (quiz/flashcard/summary generation)
    - Groq key (if using `/api/groq` for tutor) goes in server-side `.env` (not shown in README)
 
@@ -241,6 +255,7 @@ Rendered client-side by `study-summaries.tsx`.
 ### Modify AI Tutor Behavior
 
 Edit system prompt in `services/gemini-api.ts:getGeminiResponse()`. Examples:
+
 - Change response length: Edit "SHORT: 3–5 sentences" rule
 - Change tone: Add personality layer to system prompt
 - Add subject-specific logic: Check `subject` param and branch behavior
@@ -255,6 +270,7 @@ Edit system prompt in `services/gemini-api.ts:getGeminiResponse()`. Examples:
 ### Fix Emotion Detection Issues
 
 If face tracking fails or is unreliable:
+
 1. Check `components/tracking/real-time-emotion-detector.tsx` — validate face-api models are present
 2. Test with `/demo-login` to see mock vs. real detection
 3. Add fallback emotion inference from motion (attention score) if face detection unavailable
