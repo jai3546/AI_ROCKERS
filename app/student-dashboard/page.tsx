@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
   Brain,
+  Goal,
   CheckCircle,
   Clock,
   FileText,
@@ -18,7 +19,6 @@ import {
   Smile,
   Eye,
   Headphones,
-  Download,
   AlertTriangle,
   Award,
   Medal,
@@ -1027,10 +1027,10 @@ export default function StudentDashboardPage() {
               setShowQuiz(true)
             }}
           >
-            <BookOpen size={20} />
-            <span className="sr-only">Learn</span>
+            <Goal size={20} />
+            <span className="sr-only">{translations.quizzes[language]}</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-              Learn
+              {translations.quizzes[language]}
             </div>
           </Button>
 
@@ -1041,9 +1041,9 @@ export default function StudentDashboardPage() {
             onClick={() => setShowFlashcards(true)}
           >
             <FileText size={20} />
-            <span className="sr-only">Flashcards</span>
+            <span className="sr-only">{translations.flashcards[language]}</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-              Flashcards
+              {translations.flashcards[language]}
             </div>
           </Button>
 
@@ -1053,10 +1053,10 @@ export default function StudentDashboardPage() {
             className="relative group"
             onClick={() => setShowSummaries(true)}
           >
-            <Download size={20} />
-            <span className="sr-only">Summaries</span>
+            <BookOpen size={20} />
+            <span className="sr-only">{translations.summaries[language]}</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-              Summaries
+              {translations.summaries[language]}
             </div>
           </Button>
 
@@ -1085,7 +1085,6 @@ export default function StudentDashboardPage() {
               My Learning Brain
             </div>
           </Button>
-
           <Button
             variant="ghost"
             size="icon"
@@ -1323,7 +1322,7 @@ export default function StudentDashboardPage() {
               <Card className="overflow-hidden border-2 border-secondary/50 shadow-md h-full">
                 <CardHeader className="bg-secondary/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-secondary">
-                    <CheckCircle size={18} />
+                    <Goal size={18} />
                     {translations.quizzes[language]}
                   </CardTitle>
                 </CardHeader>
@@ -2216,10 +2215,29 @@ export default function StudentDashboardPage() {
           <MessageSquare size={20} />
           <span className="text-xs">Chat</span>
         </Button>
-        <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => router.push("/session-history")}>
+        {/* <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => router.push("/session-history")}>
           <TrendingUp size={20} />
           <span className="text-xs">History</span>
-        </Button>
+        </Button> */}
+         <Button
+            variant="ghost"
+            className="flex flex-col items-center gap-1 h-auto py-2"
+            onClick={() => {
+              setAutoEmotionTracking(!autoEmotionTracking);
+              setShowEmotionDetector(!autoEmotionTracking);
+            }}
+          >
+            <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
+            <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex flex-col items-center gap-1 h-auto py-2"
+            onClick={() => router.push("/session-history")}
+          >
+            <TrendingUp size={20} />
+            <span className="text-xs">History</span>
+          </Button>
       </nav>
     </main>
   )
