@@ -16,6 +16,19 @@ export async function POST(req: Request) {
       )
     }
 
+    // Validate YouTube URL format
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/
+    if (!youtubeRegex.test(url)) {
+      return NextResponse.json(
+        {
+          error: "Invalid YouTube URL format",
+        },
+        {
+          status: 400,
+        }
+      )
+    }
+
     console.log("YouTube URL:", url)
 
     // Pass the full YouTube URL
