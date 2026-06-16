@@ -218,6 +218,10 @@ export function generateLearningStylePrompt(
   
   prompt += `. ${adaptations.presentationStyle}. `;
   prompt += `Focus on ${adaptations.contentTypes.join(', ')}. `;
+  
+  // Directly locks in the user preference for the chatbot session
+  prompt += `CRITICAL: Do not default to generic text responses. The student explicitly prefers this learning style—ensure your formatting remains strictly locked to these guidelines throughout the chat. `;
+  
   prompt += `Pace should be ${adaptations.paceRecommendation}. `;
   
   if (adaptations.emotionalSupport) {
