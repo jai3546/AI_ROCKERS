@@ -30,7 +30,7 @@ AI-powered adaptive learning platform for students (grades 6–12). System track
 
 | Layer | Technology |
 |-------|-----------|
-| **Framework** | Next.js 15 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Language** | TypeScript (strict mode) |
 | **Styling** | Tailwind CSS + Radix UI |
 | **Animation** | Framer Motion |
