@@ -41,6 +41,19 @@ export async function POST(req: Request) {
     }
 
     const arrayBuffer = await file.arrayBuffer()
+    
+    // Limit file size to 10MB to prevent DoS
+    if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        {
+          error: "Image file too large. Maximum size is 10MB.",
+        },
+        {
+          status: 400,
+        }
+      )
+    }
+    
     const base64 = Buffer.from(arrayBuffer).toString("base64")
 
     const response = await fetch(
