@@ -357,31 +357,46 @@ export function AiTutorChat({
               <Button
                 variant={currentLearningStyle.primaryStyle === 'visual' ? 'default' : 'outline'}
                 size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
                 onClick={() => handleManualStyleOverride('visual')}
               >
-                <Eye size={12} />
-                Visual
+                <div className="flex items-center gap-1.5">
+                  <Eye size={12} />
+                  <span>Visual</span>
+                </div>
+                <span className="text-[10px] opacity-80">
+                  Learn using diagrams, flowcharts, and visual explanations.
+                </span>
               </Button>
 
               <Button
                 variant={currentLearningStyle.primaryStyle === 'auditory' ? 'default' : 'outline'}
                 size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
                 onClick={() => handleManualStyleOverride('auditory')}
               >
-                <Headphones size={12} />
-                Auditory
+                <div className="flex items-center gap-1.5">
+                  <Headphones size={12} />
+                  <span>Auditory</span>
+                </div>
+                <span className="text-[10px] opacity-80">
+                  Learn through spoken explanations and narration.
+                </span>
               </Button>
 
               <Button
                 variant={currentLearningStyle.primaryStyle === 'kinesthetic' ? 'default' : 'outline'}
                 size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
                 onClick={() => handleManualStyleOverride('kinesthetic')}
               >
-                <Activity size={12} />
-                Kinesthetic
+                <div className="flex items-center gap-1.5">
+                  <Activity size={12} />
+                  <span>Kinesthetic</span>
+                </div>
+                <span className="text-[10px] opacity-80">
+                  Learn through activities, examples, and hands-on learning.
+                </span>
               </Button>
             </div>
           </div>
