@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
   Brain,
+  FileQuestion,
   CheckCircle,
   Clock,
   FileText,
@@ -1026,7 +1027,7 @@ export default function StudentDashboardPage() {
               setShowQuiz(true)
             }}
           >
-            <Brain size={20} />
+            <FileQuestion size={20} />
             <span className="sr-only">{translations.quizzes[language]}</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
               {translations.quizzes[language]}
@@ -1322,7 +1323,7 @@ export default function StudentDashboardPage() {
               <Card className="overflow-hidden border-2 border-secondary/50 shadow-md h-full">
                 <CardHeader className="bg-secondary/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-secondary">
-                    <Brain size={18} />
+                    <FileQuestion size={18} />
                     {translations.quizzes[language]}
                   </CardTitle>
                 </CardHeader>
