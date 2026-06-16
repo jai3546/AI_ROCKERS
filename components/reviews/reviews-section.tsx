@@ -1,16 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { ReviewCard, ReviewData } from "./review-card"
+import React from "react"
+
+import { motion } from "framer-motion"
+import { ChevronLeft, ChevronRight, MessageCircleMore, PlusCircle } from "lucide-react"
+import useEmblaCarousel from "embla-carousel-react"
+
+import { ReviewCard, type ReviewData } from "./review-card"
 import { ReviewForm } from "./review-form"
 import TestimonialCarousel from "./carosel"
 
 interface ReviewsSectionProps {
+  eyebrow?: string
   title: string
   subtitle?: string
+  footerText?: string
   language?: "en" | "hi" | "te"
 }
 
@@ -72,14 +76,44 @@ const sampleReviews: ReviewData[] = [
   }
 ]
 
-export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSectionProps) {
-  const [currentPage, setCurrentPage] = useState(0)
-  const [reviews, setReviews] = useState<ReviewData[]>(sampleReviews)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [showReviewForm, setShowReviewForm] = useState(false)
+  React.useEffect(() => {
+    function onResize() {
+      const w = window.innerWidth
+      if (w < 640) setSlidesToShow(1)
+      else if (w < 1024) setSlidesToShow(3)
+      else setSlidesToShow(4)
+    }
+    onResize()
+    window.addEventListener("resize", onResize)
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
 
-  const reviewsPerPage = 3
-  const totalPages = Math.ceil(reviews.length / reviewsPerPage)
+  React.useEffect(() => {
+    if (!emblaApi) return
+    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap())
+    emblaApi.on("select", onSelect)
+    onSelect()
+    return () => {
+      emblaApi.off("select", onSelect)
+    }
+  }, [emblaApi])
+
+  const handleSubmitReview = (review: { name: string; role: string; rating: number; comment: string }) => {
+    const newReview: ReviewData = {
+      id: String(Date.now()),
+      name: review.name,
+      role: review.role,
+      avatar: undefined,
+      rating: review.rating,
+      comment: review.comment,
+      date: "",
+    }
+
+    setReviews((currentReviews) => [newReview, ...currentReviews])
+    requestAnimationFrame(() => emblaApi?.scrollTo(0))
+  }
 
   const translations = {
     writeReview: {
@@ -87,75 +121,66 @@ export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSect
       hi: "समीक्षा लिखें",
       te: "సమీక్ష రాయండి",
     },
-    prev: {
-      en: "Previous",
-      hi: "पिछला",
-      te: "మునుపటి",
-    },
-    next: {
-      en: "Next",
-      hi: "अगला",
-      te: "తదుపరి",
-    },
-    page: {
-      en: "Page",
-      hi: "पेज",
-      te: "పేజీ",
-    },
-    of: {
-      en: "of",
-      hi: "का",
-      te: "యొక్క",
-    },
   }
 
-  const handlePrevPage = () => {
-    if (currentPage > 0 && !isAnimating) {
-      setIsAnimating(true)
-      setCurrentPage(currentPage - 1)
-      setTimeout(() => setIsAnimating(false), 500)
-    }
-  }
+  return (
+    <section className="relative w-full overflow-hidden bg-[#F0FDFA] py-14 sm:py-20 dark:bg-background">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-0 top-0 h-52 w-52 rounded-full bg-[#0F766E]/10 blur-3xl dark:bg-primary/5" />
+        <div className="absolute right-0 top-12 h-56 w-56 rounded-full bg-[#14B8A6]/10 blur-3xl dark:bg-secondary/5" />
+        <div className="absolute -left-2 top-8 hidden h-40 w-28 opacity-60 [background-image:radial-gradient(rgba(15,118,110,0.18)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
+        <div className="absolute -bottom-2 right-0 hidden h-40 w-32 opacity-50 [background-image:radial-gradient(rgba(20,184,166,0.15)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
+      </div>
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1 && !isAnimating) {
-      setIsAnimating(true)
-      setCurrentPage(currentPage + 1)
-      setTimeout(() => setIsAnimating(false), 500)
-    }
-  }
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl text-center">
+          {eyebrow && (
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#CCFBF1] px-5 py-2 text-sm font-semibold text-[#0F766E] shadow-sm dark:bg-[#0F766E]/15 dark:text-[#5EEAD4]">
+              <MessageCircleMore className="h-4 w-4" />
+              {eyebrow}
+            </div>
+          )}
 
-  const currentReviews = reviews.slice(
-    currentPage * reviewsPerPage,
-    (currentPage + 1) * reviewsPerPage
-  )
+          <h2 className="mt-6 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl dark:text-foreground">
+            {language === "en" && title.includes("Thousands") ? (
+              <span className="inline-flex flex-wrap items-end justify-center gap-x-3 gap-y-0">
+                <span>{titleParts[0]}</span>
+                <span className="relative inline-flex items-end pb-3 text-slate-950 dark:text-foreground">
+                  <span>Thousands</span>
+                  <span className="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-[#F59E0B]/80" />
+                  {/* decorative heart removed per design: keep only underline */}
+                </span>
+                <span>{titleParts[1]}</span>
+              </span>
+            ) : (
+              title
+            )}
+          </h2>
 
-  const handleAddReview = () => {
-    setShowReviewForm(true)
-  }
+          {subtitle && (
+            <p className="mx-auto mt-5 max-w-4xl text-lg leading-8 text-slate-500 sm:text-2xl dark:text-muted-foreground">
+              {subtitle.split("VidyaAI.").map((part, index) => (
+                <span key={index}>
+                  {part}
+                  {index === 0 && subtitle.includes("VidyaAI.") && (
+                    <span className="font-semibold text-[#0F766E]">VidyaAI.</span>
+                  )}
+                </span>
+              ))}
+            </p>
+          )}
 
-  const handleSubmitReview = (reviewData: {
-    name: string
-    role: string
-    rating: number
-    comment: string
-  }) => {
-    // Create a new review with the submitted data
-    const newReview: ReviewData = {
-      id: `review-${Date.now()}`,
-      name: reviewData.name,
-      role: reviewData.role,
-      rating: reviewData.rating,
-      comment: reviewData.comment,
-      date: "Just now"
-    }
-
-    // Add the new review to the beginning of the reviews array
-    setReviews([newReview, ...reviews])
-
-    // Reset to the first page to show the new review
-    setCurrentPage(0)
-  }
+          <div className="mt-8 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setShowReviewForm(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-[#CCFBF1] bg-white px-5 py-3 text-sm font-semibold text-[#0F766E] shadow-sm transition-colors hover:bg-[#CCFBF1]/40 hover:text-[#115E59] dark:border-[#0F766E]/30 dark:bg-card dark:text-[#5EEAD4] dark:hover:bg-[#0F766E]/10"
+            >
+              <PlusCircle className="h-4 w-4" />
+              {translations.writeReview[language]}
+            </button>
+          </div>
+        </div>
 
   return (
     <section className="w-full py-12">
@@ -165,19 +190,21 @@ export function ReviewsSection({ title, subtitle, language = "en" }: ReviewsSect
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
             {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
           </div>
-          <div className="flex items-center mt-4 md:mt-0">
-            <div className="flex items-center mr-4">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={18}
-                    className="text-yellow-500 fill-yellow-500"
-                  />
-                ))}
-              </div>
-              <span className="ml-2 text-foreground font-medium">4.8</span>
-              <span className="ml-1 text-muted-foreground">({reviews.length})</span>
+
+          <div ref={emblaRef} className="embla overflow-hidden h-auto sm:h-[30rem] lg:h-[32rem]">
+            <div className="embla__container flex items-stretch">
+              {reviews.map((review, index) => (
+                <div
+                  key={review.id}
+                      className="embla__slide h-full px-3 sm:px-5"
+                      style={{ flex: `0 0 ${100 / slidesToShow}%`, maxWidth: `${100 / slidesToShow}%` }}
+                      aria-hidden={Math.floor(index / Math.max(1, slidesToShow)) !== Math.floor(selectedIndex / Math.max(1, slidesToShow))}
+                >
+                  <div className="flex h-full w-full justify-center">
+                    <ReviewCard review={review} />
+                  </div>
+                </div>
+              ))}
             </div>
            
           </div>

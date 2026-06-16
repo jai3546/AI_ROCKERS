@@ -24,6 +24,7 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  serverExternalPackages: ['pdf-parse', 'officeparser', 'pdfjs-dist'],
 }
 
 if (userConfig) {
