@@ -130,15 +130,10 @@ export function StudySummaries({
 
     const filename = selectedFile.name.toLowerCase()
     
-    const filename = selectedFile.name.toLowerCase()
-    
     if (!filename.endsWith('.pdf') && !filename.endsWith('.pptx') && !filename.endsWith('.ppt') && !filename.endsWith('.txt')) {
       setUploadError("Unsupported format. Please upload a PDF, PPT, PPTX or TXT file.")
       return
     }
-
-    setUploadError(null)
-    setUploadStep("reading")
 
     setUploadError(null)
     setUploadStep("reading")
