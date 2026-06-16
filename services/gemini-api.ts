@@ -874,6 +874,62 @@ function buildFallbackMindMap(label: string) {
   };
 }
 
+export async function generateAiSummaryFromDocument(
+  text: string,
+  filename: string,
+  subject: string = "Science",
+  syllabus: string = "General"
+): Promise<AiSummaryResult> {
+  try {
+    const systemPrompt = 
+      `You are a high-quality educational content creator. The user will provide the text extracted from a document titled "${filename}".
+      You must respond with a JSON object containing:
+      1. "title": A suitable title for the summary (capitalized).
+      2. "summary": A detailed, clear educational summary of the provided text suitable for K-12 students under the "${syllabus}" syllabus for the subject "${subject}". Use paragraphs and bullet points.
+      3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the title.
+        Each node in the tree MUST have this exact interface:
+        interface MindMapNode {
+          id: string;
+          label: string; // 1-3 words max
+          color?: string; // Hex color string corresponding to branch theme
+          children?: MindMapNode[];
+        }
+        Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
+      Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
+
+    const requestBody = {
+      contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nDocument Text:\n" + text.substring(0, 15000) }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json" }
+    };
+
+    const response = await fetch('/api/gemini', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      let title = filename, summary = "", mindMapData = null;
+      const parsed = safeJsonParse(rawText);
+      if (parsed) {
+        title = parsed.title || filename; summary = parsed.summary || ""; mindMapData = parsed.mindMapData || null;
+      } else {
+        const titleVal = extractStringField(rawText, "title"); if (titleVal) title = titleVal;
+        const summaryVal = extractStringField(rawText, "summary"); if (summaryVal) summary = summaryVal;
+        const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
+        if (mindMapMatch) { const block = extractBalancedObject(mindMapMatch[1]); if (block) mindMapData = safeJsonParse(block); }
+      }
+      if (summary) return { title, summary, mindMapData: mindMapData || { id: "root", label: title } };
+    }
+  } catch (e) { console.error("Failed to generate AI summary from document:", e); }
+  
+  const title = filename.split('.')[0] || "Document Summary";
+  return { 
+    title, 
+    summary: "Could not generate summary from the document due to an error.", 
+    mindMapData: { id: "root", label: title, color: "#3b82f6" } 
+  };
+}
 export function extractArray(parsed: any): any[] | null {
   if (Array.isArray(parsed)) return parsed;
   if (parsed && typeof parsed === "object") {

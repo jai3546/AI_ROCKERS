@@ -157,7 +157,9 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
     }
     onResize()
     window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
   }, [])
 
   React.useEffect(() => {
@@ -165,7 +167,9 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap())
     emblaApi.on("select", onSelect)
     onSelect()
-    return () => emblaApi.off("select", onSelect)
+    return () => {
+      emblaApi.off("select", onSelect)
+    }
   }, [emblaApi])
 
   const handleSubmitReview = (review: { name: string; role: string; rating: number; comment: string }) => {
@@ -192,18 +196,18 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
   }
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#fff8fb] py-14 sm:py-20 dark:bg-background">
+    <section className="relative w-full overflow-hidden bg-[#F0FDFA] py-14 sm:py-20 dark:bg-background">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-0 top-0 h-52 w-52 rounded-full bg-pink-300/10 blur-3xl dark:bg-primary/5" />
-        <div className="absolute right-0 top-12 h-56 w-56 rounded-full bg-fuchsia-300/10 blur-3xl dark:bg-secondary/5" />
-        <div className="absolute -left-2 top-8 hidden h-40 w-28 opacity-60 [background-image:radial-gradient(rgba(244,114,182,0.26)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
-        <div className="absolute -bottom-2 right-0 hidden h-40 w-32 opacity-50 [background-image:radial-gradient(rgba(244,114,182,0.22)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
+        <div className="absolute left-0 top-0 h-52 w-52 rounded-full bg-[#0F766E]/10 blur-3xl dark:bg-primary/5" />
+        <div className="absolute right-0 top-12 h-56 w-56 rounded-full bg-[#14B8A6]/10 blur-3xl dark:bg-secondary/5" />
+        <div className="absolute -left-2 top-8 hidden h-40 w-28 opacity-60 [background-image:radial-gradient(rgba(15,118,110,0.18)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
+        <div className="absolute -bottom-2 right-0 hidden h-40 w-32 opacity-50 [background-image:radial-gradient(rgba(20,184,166,0.15)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center">
           {eyebrow && (
-            <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-pink-100 px-5 py-2 text-sm font-semibold text-pink-500 shadow-sm dark:bg-pink-500/15 dark:text-pink-300">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#CCFBF1] px-5 py-2 text-sm font-semibold text-[#0F766E] shadow-sm dark:bg-[#0F766E]/15 dark:text-[#5EEAD4]">
               <MessageCircleMore className="h-4 w-4" />
               {eyebrow}
             </div>
@@ -215,7 +219,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
                 <span>{titleParts[0]}</span>
                 <span className="relative inline-flex items-end pb-3 text-slate-950 dark:text-foreground">
                   <span>Thousands</span>
-                  <span className="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-pink-400/80" />
+                  <span className="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-[#F59E0B]/80" />
                   {/* decorative heart removed per design: keep only underline */}
                 </span>
                 <span>{titleParts[1]}</span>
@@ -231,7 +235,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
                 <span key={index}>
                   {part}
                   {index === 0 && subtitle.includes("VidyaAI.") && (
-                    <span className="font-semibold text-pink-500">VidyaAI.</span>
+                    <span className="font-semibold text-[#0F766E]">VidyaAI.</span>
                   )}
                 </span>
               ))}
@@ -242,7 +246,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
             <button
               type="button"
               onClick={() => setShowReviewForm(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white px-5 py-3 text-sm font-semibold text-pink-500 shadow-sm transition-colors hover:bg-pink-50 hover:text-pink-600 dark:border-pink-900/40 dark:bg-card dark:text-pink-300 dark:hover:bg-pink-500/10"
+              className="inline-flex items-center gap-2 rounded-full border border-[#CCFBF1] bg-white px-5 py-3 text-sm font-semibold text-[#0F766E] shadow-sm transition-colors hover:bg-[#CCFBF1]/40 hover:text-[#115E59] dark:border-[#0F766E]/30 dark:bg-card dark:text-[#5EEAD4] dark:hover:bg-[#0F766E]/10"
             >
               <PlusCircle className="h-4 w-4" />
               {translations.writeReview[language]}
@@ -256,7 +260,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
               type="button"
               aria-label="Previous testimonials"
               onClick={() => emblaApi && emblaApi.scrollPrev()}
-              className="h-12 w-12 items-center justify-center rounded-full border border-pink-100 bg-white text-pink-400 shadow-[0_10px_30px_rgba(244,114,182,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-pink-300 dark:border-pink-900/40 dark:bg-card"
+              className="h-12 w-12 items-center justify-center rounded-full border border-[#CCFBF1] bg-white text-[#0F766E] shadow-[0_10px_30px_rgba(15,118,110,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-[#0F766E]/30 dark:bg-card"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
@@ -284,7 +288,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
               type="button"
               aria-label="Next testimonials"
               onClick={() => emblaApi && emblaApi.scrollNext()}
-              className="h-12 w-12 items-center justify-center rounded-full border border-pink-100 bg-white text-pink-400 shadow-[0_10px_30px_rgba(244,114,182,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-pink-300 dark:border-pink-900/40 dark:bg-card"
+              className="h-12 w-12 items-center justify-center rounded-full border border-[#CCFBF1] bg-white text-[#0F766E] shadow-[0_10px_30px_rgba(15,118,110,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-[#0F766E]/30 dark:bg-card"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
@@ -302,7 +306,9 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
                 type="button"
                 aria-label={`Go to testimonials page ${pageIndex + 1}`}
                 onClick={() => emblaApi && emblaApi.scrollTo(pageIndex * slidesToShow)}
-                className={`h-3.5 w-3.5 rounded-full transition-all ${activePage === pageIndex ? "bg-pink-500 shadow-[0_0_0_6px_rgba(244,114,182,0.12)]" : "bg-pink-200"}`}
+                className={`h-3.5 w-3.5 rounded-full transition-all ${activePage === pageIndex
+ ? "bg-[#F59E0B] shadow-[0_0_0_6px_rgba(245,158,11,0.18)]"
+: "bg-[#CCFBF1]"}`}
               />
             ))
           })()}
@@ -323,7 +329,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
         />
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[radial-gradient(ellipse_at_center,rgba(244,114,182,0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(244,114,182,0.08),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.08),transparent_70%)]" />
     </section>
   )
 }
