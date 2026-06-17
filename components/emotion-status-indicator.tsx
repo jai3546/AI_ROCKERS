@@ -99,6 +99,26 @@ export function EmotionStatusIndicator({
     return 'Very Low'
   }
 
+  // Learner-friendly status label (replaces raw emotion name)
+  const getFriendlyStatus = () => {
+    const fatigue = emotionState.fatigueScore || 0
+    const attention = emotionState.attentionScore ?? 100
+
+    if (fatigue > 70) return 'Needs a Short Break'
+    if (attention < 30) return 'Focus Tracking Active'
+
+    switch (emotionState.emotion) {
+      case 'happy':     return 'Focus Level: High'
+      case 'neutral':   return 'Focus Tracking Active'
+      case 'surprised': return 'Focus Level: Moderate'
+      case 'sad':
+      case 'fearful':
+      case 'angry':
+      case 'disgusted': return 'Learning Support Recommended'
+      default:          return 'Focus Tracking Active'
+    }
+  }
+
   return (
     <AnimatePresence mode="wait">
       {visible && (
@@ -118,14 +138,14 @@ export function EmotionStatusIndicator({
           className={`fixed top-20 right-4 z-40 ${className}`}
         >
         <Card
-          className={`w-64 shadow-lg border-l-4 cursor-pointer overflow-hidden ${getEmotionColor()} animate-pulse`}
+          className={`w-64 shadow-lg border-l-4 cursor-pointer overflow-hidden ${getEmotionColor()}`}
           onClick={() => setShowDetails(!showDetails)}
         >
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {getEmotionIcon()}
-                <span className="font-medium capitalize">{emotionState.emotion}</span>
+                <span className="font-medium">{getFriendlyStatus()}</span>
               </div>
               <div className="text-xs text-muted-foreground">
                 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -177,11 +197,16 @@ export function EmotionStatusIndicator({
                   )}
 
                   <div className="text-xs text-muted-foreground mt-2">
-                    {emotionState.emotion === 'sad' && "You seem sad. Would you like some encouragement?"}
-                    {emotionState.emotion === 'angry' && "You appear frustrated. Need help with something?"}
-                    {emotionState.emotion === 'fearful' && "You seem anxious. Let's break things down."}
-                    {emotionState.emotion === 'happy' && "You're in a great mood! Perfect time for learning."}
-                    {emotionState.emotion === 'neutral' && "You seem focused and ready to learn."}
+                    {(emotionState.emotion === 'sad' || emotionState.emotion === 'fearful') &&
+                      "It looks like you might benefit from a short break or some extra support."}
+                    {emotionState.emotion === 'angry' &&
+                      "Let's slow down — breaking the topic into smaller steps can help."}
+                    {emotionState.emotion === 'disgusted' &&
+                      "Switching topics or taking a quick pause might help refresh your focus."}
+                    {emotionState.emotion === 'happy' &&
+                      "Great energy! This is a perfect moment to tackle something challenging."}
+                    {(emotionState.emotion === 'neutral' || emotionState.emotion === 'surprised') &&
+                      "You're engaged and ready. Keep going!"}
                   </div>
                 </motion.div>
               )}
