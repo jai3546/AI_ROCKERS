@@ -7,8 +7,8 @@ import { DemoLogin } from "@/components/auth/demo-login"
 export default function DemoLoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col">
-      <header className="border-b bg-white dark:bg-gray-900 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <header className="border-b bg-white shadow-sm dark:bg-gray-900">
+        <div className="page-container flex items-center justify-between py-3">
           <div className="flex items-center gap-2">
             <BookOpen className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl text-foreground">VidyaAI</span>
@@ -53,8 +53,8 @@ export default function DemoLoginPage() {
         </motion.div>
       </main>
 
-      <footer className="border-t bg-white dark:bg-gray-900 py-4">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+      <footer className="border-t bg-white py-4 dark:bg-gray-900">
+        <div className="page-container text-center text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} VidyaAI. All rights reserved.
         </div>
       </footer>
