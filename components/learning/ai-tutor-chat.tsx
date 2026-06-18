@@ -2,10 +2,11 @@
 
 import type React from "react"
 import { motion } from "framer-motion"
-import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
+import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
@@ -357,46 +358,67 @@ export function AiTutorChat({
               <Button
                 variant={currentLearningStyle.primaryStyle === 'visual' ? 'default' : 'outline'}
                 size="sm"
-                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
+                className="h-7 text-xs w-28 justify-between px-2"
                 onClick={() => handleManualStyleOverride('visual')}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <Eye size={12} />
-                  <span>Visual</span>
+                  Visual
                 </div>
-                <span className="text-[10px] opacity-80">
-                  Learn using diagrams, flowcharts, and visual explanations.
-                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info size={12} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Learn using diagrams, flowcharts, and visual explanations.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </Button>
 
               <Button
                 variant={currentLearningStyle.primaryStyle === 'auditory' ? 'default' : 'outline'}
                 size="sm"
-                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
+                className="h-7 text-xs w-28 justify-between px-2"
                 onClick={() => handleManualStyleOverride('auditory')}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <Headphones size={12} />
-                  <span>Auditory</span>
+                  Auditory
                 </div>
-                <span className="text-[10px] opacity-80">
-                  Learn through spoken explanations and narration.
-                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info size={12} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Learn through spoken explanations and narration.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </Button>
 
               <Button
                 variant={currentLearningStyle.primaryStyle === 'kinesthetic' ? 'default' : 'outline'}
                 size="sm"
-                className="h-auto min-h-7 text-xs w-44 justify-start gap-1.5 px-2 py-2 flex-col items-start"
+                className="h-7 text-xs w-28 justify-between px-2"
                 onClick={() => handleManualStyleOverride('kinesthetic')}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <Activity size={12} />
-                  <span>Kinesthetic</span>
+                  Kinesthetic
                 </div>
-                <span className="text-[10px] opacity-80">
-                  Learn through activities, examples, and hands-on learning.
-                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info size={12} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Learn through activities, examples, and hands-on learning.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </Button>
             </div>
           </div>
