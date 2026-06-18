@@ -960,8 +960,8 @@ export default function StudentDashboardPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-card border-b border-border dark:border-border shadow-sm">
-        <div className="container flex items-center justify-between h-16 px-4">
+      <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
+        <div className="page-container flex h-16 items-center justify-between md:pl-20">
           <div
             className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
             onClick={() => setShowStudentDetails(true)}
@@ -1114,7 +1114,7 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container px-4 py-6 space-y-8 md:ml-16">
+      <div className="page-container space-y-8 py-6 pb-20 md:pl-20">
         {/* Level Progress */}
         <div id="dashboard-section">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
