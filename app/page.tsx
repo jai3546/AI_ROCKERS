@@ -411,19 +411,19 @@ export default function LandingPage() {
   return (
     <main
       suppressHydrationWarning
-      className="relative min-h-screen overflow-hidden bg-background"
+      className="relative min-h-screen overflow-x-hidden bg-background"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute right-8 top-24 h-40 w-40 rounded-full bg-primary/6 blur-2xl dark:bg-primary/4" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-4 sm:px-6 lg:px-8">
-        <motion.header
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-         className="fixed top-0 left-0 w-full z-50 border-b border-border/70 bg-background/85 px-6 py-3 shadow-sm backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto,1fr,auto] lg:gap-4">
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="fixed top-0 left-0 z-50 w-full border-b border-border/70 bg-background/85 py-4 shadow-sm backdrop-blur-xl"
+      >
+        <div className="page-shell flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto,1fr,auto] lg:gap-4">
             <div className="flex min-w-0 items-center gap-3 justify-self-start">
               <Link href="#hero" className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-highlight text-sm font-bold text-white shadow-lg shadow-primary/20">
@@ -540,9 +540,13 @@ export default function LandingPage() {
             </div>
           </motion.div>
           )}
-        </motion.header>
+      </motion.header>
 
-        <section id="hero" className="grid items-center gap-14 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-14">
+      <div className="page-shell relative flex flex-col pb-20 pt-24">
+        <section
+          id="hero"
+          className="scroll-mt-24 grid min-h-[calc(100dvh-6rem)] items-center gap-10 py-12 sm:gap-14 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20"
+        >
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -552,7 +556,7 @@ export default function LandingPage() {
             <div className="absolute -left-12 top-6 h-56 w-56 rounded-full bg-gradient-to-br from-primary/30 to-transparent blur-3xl opacity-80 dark:opacity-0 pointer-events-none" />
             {/* hero badge removed to simplify layout */}
 
-            <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+            <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-7xl">
               <span className="block">{translations.hero.title[language]}</span>
             </h1>
 
@@ -585,8 +589,8 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <div className="relative mx-auto w-full max-w-lg sm:max-w-xl lg:-translate-y-12">
-            <div className="relative rounded-xl border border-border/60 bg-background/80 p-4 sm:p-6 dark:bg-card/80 overflow-hidden h-64 sm:h-100 lg:h-50">
+          <div className="relative mx-auto w-full max-w-lg lg:max-w-none lg:justify-self-end">
+            <div className="relative min-h-[320px] overflow-hidden rounded-xl border border-border/60 bg-background/80 p-4 sm:min-h-[360px] sm:p-6 lg:min-h-[400px] dark:bg-card/80">
               <div className="absolute inset-0 -z-0 bg-gradient-to-br from-primary/30 via-primary/10 to-highlight/20 opacity-80 dark:opacity-0 pointer-events-none" />
               {/* additional pink glare for top-right, visible in dark mode and moved slightly upward */}
               <div className="absolute -right-6 -top-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/40 to-transparent blur-3xl opacity-70 dark:opacity-40 pointer-events-none -z-0" />
@@ -643,7 +647,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="py-12 sm:py-16">
+        <section id="features" className="scroll-mt-24 py-16 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">{translations.features.title[language]}</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
@@ -676,7 +680,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="portal" className="py-12 sm:py-16">
+        <section id="portal" className="scroll-mt-24 py-16 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-secondary">{translations.portal.title[language]}</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
@@ -731,7 +735,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <div id="reviews" className="py-8 sm:py-12">
+        <div id="reviews" className="scroll-mt-24 py-12 sm:py-16">
           <ReviewsSection
             eyebrow={translations.testimonials.eyebrow[language]}
             title={translations.testimonials.title[language]}

@@ -204,7 +204,7 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
         <div className="absolute -bottom-2 right-0 hidden h-40 w-32 opacity-50 [background-image:radial-gradient(rgba(20,184,166,0.15)_2px,transparent_2px)] [background-size:18px_18px] sm:block" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative page-shell">
         <div className="mx-auto max-w-5xl text-center">
           {eyebrow && (
             <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#CCFBF1] px-5 py-2 text-sm font-semibold text-[#0F766E] shadow-sm dark:bg-[#0F766E]/15 dark:text-[#5EEAD4]">

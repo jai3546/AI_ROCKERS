@@ -105,3 +105,9 @@
 .language-button {
   @apply flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-lg font-bold transition-all duration-200 hover:scale-105;
 }
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 2xl:px-20;
+  }
+}

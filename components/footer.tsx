@@ -3,7 +3,7 @@ import React from 'react';
 export default function Footer() {
   return (
     <footer className="w-full bg-background border-t border-border/70 py-10 text-muted-foreground text-sm mt-auto dark:border-border/40 dark:bg-background/95">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="page-shell grid grid-cols-1 md:grid-cols-3 gap-8">
         
         {/* Column 1: Platform Info */}
         <div>
@@ -43,7 +43,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Copyright Section */}
-      <div className="max-w-7xl mx-auto px-6 border-t border-border/70 mt-8 pt-6 text-center text-muted-foreground/70 dark:border-border/40 dark:text-neutral-500">
+      <div className="page-shell border-t border-border/70 mt-8 pt-6 text-center text-muted-foreground/70 dark:border-border/40 dark:text-neutral-500">
         <p>&copy; {new Date().getFullYear()} VidyaAI. Thank you for being a part of our journey!</p>
       </div>
     </footer>

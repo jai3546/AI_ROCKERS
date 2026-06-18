@@ -28,9 +28,9 @@ export default function RootLayout({
       <body className={`${inter.className} site-tint flex flex-col min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           {/* 3. Wrapped children in a main tag with flex-grow to push footer down */}
-          <main className="flex-grow">
+          <div className="flex-grow">
             {children}
-          </main>
+          </div>
           
           <ServiceWorkerRegistration />
           
