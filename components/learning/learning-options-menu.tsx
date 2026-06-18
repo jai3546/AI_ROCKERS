@@ -111,7 +111,7 @@ export function LearningOptionsMenu({
         >
           <div className="flex items-center justify-between p-4 border-b border-border dark:border-border">
             <h2 className="text-xl font-bold flex items-center gap-2 text-foreground dark:text-foreground">
-              <BookOpen className="text-primary" size={20} />
+              <GraduationCap className="text-primary" size={20} />
               {translations.title[language]}
             </h2>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -156,7 +156,7 @@ export function LearningOptionsMenu({
             >
               <CardContent className="p-4 flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-highlight/20 flex items-center justify-center flex-shrink-0">
-                  <Download size={24} className="text-highlight" />
+                  <BookOpen size={24} className="text-highlight" />
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground dark:text-foreground">{translations.summaries[language]}</h3>

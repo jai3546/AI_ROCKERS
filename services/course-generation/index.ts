@@ -68,6 +68,8 @@ export async function generateCourseFromContent(
     content.sourceName
   )
 
+  const sourceChunks = Object.fromEntries(chunks.map((chunk) => [chunk.id, chunk.text]))
+
   onProgress?.({
     stage: "validating",
     message: "Validating learning path and ordering...",
@@ -80,7 +82,11 @@ export async function generateCourseFromContent(
     progress: 100,
   })
 
-  return course
+  return {
+    ...course,
+    sourceText: content.text.slice(0, 50000),
+    sourceChunks,
+  }
 }
 
 export { validateAndOrderCourse, buildLearningPath, validatePrerequisiteOrder } from "./validate"

@@ -48,6 +48,8 @@ interface QuizContainerProps {
   subject?: string
   defaultShowAiGenerator?: boolean
   defaultAiTopic?: string
+  defaultSourceContent?: string
+  autoGenerateFromContent?: boolean
 }
 
 // Subject config for UI aesthetics
@@ -207,7 +209,9 @@ export function QuizContainer({
   syllabus = "General",
   subject,
   defaultShowAiGenerator = false,
-  defaultAiTopic = ""
+  defaultAiTopic = "",
+  defaultSourceContent = "",
+  autoGenerateFromContent = false,
 }: QuizContainerProps) {
   const [selectedSubject, setSelectedSubject] = useState<string | undefined>(subject)
   const [selectedTopic, setSelectedTopic] = useState<string | undefined>(undefined)
@@ -308,29 +312,19 @@ export function QuizContainer({
   const handleAnswer = (isCorrect: boolean) => {
     if (currentQuestion) {
       if (isCorrect) {
-        setScore(score + currentQuestion.points)
+        setScore(prev => prev + currentQuestion.points)
       }
 
-      setAnswers({
-        ...answers,
+      setAnswers(prev => ({
+        ...prev,
         [currentQuestion.id]: isCorrect
-      })
-
-      setTimeout(() => {
-        if (currentQuestionIndex < filteredQuestions.length - 1) {
-          setCurrentQuestionIndex(currentQuestionIndex + 1)
-        } else {
-          setQuizComplete(true)
-          const percentageScore = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0
-          onComplete(earnedPoints, totalPoints, percentageScore)
-        }
-      }, 1500)
+      }))
     }
   }
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < filteredQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1)
+      setCurrentQuestionIndex(prevIndex => prevIndex + 1)
     } else {
       setQuizComplete(true)
       const percentageScore = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0
@@ -529,8 +523,11 @@ ${index + 1}. ${q.question}
           onQuestionsGenerated={handleAiQuestionsGenerated}
           language={language}
           defaultSyllabus={syllabus}
-          defaultSubject={selectedSubject}
+          defaultSubject={selectedSubject || subject || "General"}
           defaultCustomSubject={defaultAiTopic}
+          defaultTopic={defaultAiTopic}
+          defaultSourceContent={defaultSourceContent}
+          autoGenerate={autoGenerateFromContent}
         />
       </div>
     )
@@ -1038,6 +1035,7 @@ ${index + 1}. ${q.question}
 
         {currentQuestion ? (
           <QuizCard
+            key={currentQuestion.id}
             question={currentQuestion.question}
             options={currentQuestion.options}
             timeLimit={45}

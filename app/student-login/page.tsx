@@ -295,7 +295,7 @@ export default function StudentLoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Info size={16} className="text-secondary" />
-                    <label htmlFor="schoolCode" className="text-sm font-medium">
+                    <label htmlFor="schoolCode" className="text-sm font-medium text-foreground dark:text-foreground">
                       {translations.schoolCode[language]}
                     </label>
                   </div>
@@ -312,7 +312,7 @@ export default function StudentLoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Info size={16} className="text-secondary" />
-                    <label htmlFor="studentId" className="text-sm font-medium">
+                    <label htmlFor="studentId" className="text-sm font-medium text-foreground dark:text-foreground">
                       {translations.studentId[language]}
                     </label>
                   </div>

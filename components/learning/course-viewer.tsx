@@ -17,12 +17,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Course, CourseLesson, CourseModule } from "@/types/course"
+import { buildLessonSourceContent } from "@/services/course-learning-context"
+
+export type CourseLearningTrigger = {
+  subject: string
+  topic: string
+  sourceContent: string
+}
 
 interface CourseViewerProps {
   course: Course
   onClose: () => void
-  onTriggerQuiz?: (subject: string, topic: string) => void
-  onTriggerFlashcards?: (subject: string, topic: string) => void
+  onTriggerQuiz?: (payload: CourseLearningTrigger) => void
+  onTriggerFlashcards?: (payload: CourseLearningTrigger) => void
   language?: "en" | "hi" | "te"
 }
 
@@ -293,7 +300,13 @@ export function CourseViewer({
                   {onTriggerQuiz && (
                     <Button
                       variant="outline"
-                      onClick={() => onTriggerQuiz(course.subject, activeLesson.title)}
+                      onClick={() =>
+                        onTriggerQuiz({
+                          subject: course.subject,
+                          topic: activeLesson.title,
+                          sourceContent: buildLessonSourceContent(activeLesson, course),
+                        })
+                      }
                     >
                       Quiz this topic
                     </Button>
@@ -301,7 +314,13 @@ export function CourseViewer({
                   {onTriggerFlashcards && (
                     <Button
                       variant="outline"
-                      onClick={() => onTriggerFlashcards(course.subject, activeLesson.title)}
+                      onClick={() =>
+                        onTriggerFlashcards({
+                          subject: course.subject,
+                          topic: activeLesson.title,
+                          sourceContent: buildLessonSourceContent(activeLesson, course),
+                        })
+                      }
                     >
                       Flashcards
                     </Button>

@@ -422,8 +422,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="sticky top-2 z-40 mb-4 rounded-2xl border border-border/70 bg-background/85 px-3 py-2 shadow-sm backdrop-blur-xl"
-        >
+         className="fixed top-0 left-0 w-full z-50 border-b border-border/70 bg-background/85 px-6 py-3 shadow-sm backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto,1fr,auto] lg:gap-4">
             <div className="flex min-w-0 items-center gap-3 justify-self-start">
               <Link href="#hero" className="flex items-center gap-3">

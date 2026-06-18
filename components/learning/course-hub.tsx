@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CourseCreator } from "./course-creator"
-import { CourseViewer } from "./course-viewer"
+import { CourseViewer, type CourseLearningTrigger } from "./course-viewer"
 import { getAllCourses, deleteCourse } from "@/services/course-storage"
 import type { Course, Syllabus } from "@/types/course"
 
@@ -21,8 +21,8 @@ interface CourseHubProps {
   onClose: () => void
   syllabus?: Syllabus
   language?: "en" | "hi" | "te"
-  onTriggerQuiz?: (subject: string, topic: string) => void
-  onTriggerFlashcards?: (subject: string, topic: string) => void
+  onTriggerQuiz?: (payload: CourseLearningTrigger) => void
+  onTriggerFlashcards?: (payload: CourseLearningTrigger) => void
 }
 
 type View = "library" | "create" | "view"

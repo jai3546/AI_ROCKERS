@@ -46,7 +46,13 @@ export function CourseCreator({
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<CourseGenerationProgress | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const pdfInputRef = useRef<HTMLInputElement>(null)
+  const documentInputRef = useRef<HTMLInputElement>(null)
+
+  const handleSourceTypeChange = (value: string) => {
+    setSourceType(value as SourceType)
+    setSelectedFile(null)
+    setError(null)
+  }
 
   const labels = {
     en: {
@@ -54,7 +60,7 @@ export function CourseCreator({
       subtitle: "Upload or paste any material — AI will structure it into a guided course",
       paste: "Paste Notes",
       file: "Text File",
-      pdf: "PDF",
+      pdf: "Document",
       url: "Web Link",
       pastePlaceholder: "Paste your study notes, lecture content, or any learning material here...",
       urlPlaceholder: "https://example.com/article",
@@ -62,7 +68,7 @@ export function CourseCreator({
       generate: "Generate Course",
       generating: "Generating your course...",
       selectFile: "Choose .txt or .md file",
-      selectPdf: "Choose PDF file",
+      selectDocument: "Choose PDF, PPT, PPTX, or TXT file",
     },
     hi: {
       title: "सामग्री से कोर्स बनाएं",
@@ -77,7 +83,7 @@ export function CourseCreator({
       generate: "कोर्स बनाएं",
       generating: "आपका कोर्स बनाया जा रहा है...",
       selectFile: ".txt या .md फ़ाइल चुनें",
-      selectPdf: "PDF फ़ाइल चुनें",
+      selectDocument: "PDF, PPT, PPTX या TXT फ़ाइल चुनें",
     },
     te: {
       title: "కంటెంట్ నుండి కోర్స్ సృష్టించండి",
@@ -92,7 +98,7 @@ export function CourseCreator({
       generate: "కోర్స్ సృష్టించండి",
       generating: "మీ కోర్స్ సృష్టించబడుతోంది...",
       selectFile: ".txt లేదా .md ఫైల్ ఎంచుకోండి",
-      selectPdf: "PDF ఫైల్ ఎంచుకోండి",
+      selectDocument: "PDF, PPT, PPTX లేదా TXT ఫైల్ ఎంచుకోండి",
     },
   }
 
@@ -111,7 +117,11 @@ export function CourseCreator({
         input = url
       } else if (sourceType === "file" || sourceType === "pdf") {
         if (!selectedFile) {
-          throw new Error(sourceType === "pdf" ? "Please select a PDF file." : "Please select a text file.")
+          throw new Error(
+            sourceType === "pdf"
+              ? "Please select a document (PDF, PPT, PPTX, or TXT)."
+              : "Please select a text file."
+          )
         }
         input = selectedFile
       } else {
@@ -152,7 +162,7 @@ export function CourseCreator({
       </div>
 
       <div className="p-4 overflow-y-auto flex-1 space-y-4">
-        <Tabs value={sourceType} onValueChange={(v) => setSourceType(v as SourceType)}>
+        <Tabs value={sourceType} onValueChange={handleSourceTypeChange}>
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="paste" disabled={isGenerating}>
               <FileText size={14} className="mr-1" />
@@ -207,18 +217,18 @@ export function CourseCreator({
           <TabsContent value="pdf" className="mt-4">
             <Card
               className="border-dashed cursor-pointer hover:bg-accent/30 transition-colors"
-              onClick={() => !isGenerating && pdfInputRef.current?.click()}
+              onClick={() => !isGenerating && documentInputRef.current?.click()}
             >
               <CardContent className="p-8 text-center">
                 <FileText className="mx-auto mb-3 text-muted-foreground" size={32} />
-                <p className="text-sm text-muted-foreground">{t.selectPdf}</p>
+                <p className="text-sm text-muted-foreground">{t.selectDocument}</p>
                 {selectedFile && sourceType === "pdf" && (
                   <p className="text-sm font-medium mt-2">{selectedFile.name}</p>
                 )}
                 <input
-                  ref={pdfInputRef}
+                  ref={documentInputRef}
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.ppt,.pptx,.txt"
                   className="hidden"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                 />

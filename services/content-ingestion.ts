@@ -1,5 +1,30 @@
 import type { IngestedContent, SourceType } from "@/types/course"
 
+const PARSE_DOCUMENT_PATTERN = /\.(pdf|pptx?|txt)$/i
+
+async function parseDocumentViaApi(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await fetch("/api/parse-document", {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Document extraction failed" }))
+    throw new Error(error.error || "Failed to extract text from the document.")
+  }
+
+  const data = await response.json()
+  const text = (data.text || "").trim()
+  if (!text) {
+    throw new Error("No readable text found in the document.")
+  }
+
+  return text
+}
+
 export async function ingestPastedText(text: string): Promise<IngestedContent> {
   const trimmed = text.trim()
   if (!trimmed) {
@@ -22,31 +47,29 @@ export async function ingestTextFile(file: File): Promise<IngestedContent> {
   return { text, sourceType: "file", sourceName: file.name }
 }
 
+/** PDF, PPT, PPTX, and TXT via server-side parser (same path as Study Summaries uploads). */
+export async function ingestDocumentFile(file: File): Promise<IngestedContent> {
+  const name = file.name.toLowerCase()
+
+  if (name.match(/\.(md|markdown)$/i)) {
+    return ingestTextFile(file)
+  }
+
+  if (!name.match(PARSE_DOCUMENT_PATTERN)) {
+    throw new Error("Unsupported file type. Please upload PDF, PPT, PPTX, TXT, or MD.")
+  }
+
+  const text = await parseDocumentViaApi(file)
+  const sourceType: SourceType = name.endsWith(".pdf") ? "pdf" : "file"
+
+  return { text, sourceType, sourceName: file.name }
+}
+
 export async function ingestPdfFile(file: File): Promise<IngestedContent> {
   if (!file.name.match(/\.pdf$/i)) {
     throw new Error("Please upload a PDF file.")
   }
-
-  const formData = new FormData()
-  formData.append("file", file)
-
-  const response = await fetch("/api/content/extract-pdf", {
-    method: "POST",
-    body: formData,
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "PDF extraction failed" }))
-    throw new Error(error.error || "Failed to extract text from PDF.")
-  }
-
-  const data = await response.json()
-  const text = (data.text || "").trim()
-  if (!text) {
-    throw new Error("No readable text found in the PDF.")
-  }
-
-  return { text, sourceType: "pdf", sourceName: file.name }
+  return ingestDocumentFile(file)
 }
 
 export async function ingestUrl(url: string): Promise<IngestedContent> {
@@ -98,8 +121,8 @@ export async function ingestContent(
       if (!(input instanceof File)) throw new Error("Expected a file.")
       return ingestTextFile(input)
     case "pdf":
-      if (!(input instanceof File)) throw new Error("Expected a PDF file.")
-      return ingestPdfFile(input)
+      if (!(input instanceof File)) throw new Error("Expected a document file.")
+      return ingestDocumentFile(input)
     case "url":
       if (typeof input !== "string") throw new Error("Expected a URL.")
       return ingestUrl(input)

@@ -44,6 +44,10 @@ export const CourseSchema = z.object({
   learningPath: z.array(z.string()),
   essentialTopics: z.array(z.string()),
   createdAt: z.string(),
+  /** Original ingested text, used for quiz/flashcard generation from uploaded material */
+  sourceText: z.string().optional(),
+  /** Chunk id → text map from course generation, for lesson-scoped quizzes */
+  sourceChunks: z.record(z.string()).optional(),
 })
 
 export type Course = z.infer<typeof CourseSchema>
