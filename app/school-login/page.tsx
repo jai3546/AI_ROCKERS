@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { VoiceCommand } from "@/components/voice-command"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { setSession } from "@/lib/auth/session"
 
 export default function SchoolLoginPage() {
   const router = useRouter()
@@ -64,15 +65,29 @@ export default function SchoolLoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    // For demo purposes, navigate to admin dashboard
+    setSession({
+      id: "school-admin",
+      name: "School Admin",
+      role: "school",
+      avatar: "🏫",
+      isDemo: false,
+      schoolCode: schoolCode.trim() || "ADMIN123",
+    })
     router.push("/admin-dashboard")
   }
 
   const handleDemoLogin = () => {
     setSchoolCode("ADMIN123")
     setAdminPin("1234")
-    // Auto login after a short delay
     setTimeout(() => {
+      setSession({
+        id: "school-admin",
+        name: "School Admin",
+        role: "school",
+        avatar: "🏫",
+        isDemo: true,
+        schoolCode: "ADMIN123",
+      })
       router.push("/admin-dashboard")
     }, 500)
   }

@@ -87,34 +87,39 @@
 
 "use client";
 
-import { StudySessionHistory } from "@/components/learning/study-session-history";
 import { useRouter } from "next/navigation";
+import { StudySessionHistory } from "@/components/learning/study-session-history";
 import { AppSidebar, AppBottomNav } from "@/components/layout/app-nav";
+import { RouteGuard } from "@/components/auth/route-guard";
+import { useLogout } from "@/hooks/use-logout";
 
 export default function SessionHistoryPage() {
   const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem("demoUser");
-    router.push("/");
-  };
+  const { requestLogout, LogoutConfirmDialog } = useLogout();
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-highlight/10 pb-20 pt-8">
-      <AppSidebar onLogout={handleLogout} />
-      <div className="page-container md:pl-20">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Study Session History
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Track your learning progress, study patterns, and performance insights.
-          </p>
-        </div>
+    <>
+      <RouteGuard allowedRoles={["student"]}>
+        {(user) => (
+          <main className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-highlight/10 pb-20 pt-8">
+            <AppSidebar user={user} onLogout={requestLogout} />
+          <div className="page-container md:pl-20">
+            <div className="mb-6">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Study Session History
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Track your learning progress, study patterns, and performance insights.
+              </p>
+            </div>
 
-        <StudySessionHistory onClose={() => router.push("/student-dashboard")} language="en" />
-      </div>
-      <AppBottomNav />
-    </main>
+            <StudySessionHistory onClose={() => router.push("/student-dashboard")} language="en" />
+          </div>
+          <AppBottomNav />
+        </main>
+        )}
+      </RouteGuard>
+      <LogoutConfirmDialog />
+    </>
   );
 }

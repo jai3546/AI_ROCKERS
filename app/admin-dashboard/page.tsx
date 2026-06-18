@@ -28,6 +28,8 @@ import { StudentManagement } from "@/components/school/student-management"
 import { StudentDetailsDialog } from "@/components/school/student-details-dialog"
 import { SchoolDetailsDialog } from "@/components/school-details-dialog"
 import { useRouter } from "next/navigation"
+import { RouteGuard } from "@/components/auth/route-guard"
+import { useLogout } from "@/hooks/use-logout"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -48,6 +50,27 @@ function ThemeToggle() {
 }
 
 export default function AdminDashboardPage() {
+  const { requestLogout, LogoutConfirmDialog } = useLogout()
+
+  return (
+    <>
+      <RouteGuard allowedRoles={["school"]}>
+        {(user) => (
+          <AdminDashboardContent adminName={user.name} onLogout={requestLogout} />
+        )}
+      </RouteGuard>
+      <LogoutConfirmDialog />
+    </>
+  )
+}
+
+function AdminDashboardContent({
+  adminName,
+  onLogout,
+}: {
+  adminName: string
+  onLogout: () => void
+}) {
   const router = useRouter()
   const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [isExporting, setIsExporting] = useState(false)
@@ -69,9 +92,9 @@ export default function AdminDashboardPage() {
 
   const translations = {
     welcome: {
-      en: "Welcome, Admin!",
-      hi: "स्वागत है, एडमिन!",
-      te: "స్వాగతం, అడ్మిన్!",
+      en: `Welcome, ${adminName}!`,
+      hi: `स्वागत है, ${adminName}!`,
+      te: `స్వాగతం, ${adminName}!`,
     },
     dashboard: {
       en: "School Portal",
@@ -262,7 +285,7 @@ export default function AdminDashboardPage() {
 
     // Handle logout command
     if (lowerCommand.includes("logout") || lowerCommand.includes("लॉगआउट") || lowerCommand.includes("లాగౌట్")) {
-      router.push("/")
+      onLogout()
     }
 
     // Other commands would trigger specific actions
@@ -290,7 +313,7 @@ export default function AdminDashboardPage() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="text-foreground/70">
+            <Button variant="ghost" size="icon" onClick={onLogout} className="text-foreground/70">
               <LogOut size={20} />
               <span className="sr-only">{translations.logout[language]}</span>
             </Button>
@@ -743,7 +766,7 @@ export default function AdminDashboardPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push("/")}
+          onClick={onLogout}
           className="text-foreground/70 relative group"
         >
           <LogOut size={20} />

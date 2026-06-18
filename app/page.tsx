@@ -16,6 +16,7 @@ import {
   TabletSmartphone,
   Menu,
   X,
+  Users,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -192,6 +193,12 @@ export default function LandingPage() {
             bullets: ["Weekly performance summaries", "Focus and emotion insights", "Teacher-friendly reporting"],
             cta: "Open School Portal",
           },
+          {
+            title: "Mentor Portal",
+            subtitle: "Monitor assigned students, track progress, and send personalized guidance.",
+            bullets: ["Assigned student overview", "Progress and activity tracking", "Guidance and encouragement tools"],
+            cta: "Open Mentor Portal",
+          },
         ],
         hi: [
           {
@@ -206,6 +213,12 @@ export default function LandingPage() {
             bullets: ["साप्ताहिक प्रदर्शन सारांश", "ध्यान और भावना की जानकारी", "शिक्षक-अनुकूल रिपोर्टिंग"],
             cta: "स्कूल पोर्टल खोलें",
           },
+          {
+            title: "मेंटर पोर्टल",
+            subtitle: "सौंपे गए छात्रों की प्रगति देखें और मार्गदर्शन दें।",
+            bullets: ["सौंपे गए छात्र", "प्रगति ट्रैकिंग", "मार्गदर्शन उपकरण"],
+            cta: "मेंटर पोर्टल खोलें",
+          },
         ],
         te: [
           {
@@ -219,6 +232,12 @@ export default function LandingPage() {
             subtitle: "తరగతి పురోగతి, విద్యార్థి నిమగ్నత, ఉపయోగకరమైన విశ్లేషణల స్పష్టమైన దృశ్యం.",
             bullets: ["వారపు పనితీరు సారాంశాలు", "ఫోకస్ మరియు భావోద్వేగ అవగాహన", "టీచర్‌కు అనుకూల రిపోర్టింగ్"],
             cta: "స్కూల్ పోర్టల్ తెరవండి",
+          },
+          {
+            title: "మెంటర్ పోర్టల్",
+            subtitle: "కేటాయించిన విద్యార్థుల పురోగతిని ట్రాక్ చేసి మార్గదర్శకత్వం అందించండి.",
+            bullets: ["కేటాయించిన విద్యార్థులు", "పురోగతి ట్రాకింగ్", "మార్గదర్శకత్వ సాధనాలు"],
+            cta: "మెంటర్ పోర్టల్ తెరవండి",
           },
         ],
       },
@@ -372,6 +391,15 @@ export default function LandingPage() {
       bullets: translations.portal.cards[language][1].bullets,
       cta: translations.portal.cards[language][1].cta,
       accent: "from-secondary to-accent",
+    },
+    {
+      icon: Users,
+      href: "/mentor-login",
+      title: translations.portal.cards[language][2].title,
+      subtitle: translations.portal.cards[language][2].subtitle,
+      bullets: translations.portal.cards[language][2].bullets,
+      cta: translations.portal.cards[language][2].cta,
+      accent: "from-accent to-primary",
     },
   ]
 
@@ -690,7 +718,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-2">
+          <div className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-3">
             {portalCards.map((portal) => {
               const Icon = portal.icon
 
