@@ -216,7 +216,7 @@ export default function LearningBrainPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
       <AppSidebar user={user} onLogout={handleLogout} />
-      <div className="container mx-auto px-4 py-6 md:ml-16">
+      <div className="page-container py-6 pb-20 md:pl-20">
         <LearningBrainDashboard studentId={user.id} studentName={user.name} />
       </div>
       <AppBottomNav />

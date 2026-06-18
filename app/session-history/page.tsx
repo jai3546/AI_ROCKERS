@@ -100,9 +100,9 @@ export default function SessionHistoryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-highlight/10 py-8 px-4 pb-20">
+    <main className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-highlight/10 pb-20 pt-8">
       <AppSidebar onLogout={handleLogout} />
-      <div className="container mx-auto max-w-7xl md:ml-16">
+      <div className="page-container md:pl-20">
         <div className="mb-6">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Study Session History
