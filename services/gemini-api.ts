@@ -28,12 +28,12 @@ export async function getGeminiResponse(
     let systemPrompt = `You are VidyAI, a friendly and encouraging AI tutor for school students (classes 6–12).
 
 CORE BEHAVIOR:
-- Respond like a patient, warm teacher sitting beside the student — never like a chatbot.
-- Keep responses SHORT: 3–5 sentences or 3–4 bullet points max. The student can always ask for more.
-- Use simple language. Explain step by step. Prioritize clarity over completeness.
-- Use real-life analogies and relatable examples to explain concepts.
-- Never produce walls of text. Break into short paragraphs or bullet points with line breaks.
-- End responses with ONE short follow-up question or "Want to go deeper? Just ask!" — never multiple questions.
+- Respond like a patient, warm teacher sitting beside the student — never like a chatbot. Speak directly and encouragingly.
+- Keep responses SHORT: 3–5 sentences or 3–4 bullet points max. Give just enough to understand; the student can always ask for more.
+- Use simple language. Explain concepts step by step. Prioritize clarity and immediate understanding over completeness.
+- Use real-life analogies and relatable, everyday examples to make abstract concepts easy to grasp.
+- Never produce walls of text. Break your writing into very short paragraphs or bullet points with frequent line breaks.
+- End responses with exactly ONE short follow-up question or the phrase "Want to go deeper? Just ask!" — never ask multiple questions.
 
 SUBJECT: ${subject}
 
@@ -41,11 +41,11 @@ LANGUAGE:
 ${language === 'hi' ? 'Respond entirely in Hindi.' : language === 'te' ? 'Respond entirely in Telugu.' : 'Respond in English.'}
 
 AMBIGUOUS/TYPO QUERIES:
-- If the query is unclear or seems like a typo, suggest 2–3 likely meanings in one line, then ask ONE clarification question. Do not guess and write a long answer.
+- If the query is unclear or seems like a typo, do not guess or write a long answer. Suggest 2–3 likely meanings in a single line, then ask ONE short clarification question.
 
 CLASS-LEVEL PERSONALIZATION:
-- If the student mentions their class or grade, adapt vocabulary and depth accordingly.
-- Default to middle school level (class 8) if unknown.
+- If the student mentions their class or grade, adapt your vocabulary, depth, and choice of analogies accordingly.
+- Default to a middle school level (Class 8) if the grade is unknown.
 
 MERMAID DIAGRAMS:
 - For topics like cycles, processes, or workflows (e.g. water cycle, photosynthesis, mitosis), include a simple Mermaid diagram after your explanation using this format:
@@ -64,12 +64,12 @@ graph TD
     if (emotionState) {
       systemPrompt += `\n\nEMOTION AWARENESS:\nThe student currently appears ${emotionState.emotion}.`;
       const emotionGuide: Record<string, string> = {
-        sad: 'Be extra warm and encouraging. Use positive reinforcement.',
-        angry: 'Acknowledge their frustration calmly. Offer a fresh, simpler approach.',
-        fearful: 'Be reassuring. Break the topic into the smallest possible steps.',
-        confused: 'Use a simple analogy first. Ask what part confused them.',
-        happy: 'Match their energy! You can introduce a fun challenge or deeper angle.',
-        neutral: 'Keep a steady, friendly tone.',
+        sad: 'Be extra warm and encouraging. Use positive reinforcement to build their confidence.',
+        angry: 'Acknowledge their frustration calmly. Take a step back and offer a fresh, simpler approach.',
+        fearful: 'Be deeply reassuring. Reassure them that it is okay to struggle. Break the topic into the smallest possible steps.',
+        confused: 'Use a simple, vivid analogy first. Gently ask what part confused them.',
+        happy: 'Match their energy! Celebrate their enthusiasm and introduce a fun challenge or a slightly deeper angle.',
+        neutral: 'Keep a steady, friendly, and supportive tone.',
       };
       const guide = emotionGuide[emotionState.emotion.toLowerCase()] || emotionGuide.neutral;
       systemPrompt += ` ${guide}`;
@@ -278,11 +278,11 @@ export async function generateAiSummaryAndMindmap(
 
   const mockSummariesDb: Record<string, { summary: string; mindMapData: any }> = {
     "python": {
-      summary: "Python is a high-level, interpreted programming language known for its exceptional readability and simplicity. Created by Guido van Rossum and released in 1991, Python's design philosophy emphasizes clean code layout, specifically using indentation rather than braces to define code blocks.\n\nKey concepts of Python include:\n• Ease of Learning: Python has a simple, English-like syntax, making it highly accessible for beginners.\n• Interpreted Execution: Programs are executed line-by-line by an interpreter, allowing rapid prototyping and easy debugging.\n• Rich Standard Library: Python supports thousands of modules for tasks ranging from file handling to machine learning and game development.\n• Multi-paradigm Support: Developers can choose object-oriented, functional, or procedural styles to build applications.",
+      summary: "Python is a high-level, interpreted programming language known for its exceptional readability and simplicity. Created by Guido van Rossum and released in 1991, Python's design philosophy emphasizes clean code layout, specifically using indentation rather than braces to define code blocks.\n\nKey concepts of Python include:\n• Ease of Learning: Python has a simple, English-like syntax, making it highly accessible for beginners.\n• Interpreted Execution: Programs are executed line-by-line by an interpreter, allowing rapid prototyping and easy debugging.\n• Rich Standard Library: Python supports thousands of modules for tasks ranging from file handling to machine learning and game development.\n• Multi-paradigm Support: Developers can choose object-oriented, functional, or procedural styles to build applications.\n• Variety of Real-World Applications: Python is widely used in web development, data science and machine learning, workflow automation, scientific computing, IoT, and robotics.",
       mindMapData: { id: "root-python", label: "Python", color: "#3b82f6", children: [{ id: "py1", label: "Key Features", color: "#10b981", children: [{ id: "py1_1", label: "Clean Syntax", color: "#10b981" }, { id: "py1_2", label: "Interpreted", color: "#10b981" }] }, { id: "py2", label: "Use Cases", color: "#ea580c", children: [{ id: "py2_1", label: "Web Dev", color: "#ea580c" }, { id: "py2_2", label: "Data Science", color: "#ea580c" }, { id: "py2_3", label: "AI & Automation", color: "#ea580c" }] }, { id: "py3", label: "Ecosystem", color: "#db2777", children: [{ id: "py3_1", label: "Pip Packages", color: "#db2777" }, { id: "py3_2", label: "Libraries", color: "#db2777" }] }] }
     },
     "artificial intelligence": {
-      summary: "Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that historically required human intelligence.\n\nMain fields include:\n• Machine Learning: Teaching systems to identify patterns from data.\n• Deep Learning: Multi-layered neural networks for complex data.\n• Natural Language Processing: Understanding human speech and text.\n• Robotics & Computer Vision: Machines that perceive and interact with the world.",
+      summary: "Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that historically required human intelligence.\n\nMain fields include:\n• Machine Learning: Teaching systems to identify patterns from data.\n• Deep Learning: Multi-layered neural networks for complex data.\n• Natural Language Processing: Understanding human speech and text.\n• Robotics: Machines that perceive and interact with the world.\n• Computer Vision: Training machines to interpret and understand visual information from the world.",
       mindMapData: { id: "root-ai", label: "Artificial Intelligence", color: "#8b5cf6", children: [{ id: "ai1", label: "Core Pillars", color: "#ec4899", children: [{ id: "ai1_1", label: "Machine Learning", color: "#ec4899" }, { id: "ai1_2", label: "Deep Learning", color: "#ec4899" }] }, { id: "ai2", label: "User Interaction", color: "#3b82f6", children: [{ id: "ai2_1", label: "Natural Language", color: "#3b82f6" }, { id: "ai2_2", label: "Computer Vision", color: "#3b82f6" }] }, { id: "ai3", label: "Applications", color: "#10b981", children: [{ id: "ai3_1", label: "Smart Assistants", color: "#10b981" }, { id: "ai3_2", label: "Automation", color: "#10b981" }] }] }
     },
     "quantum physics": {
@@ -305,6 +305,62 @@ export async function generateAiSummaryAndMindmap(
   return { title, summary: content, mindMapData };
 }
 
+export async function generateAiSummaryFromDocument(
+  text: string,
+  filename: string,
+  subject: string = "Science",
+  syllabus: string = "General"
+): Promise<AiSummaryResult> {
+  try {
+    const systemPrompt = 
+      `You are a high-quality educational content creator. The user will provide the text extracted from a document titled "${filename}".
+      You must respond with a JSON object containing:
+      1. "title": A suitable title for the summary (capitalized).
+      2. "summary": A detailed, clear educational summary of the provided text suitable for K-12 students under the "${syllabus}" syllabus for the subject "${subject}". Use paragraphs and bullet points.
+      3. "mindMapData": A hierarchical tree structure of the concept map. The root node is the title.
+        Each node in the tree MUST have this exact interface:
+        interface MindMapNode {
+          id: string;
+          label: string; // 1-3 words max
+          color?: string; // Hex color string corresponding to branch theme
+          children?: MindMapNode[];
+        }
+        Limit the tree to a root node, 3 primary branches, and 2-3 leaf nodes per branch.
+      Respond ONLY with a valid JSON block matching the above description. Do not wrap in markdown quotes.`;
+
+    const requestBody = {
+      contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nDocument Text:\n" + text.substring(0, 15000) }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json" }
+    };
+
+    const response = await fetch('/api/gemini', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      let title = filename, summary = "", mindMapData = null;
+      const parsed = safeJsonParse(rawText);
+      if (parsed) {
+        title = parsed.title || filename; summary = parsed.summary || ""; mindMapData = parsed.mindMapData || null;
+      } else {
+        const titleVal = extractStringField(rawText, "title"); if (titleVal) title = titleVal;
+        const summaryVal = extractStringField(rawText, "summary"); if (summaryVal) summary = summaryVal;
+        const mindMapMatch = rawText.match(/"mindMapData"\s*:\s*(\{[\s\S]*\})/i);
+        if (mindMapMatch) { const block = extractBalancedObject(mindMapMatch[1]); if (block) mindMapData = safeJsonParse(block); }
+      }
+      if (summary) return { title, summary, mindMapData: mindMapData || { id: "root", label: title } };
+    }
+  } catch (e) { console.error("Failed to generate AI summary from document:", e); }
+  
+  const title = filename.split('.')[0] || "Document Summary";
+  return { 
+    title, 
+    summary: "Could not generate summary from the document due to an error.", 
+    mindMapData: { id: "root", label: title, color: "#3b82f6" } 
+  };
+}
 export function extractArray(parsed: any): any[] | null {
   if (Array.isArray(parsed)) return parsed;
   if (parsed && typeof parsed === "object") {
@@ -327,7 +383,7 @@ interface QuizQuestion {
   points: number; // set to 20
   topic: string;
 }
-Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
+Respond ONLY with a valid JSON array. Do NOT wrap in markdown quotes.`;
       const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numQuestions} questions for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
       const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {
@@ -373,7 +429,7 @@ export async function generateAiFlashcards(subject: string, syllabus: string = "
         You must respond with a JSON array containing ${numFlashcards} flashcards for the subject "${subject}" under the "${syllabus}" syllabus.
         Each flashcard must match:
         interface Flashcard { front: string; back: string; }
-        Respond ONLY with a valid JSON array. Do not wrap in markdown quotes.`;
+        Respond ONLY with a valid JSON array. Do NOT wrap in markdown quotes.`;
       const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numFlashcards} flashcards for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
       const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {

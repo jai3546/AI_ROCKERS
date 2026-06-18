@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { updateSchoolPortal } from "@/services/school-portal-service"
 import { MindMap } from "./mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
-import { generateAiSummaryAndMindmap } from "@/services/gemini-api"
+import { generateAiSummaryAndMindmap, generateAiSummaryFromDocument } from "@/services/gemini-api"
 
 export interface StudySummary {
   id: string
@@ -88,6 +88,125 @@ export function StudySummaries({
   const [isGeneratingAI, setIsGeneratingAI] = useState<boolean>(false)
   const [aiTargetSubject, setAiTargetSubject] = useState<string>("Science")
   const [customAiSubject, setCustomAiSubject] = useState<string>("")
+
+  // File upload state definitions
+  const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadSubject, setUploadSubject] = useState<string>("Science")
+  const [customUploadSubject, setCustomUploadSubject] = useState<string>("")
+  const [uploadStep, setUploadStep] = useState<"idle" | "reading" | "parsing" | "ai_generating" | "complete">("idle")
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [dragActive, setDragActive] = useState<boolean>(false)
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.size > 15 * 1024 * 1024) {
+        setUploadError("File size exceeds the 15MB limit.")
+        setSelectedFile(null)
+      } else {
+        setSelectedFile(file)
+        setUploadError(null)
+      }
+    }
+  }
+
+  const handleUploadAndSummarize = async () => {
+    if (!selectedFile) {
+      setUploadError("Please select a file first")
+      return
+    }
+
+    const filename = selectedFile.name.toLowerCase()
+    
+    if (!filename.endsWith('.pdf') && !filename.endsWith('.pptx') && !filename.endsWith('.ppt') && !filename.endsWith('.txt')) {
+      setUploadError("Unsupported format. Please upload a PDF, PPT, PPTX or TXT file.")
+      return
+    }
+
+    setUploadError(null)
+    setUploadStep("reading")
+
+    try {
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+
+      setUploadStep("parsing")
+      const parseResponse = await fetch("/api/parse-document", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!parseResponse.ok) {
+        let errorMessage = "Failed to parse document content."
+        try {
+          const contentType = parseResponse.headers.get("content-type")
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await parseResponse.json()
+            errorMessage = errorData.error || errorMessage
+          } else {
+            const textError = await parseResponse.text()
+            errorMessage = textError || errorMessage
+          }
+        } catch (_) {}
+        throw new Error(errorMessage)
+      }
+
+      const { text } = await parseResponse.json()
+      if (!text || text.trim() === "") {
+        throw new Error("No text content could be extracted from this document.")
+      }
+
+      setUploadStep("ai_generating")
+      const targetSubj = uploadSubject === "Other" ? (customUploadSubject.trim() || "General") : uploadSubject
+      const capitalizedSubject = targetSubj.charAt(0).toUpperCase() + targetSubj.slice(1)
+
+      const aiResult = await generateAiSummaryFromDocument(text, selectedFile.name, capitalizedSubject, syllabus)
+
+      const newSummary: StudySummary = {
+        id: `uploaded-summary-${Date.now()}`,
+        title: aiResult.title,
+        content: aiResult.summary,
+        subject: capitalizedSubject,
+        syllabus: syllabus as any || "General",
+        customMindMapData: aiResult.mindMapData
+      }
+
+      setAllSummariesList(prev => [...prev, newSummary])
+      if (onAddSummary) {
+        onAddSummary(newSummary)
+      }
+
+      setActiveSubject(capitalizedSubject)
+      setShowSubjectSelect(false)
+      setUploadStep("complete")
+      
+      setTimeout(() => {
+        setShowUploadDialog(false)
+        setUploadStep("idle")
+        setSelectedFile(null)
+        setCustomUploadSubject("")
+      }, 1500)
+
+    } catch (err: any) {
+      console.error("Document summarization failed:", err)
+      setUploadError(err.message || "An unexpected error occurred during summarization.")
+      setUploadStep("idle")
+    }
+  }
 
   // Sync state if summaries prop changes
   useEffect(() => {
@@ -595,80 +714,198 @@ ${summary.content}
           })}
         </div>
 
-        {/* Custom AI Summary Generation Block */}
+        {/* Custom AI Generation Options */}
         <div className="mt-6 pt-4 border-t border-border">
-          <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/25">
-                  <Sparkles size={20} className="text-purple-500 animate-pulse" />
-                </div>
-                <div className="space-y-0.5 text-left">
-                  <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                    Generate Custom Summary
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Enter any topic & subject to generate a detailed summary and mind map instantly using Gemini AI.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5 text-left">
-                  <span className="text-[11px] font-semibold text-muted-foreground">Select Subject:</span>
-                  <select
-                    className="w-full h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={aiTargetSubject}
-                    onChange={(e) => {
-                      setAiTargetSubject(e.target.value)
-                      if (e.target.value !== "Other") {
-                        setCustomAiSubject("")
-                      }
-                    }}
-                  >
-                    {["Science", "Math", "Social Studies", "English", "Other"].map((subj) => (
-                      <option key={subj} value={subj} className="bg-background">
-                        {subj}
-                      </option>
-                    ))}
-                  </select>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Column 1: Custom AI Summary Generation Block */}
+            <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/25">
+                    <Sparkles size={20} className="text-purple-500 animate-pulse" />
+                  </div>
+                  <div className="space-y-0.5 text-left">
+                    <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      Generate Custom Summary
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Enter any topic & subject to generate a detailed summary and mind map instantly using Gemini AI.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-1.5 text-left">
-                  <span className="text-[11px] font-semibold text-muted-foreground">Enter Topic Name:</span>
-                  <Input
-                    type="text"
-                    placeholder="e.g. Photosynthesis, Linear Equations"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
-                  />
-                </div>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-[11px] font-semibold text-muted-foreground">Select Subject:</span>
+                    <select
+                      className="w-full h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={aiTargetSubject}
+                      onChange={(e) => {
+                        setAiTargetSubject(e.target.value)
+                        if (e.target.value !== "Other") {
+                          setCustomAiSubject("")
+                        }
+                      }}
+                    >
+                      {["Science", "Math", "Social Studies", "English", "Other"].map((subj) => (
+                        <option key={subj} value={subj} className="bg-background">
+                          {subj}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {aiTargetSubject === "Other" && (
-                <div className="space-y-1.5 text-left max-w-[280px]">
-                  <span className="text-[11px] font-semibold text-muted-foreground">Custom Subject Name:</span>
-                  <Input
-                    type="text"
-                    placeholder="e.g. Computer Science, Geography"
-                    value={customAiSubject}
-                    onChange={(e) => setCustomAiSubject(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
-                  />
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-[11px] font-semibold text-muted-foreground">Enter Topic Name:</span>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Photosynthesis, Linear Equations"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-9 text-xs rounded-lg"
+                    />
+                  </div>
                 </div>
-              )}
 
-              <Button
-                onClick={handleGenerateAISummary}
-                disabled={isGeneratingAI || !searchQuery.trim()}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20"
-              >
-                <Sparkles size={14} />
-                Generate Summary & Mind Map
-              </Button>
-            </CardContent>
-          </Card>
+                {aiTargetSubject === "Other" && (
+                  <div className="space-y-1.5 text-left max-w-[280px]">
+                    <span className="text-[11px] font-semibold text-muted-foreground">Custom Subject Name:</span>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Computer Science, Geography"
+                      value={customAiSubject}
+                      onChange={(e) => setCustomAiSubject(e.target.value)}
+                      className="h-9 text-xs rounded-lg"
+                    />
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleGenerateAISummary}
+                  disabled={isGeneratingAI || !searchQuery.trim()}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20"
+                >
+                  <Sparkles size={14} />
+                  Generate Summary & Mind Map
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Column 2: Document Summarization Block */}
+            <Card className="border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-transparent dark:from-purple-950/10 dark:via-indigo-950/5 dark:to-transparent shadow-sm">
+              <CardContent className="p-5 space-y-4 flex flex-col justify-between h-full">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/25">
+                      <Upload size={20} className="text-purple-500 animate-pulse" />
+                    </div>
+                    <div className="space-y-0.5 text-left">
+                      <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                        Generate from Document
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Upload a slide deck or notes file (PDF, PPT, PPTX, TXT) to create summaries & mind maps.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5 text-left">
+                      <span className="text-[11px] font-semibold text-muted-foreground">Select Subject:</span>
+                      <select
+                        className="w-full h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        value={uploadSubject}
+                        onChange={(e) => {
+                          setUploadSubject(e.target.value)
+                          if (e.target.value !== "Other") {
+                            setCustomUploadSubject("")
+                          }
+                        }}
+                      >
+                        {["Science", "Math", "Social Studies", "English", "Other"].map((subj) => (
+                          <option key={subj} value={subj} className="bg-background">
+                            {subj}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5 text-left">
+                      <span className="text-[11px] font-semibold text-muted-foreground">Upload File:</span>
+                      <div
+                        onDragEnter={handleDrag}
+                        onDragOver={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDrop={handleDrop}
+                        onClick={() => document.getElementById("direct-file-upload-input")?.click()}
+                        className={`h-9 border border-input rounded-lg flex items-center justify-center px-3 text-xs cursor-pointer hover:bg-muted/30 transition-colors ${
+                          selectedFile ? "border-purple-500/50 bg-purple-500/5" : "border-border"
+                        }`}
+                      >
+                        <input
+                          id="direct-file-upload-input"
+                          type="file"
+                          accept=".pdf,.pptx,.ppt,.txt"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0]
+                              if (file.size > 15 * 1024 * 1024) {
+                                setUploadError("File size exceeds the 15MB limit.")
+                                setSelectedFile(null)
+                              } else {
+                                setSelectedFile(file)
+                                setUploadError(null)
+                              }
+                            }
+                          }}
+                        />
+                        <span className="truncate max-w-[150px] text-muted-foreground font-medium flex items-center gap-1.5">
+                          {selectedFile ? selectedFile.name : <>Select PPT/PDF/TXT</>}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {uploadSubject === "Other" && (
+                    <div className="space-y-1.5 text-left max-w-[280px]">
+                      <span className="text-[11px] font-semibold text-muted-foreground">Custom Subject Name:</span>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Computer Science, Geography"
+                        value={customUploadSubject}
+                        onChange={(e) => setCustomUploadSubject(e.target.value)}
+                        className="h-9 text-xs rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className="p-2 bg-red-500/10 border border-red-500/20 text-red-500 text-[11px] rounded-lg">
+                      {uploadError}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleUploadAndSummarize}
+                  disabled={(uploadStep !== "idle" && uploadStep !== "complete") || !selectedFile}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-indigo-500/20 mt-auto"
+                >
+                  {uploadStep === "reading" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Reading...</>}
+                  {uploadStep === "parsing" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Extracting slides...</>}
+                  {uploadStep === "ai_generating" && <><Loader2 className="w-3.5 h-3.5 animate-spin" /> AI Generating...</>}
+                  {uploadStep === "complete" && <>Success!</>}
+                  {uploadStep === "idle" && (
+                    <>
+                      <Upload size={14} />
+                      Upload & Generate Summary
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     )
@@ -720,6 +957,14 @@ ${summary.content}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <Button
+          variant="outline"
+          className="flex items-center gap-1.5 h-9 px-3 border-purple-500/30 hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 text-purple-600 dark:text-purple-400 font-semibold"
+          onClick={() => setShowUploadDialog(true)}
+        >
+          <Upload size={14} />
+          <span>Upload PDF/PPT</span>
+        </Button>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -1079,6 +1324,204 @@ ${summary.content}
                   title={`${activeMindMapSummary.title} - Concept Map`}
                   language={language}
                 />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Upload Document Overlay Modal */}
+      <AnimatePresence>
+        {showUploadDialog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 text-foreground w-full max-w-md rounded-2xl shadow-2xl p-6 relative overflow-hidden"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-4 rounded-full text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  if (uploadStep === "idle" || uploadStep === "complete") {
+                    setShowUploadDialog(false)
+                    setSelectedFile(null)
+                    setUploadError(null)
+                  }
+                }}
+                disabled={uploadStep !== "idle" && uploadStep !== "complete"}
+              >
+                <X size={18} />
+              </Button>
+
+              <div className="space-y-4 text-left">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <Upload size={18} />
+                  </div>
+                  <h3 className="text-lg font-bold">Generate from Document</h3>
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  Upload a class slide deck or notes file, and Gemini AI will parse its pages to create summaries and mind maps instantly.
+                </p>
+
+                {uploadStep === "idle" ? (
+                  <>
+                    {/* Drag and Drop Zone */}
+                    <div
+                      onDragEnter={handleDrag}
+                      onDragOver={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDrop={handleDrop}
+                      onClick={() => document.getElementById("file-upload-input")?.click()}
+                      className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+                        dragActive 
+                          ? "border-purple-500 bg-purple-50/30 dark:bg-purple-950/10" 
+                          : "border-border hover:border-purple-400/50 hover:bg-muted/30"
+                      }`}
+                    >
+                      <input
+                        id="file-upload-input"
+                        type="file"
+                        accept=".pdf,.pptx,.ppt,.txt"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0]
+                            if (file.size > 15 * 1024 * 1024) {
+                              setUploadError("File size exceeds the 15MB limit.")
+                              setSelectedFile(null)
+                            } else {
+                              setSelectedFile(file)
+                              setUploadError(null)
+                            }
+                          }
+                        }}
+                      />
+                      <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-3 animate-pulse" />
+                      <p className="text-xs font-semibold">
+                        {selectedFile ? selectedFile.name : "Drag & drop file here or click to browse"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
+                        Supports PDF, PPT, PPTX or TXT (Max 15MB)
+                      </p>
+                    </div>
+
+                    {selectedFile && (
+                      <div className="space-y-3 bg-muted/20 dark:bg-slate-800/30 border border-border/50 rounded-xl p-3 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-muted-foreground">File Selected:</span>
+                          <span className="font-medium text-foreground truncate max-w-[200px]" title={selectedFile.name}>
+                            {selectedFile.name}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-muted-foreground">Size:</span>
+                          <span className="font-medium text-foreground">
+                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subject Mapping */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Select Study Subject:</label>
+                      <select
+                        value={uploadSubject}
+                        onChange={(e) => setUploadSubject(e.target.value)}
+                        className="w-full h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="Science">Science</option>
+                        <option value="Math">Math</option>
+                        <option value="Social Studies">Social Studies</option>
+                        <option value="English">English</option>
+                        <option value="Other">Other (Custom Subject)</option>
+                      </select>
+                    </div>
+
+                    {uploadSubject === "Other" && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Custom Subject Name:</label>
+                        <Input
+                          placeholder="e.g. Computer Science, Economics"
+                          value={customUploadSubject}
+                          onChange={(e) => setCustomUploadSubject(e.target.value)}
+                          className="h-9 text-xs rounded-lg"
+                        />
+                      </div>
+                    )}
+
+                    {uploadError && (
+                      <p className="text-xs text-destructive font-medium text-center bg-destructive/10 p-2.5 rounded-lg border border-destructive/20">
+                        {uploadError}
+                      </p>
+                    )}
+
+                    <Button
+                      onClick={() => handleUploadAndSummarize()}
+                      disabled={!selectedFile}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl text-xs py-2 px-4 shadow-md transition-all duration-200"
+                    >
+                      Analyze & Summarize Document
+                    </Button>
+                  </>
+                ) : (
+                  /* Glowing Multi-Step Parsing Status UI */
+                  <div className="py-6 space-y-6 flex flex-col items-center justify-center text-center">
+                    <Loader2 size={36} className="animate-spin text-purple-600 dark:text-purple-400" />
+                    
+                    <div className="space-y-3 w-full">
+                      <div className="flex flex-col gap-2 items-center text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            uploadStep === "reading" ? "bg-purple-500 animate-ping" : "bg-green-500"
+                          }`} />
+                          <span className={uploadStep === "reading" ? "font-bold text-foreground" : "text-muted-foreground"}>
+                            Reading document pages...
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            uploadStep === "parsing" ? "bg-purple-500 animate-ping" : 
+                            uploadStep === "reading" ? "bg-muted-foreground/30" : "bg-green-500"
+                          }`} />
+                          <span className={uploadStep === "parsing" ? "font-bold text-foreground" : "text-muted-foreground"}>
+                            Extracting text content...
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            uploadStep === "ai_generating" ? "bg-purple-500 animate-ping" : 
+                            (uploadStep === "reading" || uploadStep === "parsing") ? "bg-muted-foreground/30" : "bg-green-500"
+                          }`} />
+                          <span className={uploadStep === "ai_generating" ? "font-bold text-foreground" : "text-muted-foreground"}>
+                            Gemini AI generating summaries...
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            uploadStep === "complete" ? "bg-green-500" : "bg-muted-foreground/30"
+                          }`} />
+                          <span className={uploadStep === "complete" ? "font-bold text-foreground" : "text-muted-foreground"}>
+                            Complete! Study guide ready.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

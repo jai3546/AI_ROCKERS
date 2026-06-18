@@ -273,8 +273,8 @@ export default function AdminDashboardPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-card border-b border-border dark:border-border shadow-sm">
-        <div className="container flex items-center justify-between h-16 px-4">
+      <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
+        <div className="page-container flex h-16 items-center justify-between">
           <div
             className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
             onClick={() => setShowSchoolDetails(true)}
@@ -299,7 +299,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="container px-4 py-6 space-y-8">
+      <div className="page-container space-y-8 py-6">
         {/* Overview Section */}
         <section id="overview-section">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
