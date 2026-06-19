@@ -5,18 +5,9 @@ import { Activity, AlertCircle, Mic, MicOff, Volume2 } from "lucide-react"
 import { WebcamAccess } from "./webcam-access"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MotionTrackerProps } from "@/types/interface"
 
-interface MotionTrackerProps {
-  onMotionDetected?: (motionData: MotionData) => void
-  className?: string
-}
 
-export interface MotionData {
-  timestamp: number
-  motionScore: number
-  direction: "left" | "right" | "up" | "down" | "none"
-  personDetected: boolean
-}
 
 export function MotionTracker({
   onMotionDetected,
@@ -44,6 +35,7 @@ export function MotionTracker({
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined' && 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      // @ts-ignore
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = true

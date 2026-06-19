@@ -5,6 +5,7 @@ import { Smile, AlertCircle, RefreshCw } from "lucide-react"
 import { WebcamAccess } from "./webcam-access"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Emotion } from "@/types/types"
 
 interface FaceEmotionDetectorProps {
   onEmotionDetected?: (emotionData: EmotionData) => void
@@ -30,7 +31,6 @@ export interface EmotionHistory {
   lastUpdateTime: number
 }
 
-export type Emotion = "happy" | "sad" | "angry" | "surprised" | "neutral" | "fearful" | "disgusted" | "none"
 
 export function FaceEmotionDetector({
   onEmotionDetected,
@@ -282,8 +282,8 @@ export function FaceEmotionDetector({
           let dominantEmotion: Emotion = "none"
 
           Object.entries(expressions).forEach(([emotion, score]) => {
-            if (score > highestScore && emotion !== "neutral") {
-              highestScore = score
+            if (score as number> highestScore && emotion !== "neutral") {
+              highestScore = score as number
               dominantEmotion = emotion as Emotion
             }
           })

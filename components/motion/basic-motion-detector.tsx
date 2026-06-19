@@ -2,13 +2,9 @@
 
 import React, { useRef, useState, useEffect } from 'react'
 import { AlertTriangle, CheckCircle, Camera, CameraOff, RefreshCw } from 'lucide-react'
+import { MotionData } from '@/types/interface'
 
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-}
+
 
 interface MotionDetectorProps {
   onMotionDetected?: (data: MotionData) => void

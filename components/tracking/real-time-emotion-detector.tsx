@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Smile, Frown, Meh, AlertTriangle, Eye, RefreshCw, Camera, CameraOff, X } from "lucide-react"
+import { Smile, Frown, Meh, AlertTriangle, Eye, RefreshCw, Camera, CameraOff, X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { EmotionData } from "@/types/interface"
+import { Emotion } from "@/types/types"
 
 interface RealTimeEmotionDetectorProps {
   onEmotionDetected?: (emotionData: EmotionData) => void
@@ -13,15 +15,6 @@ interface RealTimeEmotionDetectorProps {
   autoTracking?: boolean
 }
 
-export interface EmotionData {
-  timestamp: number
-  emotion: Emotion
-  confidence: number
-  fatigueScore?: number
-  attentionScore?: number
-}
-
-export type Emotion = "happy" | "sad" | "angry" | "surprised" | "neutral" | "fearful" | "disgusted" | "none"
 
 export function RealTimeEmotionDetector({
   onEmotionDetected,
@@ -94,7 +87,7 @@ export function RealTimeEmotionDetector({
         console.log("Camera access granted with specific constraints")
         setupVideoStream(stream)
       }
-    } catch (err) {
+    } catch (err:any) {
       console.error("Error accessing camera:", err)
       setError(`Could not access camera: ${err.message || 'Unknown error'}. Please check permissions.`)
       setIsLoading(false)
@@ -296,8 +289,8 @@ export function RealTimeEmotionDetector({
 
         // Find the dominant emotion
         for (const [emotion, score] of Object.entries(expressions)) {
-          if (score > highestScore && emotion !== "neutral") {
-            highestScore = score
+          if (score as number > highestScore && emotion !== "neutral") {
+            highestScore = score as number
             dominantEmotion = emotion as Emotion
           }
         }
@@ -556,7 +549,7 @@ export function RealTimeEmotionDetector({
               <p className="text-xs text-center mt-2 max-w-[80%]">Please allow camera access when prompted</p>
               <div className="flex flex-col gap-2 mt-4 w-full max-w-[80%]">
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   className="bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={() => {

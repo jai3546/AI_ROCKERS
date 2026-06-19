@@ -4,22 +4,11 @@ import { useState, useRef, useEffect } from "react"
 import { Smile, AlertCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Emotion } from "@/types/types"
+import { SimpleFaceDetectorProps } from "@/types/interface"
 
-interface SimpleFaceDetectorProps {
-  onEmotionDetected?: (emotionData: EmotionData) => void
-  className?: string
-  autoTracking?: boolean
-}
 
-export interface EmotionData {
-  timestamp: number
-  emotion: Emotion
-  confidence: number
-  fatigueScore?: number
-  attentionScore?: number
-}
 
-export type Emotion = "happy" | "sad" | "angry" | "surprised" | "neutral" | "fearful" | "disgusted" | "none"
 
 export function SimpleFaceDetector({
   onEmotionDetected,

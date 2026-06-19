@@ -6,28 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-
-export type EmotionType = "happy" | "sad" | "confused" | "bored" | "focused" | "unknown"
-
-export interface EmotionData {
-  emotion: EmotionType
-  confidence: number
-  timestamp: Date
-  message?: string
-  faceDetected: boolean
-  lightingQuality?: "good" | "poor" | "unknown"
-  fatigueScore?: number
-  attentionScore?: number
-}
-
-interface ImprovedEmotionDetectorProps {
-  onEmotionDetected?: (data: EmotionData) => void
-  autoTracking?: boolean
-  showControls?: boolean
-  language?: "en" | "hi" | "te"
-  className?: string
-  showCamera?: boolean
-}
+import { ImprovedEmotionDetectorProps } from "@/types/interface"
+import { EmotionType } from "@/types/types"
 
 // Translations for UI elements
 const translations = {
@@ -217,7 +197,7 @@ export function ImprovedEmotionDetector({
       onEmotionDetected({
         emotion: 'focused',
         confidence: 85,
-        timestamp: new Date(),
+        timestamp: new Date().getTime(),
         faceDetected: true,
         lightingQuality: "good",
         attentionScore: 80,
@@ -249,7 +229,43 @@ export function ImprovedEmotionDetector({
     // Set up interval to update emotion
     emotionInterval.current = setInterval(() => {
       // Get transition probabilities for current emotion
-      const transitions = emotionTransitions[lastEmotion]
+      const transitions:{
+    happy: number;
+    sad: number;
+    confused: number;
+    bored: number;
+    focused: number;
+} | {
+    happy: number;
+    focused: number;
+    confused: number;
+    bored: number;
+    sad: number;
+} | {
+    sad: number;
+    focused: number;
+    happy: number;
+    confused: number;
+    bored: number;
+} | {
+    confused: number;
+    focused: number;
+    happy: number;
+    sad: number;
+    bored: number;
+} | {
+    bored: number;
+    focused: number;
+    happy: number;
+    confused: number;
+    sad: number;
+} | {
+    focused: number;
+    happy: number;
+    confused: number;
+    bored: number;
+    sad: number;
+} = emotionTransitions[lastEmotion]
 
       // Select next emotion based on transition probabilities
       const random = Math.random()
@@ -257,6 +273,7 @@ export function ImprovedEmotionDetector({
       let selectedEmotion: EmotionType = 'unknown'
 
       for (const emotion of Object.keys(transitions) as EmotionType[]) {
+        // @ts-ignore
         cumulativeProbability += transitions[emotion]
         if (random < cumulativeProbability) {
           selectedEmotion = emotion
@@ -300,7 +317,7 @@ export function ImprovedEmotionDetector({
         onEmotionDetected({
           emotion: selectedEmotion,
           confidence,
-          timestamp: new Date(),
+          timestamp: new Date().getTime(),
           faceDetected: true,
           lightingQuality: "good",
           attentionScore: newAttentionScore,

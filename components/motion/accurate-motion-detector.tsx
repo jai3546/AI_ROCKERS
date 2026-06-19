@@ -6,13 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { MotionData } from '@/types/interface'
 
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-}
 
 interface MotionDetectorProps {
   onMotionDetected?: (data: MotionData) => void
@@ -284,7 +279,7 @@ export function AccurateMotionDetector({
           },
           audio: false
         });
-      } catch (initialError) {
+      } catch (initialError:any) {
         console.warn('Failed with ideal settings, trying fallback:', initialError);
 
         // Check for specific error types

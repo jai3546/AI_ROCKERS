@@ -5,13 +5,7 @@ import { AlertTriangle, CheckCircle, Camera, CameraOff, RefreshCw, Zap } from 'l
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-}
+import { MotionData } from '@/types/interface'
 
 interface ImprovedMotionDetectorProps {
   onMotionDetected?: (data: MotionData) => void

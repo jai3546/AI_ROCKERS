@@ -7,18 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-  gesture?: string
-  focusScore?: number
-  posture?: 'good' | 'slouching' | 'tooClose' | 'tooFar' | 'unknown'
-  attentionMap?: number
-  movementLevel?: 'low' | 'medium' | 'high'
-}
+import { MotionData } from '@/types/interface'
 
 interface MotionDetectorProps {
   onMotionDetected?: (data: MotionData) => void
@@ -1175,7 +1164,7 @@ export function MotionDetector({
         {isTracking && (
           <div className="space-y-2 mt-2">
             {lightingWarning && (
-              <Alert variant="warning" className="py-2">
+              <Alert variant="destructive" className="py-2">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{translations.poorLighting[language]}</AlertTitle>
                 <AlertDescription className="text-xs">
@@ -1185,7 +1174,7 @@ export function MotionDetector({
             )}
 
             {distanceWarning && (
-              <Alert variant="warning" className="py-2">
+              <Alert variant="destructive" className="py-2">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{translations.moveCloser[language]}</AlertTitle>
                 <AlertDescription className="text-xs">

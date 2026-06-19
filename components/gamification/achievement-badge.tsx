@@ -4,34 +4,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Award, Star, Trophy, Medal, Target, Brain, BookOpen, CheckCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-
-export type BadgeType =
-  | "bronze"
-  | "silver"
-  | "gold"
-  | "platinum"
-  | "diamond"
-  | "master"
-  | "grandmaster"
-  | "locked"
-
-export type BadgeCategory =
-  | "quiz"
-  | "flashcard"
-  | "streak"
-  | "tutor"
-  | "subject"
-
-interface AchievementBadgeProps {
-  type: BadgeType
-  category: BadgeCategory
-  name: string
-  description: string
-  xpReward: number
-  isUnlocked: boolean
-  subject?: string
-  onClick?: () => void
-}
+import {AchievementBadgeProps} from "@/types/interface"
 
 export function AchievementBadge({
   type,

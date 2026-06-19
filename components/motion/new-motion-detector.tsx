@@ -6,21 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-
-export interface MotionData {
-  inFrame: boolean
-  confidence: number
-  timestamp: Date
-  message?: string
-}
-
-interface MotionDetectorProps {
-  onMotionDetected?: (data: MotionData) => void
-  autoTracking?: boolean
-  className?: string
-  language?: 'en' | 'hi' | 'te'
-  compact?: boolean
-}
+import {MotionDetectorProps} from '@/types/interface'
 
 // Translations for UI elements
 const translations = {
@@ -227,7 +213,7 @@ export function NewMotionDetector({
           },
           audio: false
         });
-      } catch (initialError) {
+      } catch (initialError:any) {
         console.warn('Failed with ideal settings, trying fallback:', initialError);
         
         // Check for specific error types

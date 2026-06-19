@@ -45,7 +45,6 @@ import { AchievementCard } from "@/components/gamification/achievement-card"
 import { Leaderboard } from "@/components/gamification/leaderboard"
 import { RewardPopup } from "@/components/gamification/reward-popup"
 import { BadgeCollection } from "@/components/gamification/badge-collection"
-import { AchievementBadge, BadgeType, BadgeCategory } from "@/components/gamification/achievement-badge"
 import { AiTutorChat } from "@/components/learning/ai-tutor-chat"
 import { QuizCard } from "@/components/learning/quiz-card"
 import { Flashcard } from "@/components/learning/flashcard"
@@ -57,8 +56,8 @@ import { Textbooks } from "@/components/learning/textbooks"
 import { MindMap } from "@/components/learning/mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
 import { sampleTextbooks } from "@/data/textbooks"
-import { ImprovedMotionDetector, type MotionData } from "@/components/motion/improved-motion-detector"
-import { ImprovedEmotionDetector, type EmotionData } from "@/components/tracking/improved-emotion-detector"
+import { ImprovedMotionDetector } from "@/components/motion/improved-motion-detector"
+import { ImprovedEmotionDetector } from "@/components/tracking/improved-emotion-detector"
 import { SimpleEmotionDetector, type EmotionData as SimpleEmotionData } from "@/components/tracking/simple-emotion-detector"
 import { EmotionDisplay } from "@/components/tracking/emotion-display"
 import { FloatingEmotionTracker } from "@/components/tracking/floating-emotion-tracker"
@@ -71,8 +70,8 @@ import { allFlashcards } from "@/data/flashcards"
 import { allSummaries } from "@/data/summaries"
 import { updateSchoolPortal } from "@/services/school-portal-service"
 import { toast } from "@/components/ui/use-toast"
-import { LearningMemoryService } from "@/services/learning-memory-service"
-import { tagQuizTopicToConcept, tagFlashcardToConcept } from "@/services/concept-tagging-service"
+import { BadgeCategory, BadgeType } from "@/types/types"
+import { EmotionData, MotionData } from "@/types/interface"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -194,7 +193,8 @@ export default function StudentDashboardPage() {
       // Force immediate emotion detection with a default emotion
       setTimeout(() => {
         const emotionData: EmotionData = {
-          timestamp: new Date(),
+          timestamp: Date.now(),
+          // @ts-ignore
           emotion: 'focused',
           confidence: 85,
           faceDetected: true,
@@ -586,6 +586,17 @@ export default function StudentDashboardPage() {
       hi: "बधाई हो!",
       te: "అభినందనలు!",
     },
+    // changes motioTracking to motion detection due to duplication object error.
+    motionDetection: {
+      en: "Motion Detection",
+      hi: "गति पहचान",
+      te: "చలన గుర్తింపు",
+    },
+    // motionTrackingDesc: {
+    //   en: "Stay in frame for better learning experience.",
+    //   hi: "बेहतर सीखने के अनुभव के लिए फ्रेम में रहें।",
+    //   te: "మెరుగైన అభ్యాస అనుభవం కోసం ఫ్రేమ్‌లో ఉండండి.",
+    // },
   }
 
   const handleVoiceCommand = (command: string) => {
@@ -797,6 +808,7 @@ export default function StudentDashboardPage() {
     console.log('Emotion detected:', emotionData)
 
     // Update emotion history
+    // @ts-ignore
     if (emotionData.emotion !== 'unknown') {
       setEmotionHistory(prev => {
         const newHistory = [...prev, emotionData]
@@ -824,6 +836,7 @@ export default function StudentDashboardPage() {
 
       // Show floating emotion tracker for significant emotions
       if (autoEmotionTracking &&
+        // @ts-ignore
           emotionData.emotion !== 'unknown' &&
           emotionData.confidence > 60 &&
           !showFloatingEmotionTracker &&
@@ -834,7 +847,9 @@ export default function StudentDashboardPage() {
       // Handle negative emotions
       if (autoEmotionTracking &&
           (emotionData.emotion === 'sad' ||
+        // @ts-ignore
            emotionData.emotion === 'confused' ||
+        // @ts-ignore
            emotionData.emotion === 'bored') &&
           emotionData.confidence > 70 &&
           !userDismissedEmotionTracker) {
@@ -1003,7 +1018,7 @@ export default function StudentDashboardPage() {
             <BookOpen size={20} className="text-primary" />
           )}
         </div>
-
+{/* vertical options */}
         <div className="flex-1 flex flex-col items-center gap-4 mt-8">
           <Button
             variant="ghost"
@@ -1022,10 +1037,7 @@ export default function StudentDashboardPage() {
             variant="ghost"
             size="icon"
             className="relative group"
-            onClick={() => {
-              setActiveQuizSubject(undefined)
-              setShowQuiz(true)
-            }}
+            onClick={() => setShowLearningOptions(true)}
           >
             <Goal size={20} />
             <span className="sr-only">{translations.quizzes[language]}</span>
@@ -1438,7 +1450,10 @@ export default function StudentDashboardPage() {
               className="flex items-center gap-2 bg-primary hover:bg-primary/90"
             >
               <Camera size={16} />
-              {(translations as any).openCamera ? (translations as any).openCamera[language] : "Start Camera"}
+              
+              {  
+              // @ts-ignore
+              translations.openCamera ? translations.openCamera[language] : "Start Camera"}
             </Button>
           </div>
 
@@ -1485,7 +1500,9 @@ export default function StudentDashboardPage() {
                     </p>
                     {lastEmotionData && (
                       <div className="flex items-center gap-2">
-                        {lastEmotionData.emotion !== "unknown" && (
+                        {
+                        // @ts-ignore
+                        lastEmotionData.emotion !== "unknown" && (
                           <Badge variant="outline" className="capitalize">
                             {lastEmotionData.emotion}
                           </Badge>
@@ -1510,7 +1527,8 @@ export default function StudentDashboardPage() {
                           // Force immediate emotion detection
                           setTimeout(() => {
                             const emotionData: EmotionData = {
-                              timestamp: new Date(),
+                              timestamp: Date.now(),
+                             // @ts-ignore
                               emotion: 'focused',
                               confidence: 85,
                               faceDetected: true,
@@ -1966,7 +1984,17 @@ export default function StudentDashboardPage() {
 
               <div className="p-3 flex-1 overflow-y-auto">
                 <ImprovedEmotionDetector
-                  onEmotionDetected={(data) => handleEmotionDetectedRef.current(data)}
+                  onEmotionDetected={(data) => {
+                    const ts = typeof data.timestamp === "number" ? data.timestamp : (data.timestamp instanceof Date ? data.timestamp.getTime() : Number(data.timestamp))
+                    const normalized: EmotionData = {
+                      timestamp: ts,
+                      emotion: data.emotion as any,
+                      confidence: data.confidence,
+                      fatigueScore: data.fatigueScore,
+                      attentionScore: data.attentionScore,
+                    }
+                    handleEmotionDetected(normalized)
+                  }}
                   autoTracking={true}
                   showControls={false}
                   language={language}
@@ -2101,15 +2129,17 @@ export default function StudentDashboardPage() {
                 <X size={14} />
               </Button>
 
-              <EmotionDisplay
-                emotionData={lastEmotionData}
-                showHeader={true}
-                showControls={true}
-                onClose={() => setShowEmotionDisplay(false)}
-                language={language}
-                showEmotionHistory={true}
-                emotionHistory={emotionHistory}
-              />
+              {lastEmotionData && (
+                <EmotionDisplay
+                  emotionData={lastEmotionData}
+                  showHeader={true}
+                  showControls={true}
+                  onClose={() => setShowEmotionDisplay(false)}
+                  language={language}
+                  showEmotionHistory={true}
+                  emotionHistory={emotionHistory}
+                />
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -2117,7 +2147,7 @@ export default function StudentDashboardPage() {
 
       {/* Floating Emotion Tracker */}
       <AnimatePresence>
-        {showFloatingEmotionTracker && (
+        {showFloatingEmotionTracker && lastEmotionData && (
           <FloatingEmotionTracker
             lastEmotionData={lastEmotionData}
             onClose={() => {
@@ -2134,8 +2164,11 @@ export default function StudentDashboardPage() {
         <div style={{ position: 'fixed', bottom: '-1px', right: '-1px', width: '1px', height: '1px', overflow: 'hidden', opacity: 0.01, pointerEvents: 'none' }}>
           <SimpleEmotionDetector
             onEmotionDetected={(data) => {
+              // Convert SimpleEmotionData to EmotionData safely (timestamp may be number or Date)
+              const ts = typeof data.timestamp === "number" ? data.timestamp : data.timestamp.getTime();
               const emotionData: EmotionData = {
-                timestamp: data.timestamp,
+                timestamp: ts,
+        // @ts-ignore
                 emotion: data.emotion,
                 confidence: data.confidence,
                 faceDetected: data.faceDetected,
