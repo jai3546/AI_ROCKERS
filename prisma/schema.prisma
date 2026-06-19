@@ -1,0 +1,292 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                String                 @id
+  name              String
+  email             String?                @unique
+  passwordHash      String?
+  role              String                 @default("student")
+  avatar            String                 @default("👦🏽")
+  preferredLanguage String                 @default("en")
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  // Existing sqlite compatibility relations
+  learningProfiles  LearningProfile[]
+  masteries         UserConceptMastery[]
+  activities        LearningActivity[]
+  history           MasteryHistory[]
+  recommendations   CachedRecommendation[]
+
+  // New PostgreSQL profile relations
+  studentProfile    StudentProfile?
+  teacherProfile    TeacherProfile?
+}
+
+model StudentProfile {
+  userId            String                 @id
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grade             String
+  school            String
+  streakCount       Int                    @default(0)
+  xpPoints          Int                    @default(0)
+  currentLevel      Int                    @default(1)
+
+  // Fields to support mock students.json and match-mentor data
+  emotionalState    String?
+  subjectNeed       String?
+  availableTime     String?
+  region            String?
+  language          String?
+  performanceLevel  String?
+  behavior          String?
+  learningStyle     String?
+  class             String?
+
+  // Relations
+  emotionLogs       EmotionLog[]
+  learningSessions  LearningSession[]
+  topicProgress     StudentTopicProgress[]
+  quizAttempts      QuizAttempt[]
+  conversations     AITutorConversation[]
+  achievements      StudentAchievement[]
+}
+
+model TeacherProfile {
+  userId            String                 @id
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school            String
+  department        String
+
+  // Fields to support mock mentors.json and match-mentor data
+  expertise               String[]               @default([])
+  availableTime           String[]               @default([])
+  region                  String[]               @default([])
+  language                String[]               @default([])
+  specialization          String[]               @default([])
+  experienceYears         Int                    @default(0)
+  teachingStyle           String?
+  studentPerformanceFocus String?
+  behaviorManagement      String?
+  bio                     String?
+  avatar                  String?
+}
+
+model EmotionLog {
+  id             String         @id @default(uuid())
+  studentId      String
+  student        StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  emotion        String
+  confidence     Float
+  attentionScore Float
+  createdAt      DateTime       @default(now())
+
+  @@index([studentId, createdAt])
+}
+
+model LearningSession {
+  id                String         @id @default(uuid())
+  studentId         String
+  student           StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  startTime         DateTime
+  endTime           DateTime?
+  averageAttention  Float
+  averageEngagement Float
+}
+
+model Topic {
+  id              String                 @id @default(uuid())
+  name            String
+  description     String?
+  difficultyLevel String
+
+  // Relations
+  studentProgress StudentTopicProgress[]
+  quizzes         Quiz[]
+  flashcards      Flashcard[]
+}
+
+model StudentTopicProgress {
+  studentId        String
+  student          StudentProfile       @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  topicId          String
+  topic            Topic                @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  masteryScore     Float
+  revisionPriority Int                  @default(0)
+  lastReviewedAt   DateTime             @default(now())
+
+  @@id([studentId, topicId])
+}
+
+model Quiz {
+  id        String        @id @default(uuid())
+  title     String
+  topicId   String
+  topic     Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions String?
+
+  // Relations
+  attempts  QuizAttempt[]
+}
+
+model QuizAttempt {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  quizId      String
+  quiz        Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score       Float
+  completedAt DateTime       @default(now())
+}
+
+model Flashcard {
+  id       String @id @default(uuid())
+  topicId  String
+  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  question String
+  answer   String
+}
+
+model AITutorConversation {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  sessionId String
+  prompt    String
+  response  String
+  createdAt DateTime       @default(now())
+}
+
+model Achievement {
+  id          String               @id @default(uuid())
+  title       String
+  description String
+  xpReward    Int
+
+  // Relations
+  unlockedBy  StudentAchievement[]
+}
+
+model StudentAchievement {
+  studentId     String
+  student       StudentProfile     @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement        @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime           @default(now())
+
+  @@id([studentId, achievementId])
+}
+
+// ----------------------------------------------------
+// BACKWARDS COMPATIBILITY MODELS (FROM SQLITE SCHEMA)
+// ----------------------------------------------------
+
+model LearningProfile {
+  id                 String    @id @default(uuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domainType         String
+  currentLevel       Int       @default(1)
+  currentXP          Int       @default(0)
+  dailyStreak        Int       @default(0)
+  lastLoginDate      DateTime?
+  syllabusPreference String    @default("General")
+  targetGoal         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([userId, domainType])
+}
+
+model Concept {
+  id                   String                 @id
+  name                 String
+  description          String?
+  subject              String
+  domainType           String
+  levelGroup           String?
+  metadata             String?
+  createdAt            DateTime               @default(now())
+  masteries            UserConceptMastery[]
+  activities           LearningActivity[]
+  recommendations      CachedRecommendation[]
+  prerequisitesOf      ConceptRelationship[]  @relation("FromConcept")
+  prerequisites        ConceptRelationship[]  @relation("ToConcept")
+}
+
+model ConceptRelationship {
+  fromConceptId   String
+  toConceptId     String
+  relationType    String   @default("STRICT_PREREQUISITE")
+  fromConcept     Concept  @relation("FromConcept", fields: [fromConceptId], references: [id], onDelete: Cascade)
+  toConcept       Concept  @relation("ToConcept", fields: [toConceptId], references: [id], onDelete: Cascade)
+
+  @@id([fromConceptId, toConceptId])
+}
+
+model UserConceptMastery {
+  id            String   @id @default(uuid())
+  userId        String
+  conceptId     String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept       Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  mastery       Int      @default(0)
+  confidence    Int      @default(0)
+  retention     Int      @default(0)
+  accuracy      Int      @default(0)
+  engagement    Int      @default(0)
+  lastPracticed DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, conceptId])
+}
+
+model LearningActivity {
+  id                String   @id @default(uuid())
+  userId            String
+  conceptId         String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept           Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  activityType      String
+  score             Int?
+  totalScore        Int?
+  responseTime      Int?
+  confusionDetected Boolean  @default(false)
+  engagementScore   Int      @default(50)
+  timestamp         DateTime @default(now())
+}
+
+model MasteryHistory {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date               String
+  averageMastery     Int      @default(0)
+  mathMastery        Int      @default(0)
+  scienceMastery     Int      @default(0)
+  socialMastery      Int      @default(0)
+  englishMastery     Int      @default(0)
+  customMasteryData  String?
+  createdAt          DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model CachedRecommendation {
+  id          String   @id @default(uuid())
+  userId      String
+  conceptId   String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept     Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  recType     String
+  reason      String?
+  generatedAt DateTime @default(now())
+}

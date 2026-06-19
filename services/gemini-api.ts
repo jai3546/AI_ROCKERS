@@ -75,10 +75,15 @@ graph TD
       systemPrompt += ` ${guide}`;
 
       if (emotionState.fatigueScore !== undefined && emotionState.fatigueScore > 60) {
-        systemPrompt += ` Student shows ${emotionState.fatigueScore}% fatigue — keep the response extra short and suggest a break if needed.`;
+        systemPrompt += ` Student shows ${emotionState.fatigueScore}% fatigue — keep explanations concise, the response extra short, and suggest a break if needed.`;
       }
-      if (emotionState.attentionScore !== undefined && emotionState.attentionScore < 40) {
-        systemPrompt += ` Attention is low — use an engaging hook or fun fact to start.`;
+
+      if (emotionState.attentionScore !== undefined) {
+        if (emotionState.attentionScore < 40) {
+          systemPrompt += ` Attention is low (${emotionState.attentionScore}%) — use an engaging hook or fun fact to start, and keep explanations short and engaging.`;
+        } else if (emotionState.attentionScore > 70) {
+          systemPrompt += ` Their attention level is high (${emotionState.attentionScore}%) — you can provide more detailed explanations.`;
+        }
       }
     }
 

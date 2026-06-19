@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
   BookOpen,
-  Brain,
-  Goal,
   CheckCircle,
   Clock,
   FileText,
@@ -100,6 +98,8 @@ export default function StudentDashboardPage() {
   const [activeQuizSubject, setActiveQuizSubject] = useState<string | undefined>(undefined)
   const [showFlashcards, setShowFlashcards] = useState(false)
   const [showSummaries, setShowSummaries] = useState(false)
+  const [tutorPrefilledPrompt, setTutorPrefilledPrompt] = useState<string | undefined>(undefined)
+  const [activeSummaryTopic, setActiveSummaryTopic] = useState<string | undefined>(undefined)
   const [activeQuizTopic, setActiveQuizTopic] = useState<string | undefined>(undefined)
   const [showQuizAi, setShowQuizAi] = useState<boolean>(false)
   const [activeFlashcardTopic, setActiveFlashcardTopic] = useState<string | undefined>(undefined)
@@ -356,6 +356,9 @@ export default function StudentDashboardPage() {
           const parsedUser = JSON.parse(userData)
           console.log("Loaded user data:", parsedUser)
           setUser(parsedUser)
+          if (parsedUser.isDemo === false) {
+            LearningMemoryService.syncLocalStorageToCloud(parsedUser.id);
+          }
         } else {
           // If no user data, redirect to login
           router.push("/student-login")
@@ -376,41 +379,71 @@ export default function StudentDashboardPage() {
       const startQuiz = searchParams.get("startQuiz");
       const startTutor = searchParams.get("startTutor");
       const startFlashcards = searchParams.get("startFlashcards");
+      const startSummaries = searchParams.get("startSummaries");
       const conceptId = searchParams.get("conceptId");
       const subject = searchParams.get("subject");
+      const prefill = searchParams.get("prefill");
 
-      if (startQuiz === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveQuizSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveQuizTopic(node.name);
-            setShowQuizAi(true);
+      const handleRedirects = async () => {
+        if (startQuiz === "true") {
+          if (subject && subject !== "general" && subject !== "all") {
+            setActiveQuizSubject(subject);
           }
-        }
-        setShowQuiz(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startTutor === "true") {
-        setShowAiTutor(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startFlashcards === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveFlashcardSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveFlashcardTopic(node.name);
-            setShowFlashcardAi(true);
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveQuizTopic(node.name);
+              setShowQuizAi(true);
+            }
           }
+          setShowQuiz(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startTutor === "true") {
+          if (prefill) {
+            setTutorPrefilledPrompt(prefill);
+          } else if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setTutorPrefilledPrompt(`Can you explain the concept of "${node.name}" to me in a simple way?`);
+            }
+          }
+          setShowAiTutor(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startFlashcards === "true") {
+          if (subject && subject !== "general" && subject !== "all") {
+            setActiveFlashcardSubject(subject);
+          }
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveFlashcardTopic(node.name);
+              setShowFlashcardAi(true);
+            }
+          }
+          setShowFlashcards(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (startSummaries === "true") {
+          if (conceptId) {
+            const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+            const node = graph.find(n => n.id === conceptId);
+            if (node) {
+              setActiveSummaryTopic(node.name);
+            }
+          } else {
+            const query = searchParams.get("query") || searchParams.get("topic");
+            if (query) {
+              setActiveSummaryTopic(query);
+            }
+          }
+          setShowSummaries(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
-        setShowFlashcards(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+      };
+
+      handleRedirects();
     }
   }, [user]);
 
@@ -636,7 +669,7 @@ export default function StudentDashboardPage() {
       const conceptId = tagQuizTopicToConcept(quizTopic, activeQuizSubject || quizDetails.subject || "General");
       if (conceptId) {
         const confusion = emotionState?.emotion === "confused";
-        LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
+        await LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
           activityType: "quiz",
           score: earned,
           total: total,
@@ -1079,7 +1112,7 @@ export default function StudentDashboardPage() {
             className="relative group text-indigo-600 dark:text-indigo-400"
             onClick={() => router.push('/learning-brain')}
           >
-            <Brain size={20} />
+            <BookOpen size={20} />
             <span className="sr-only">My Learning Brain</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
               My Learning Brain
@@ -1264,7 +1297,7 @@ export default function StudentDashboardPage() {
             {/* Subject Selection */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Brain size={14} className="text-secondary" />
+                <BookOpen size={14} className="text-secondary" />
                 Subject Selection
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -1291,7 +1324,7 @@ export default function StudentDashboardPage() {
         {/* Learning Section */}
         <section>
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Brain size={20} className="text-secondary" />
+            <BookOpen size={20} className="text-secondary" />
             {translations.startLearning[language]}
           </h2>
 
@@ -1664,7 +1697,7 @@ export default function StudentDashboardPage() {
             className="flex flex-col items-center gap-1 h-auto py-2 text-indigo-600 dark:text-indigo-400"
             onClick={() => router.push('/learning-brain')}
           >
-            <Brain size={20} />
+            <BookOpen size={20} />
             <span className="text-xs">Brain</span>
           </Button>
           <Button
@@ -1718,18 +1751,25 @@ export default function StudentDashboardPage() {
                 variant="ghost"
                 size="icon"
                 className="absolute right-6 top-6 z-50 bg-white rounded-full"
-                onClick={() => setShowAiTutor(false)}
+                onClick={() => {
+                  setShowAiTutor(false);
+                  setTutorPrefilledPrompt(undefined);
+                }}
               >
                 <X size={18} />
               </Button>
 
               <AiTutorChat
                 language={language}
-                onClose={() => setShowAiTutor(false)}
+                onClose={() => {
+                  setShowAiTutor(false);
+                  setTutorPrefilledPrompt(undefined);
+                }}
                 emotionState={emotionState}
                 learningStyle={learningStyle}
                 onLearningStyleUpdate={setLearningStyle}
                 studentId={user?.id || "S001"}
+                prefilledPrompt={tutorPrefilledPrompt}
               />
             </motion.div>
           </motion.div>
@@ -1814,7 +1854,7 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
-                  onClose={() => {
+                  onClose={async () => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
                     setActiveFlashcardTopic(undefined)
@@ -1826,7 +1866,7 @@ export default function StudentDashboardPage() {
                         const conceptId = tagFlashcardToConcept(activeFlashcardTopic || subj, subj);
                         if (conceptId) {
                           const confusion = emotionState?.emotion === "confused";
-                          LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
+                          await LearningMemoryService.recordActivity(user?.id || "S001", conceptId, {
                             activityType: "flashcard",
                             isKnown: true,
                             confusionDetected: confusion,
@@ -1864,7 +1904,10 @@ export default function StudentDashboardPage() {
                 variant="ghost"
                 size="icon"
                 className="absolute right-6 top-6 z-50 bg-white dark:bg-slate-800 text-foreground dark:text-white rounded-full hover:bg-muted dark:hover:bg-slate-700"
-                onClick={() => setShowSummaries(false)}
+                onClick={() => {
+                  setShowSummaries(false);
+                  setActiveSummaryTopic(undefined);
+                }}
               >
                 <X size={18} />
               </Button>
@@ -1875,9 +1918,14 @@ export default function StudentDashboardPage() {
                   language={language}
                   syllabus={selectedSyllabus}
                   subject={summaryDetails.subject === "all" ? undefined : summaryDetails.subject}
-                  onClose={() => setShowSummaries(false)}
+                  initialSearchQuery={activeSummaryTopic}
+                  onClose={() => {
+                    setShowSummaries(false);
+                    setActiveSummaryTopic(undefined);
+                  }}
                   onTriggerQuiz={(subject, topic) => {
                     setShowSummaries(false)
+                    setActiveSummaryTopic(undefined)
                     setActiveQuizSubject(subject)
                     setActiveQuizTopic(topic)
                     setShowQuizAi(true)
@@ -1885,6 +1933,7 @@ export default function StudentDashboardPage() {
                   }}
                   onTriggerFlashcards={(subject, topic) => {
                     setShowSummaries(false)
+                    setActiveSummaryTopic(undefined)
                     setActiveFlashcardSubject(subject)
                     setActiveFlashcardTopic(topic)
                     setShowFlashcardAi(true)
@@ -2208,7 +2257,7 @@ export default function StudentDashboardPage() {
           <span className="text-xs">Learn</span>
         </Button>
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1 text-indigo-600 dark:text-indigo-400" onClick={() => router.push("/learning-brain")}>
-          <Brain size={20} />
+          <BookOpen size={20} />
           <span className="text-xs">Brain</span>
         </Button>
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => setShowAiTutor(true)}>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Clock, Brain, Smile, TrendingUp, X } from "lucide-react"
+import { Clock, BookOpen, Smile, TrendingUp, X } from "lucide-react"
 
 interface SessionRecord {
   id: string
@@ -112,7 +112,7 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
         </Card>
         <Card className="border border-secondary/20">
           <CardContent className="pt-4 text-center">
-            <Brain size={20} className="mx-auto text-secondary mb-1" />
+            <BookOpen size={20} className="mx-auto text-secondary mb-1" />
             <p className="text-2xl font-bold">{avgFocus}%</p>
             <p className="text-xs text-muted-foreground">Avg Focus</p>
           </CardContent>

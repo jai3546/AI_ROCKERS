@@ -4,19 +4,24 @@ import React, { useState } from "react";
 import { ConceptNode } from "../../data/learning-graph";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Treemap, Tooltip } from "recharts";
-import { Brain, Star, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import { BookOpen, Star, Clock, AlertCircle, RefreshCw, X, Target, Sparkles, ChevronRight, FileText } from "lucide-react";
 
 interface KnowledgeGraphProps {
   graph: ConceptNode[];
   onSelectConcept?: (conceptId: string) => void;
+  onActionClick?: (conceptId: string, actionType: "quiz" | "flashcard" | "tutor" | "summaries") => void;
 }
 
-export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ graph, onSelectConcept, onActionClick }: KnowledgeGraphProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Find the selected node details
   const selectedNode = graph.find((n) => n.id === selectedNodeId);
+  const hoveredNode = hoveredNodeId ? graph.find((n) => n.id === hoveredNodeId) : null;
 
   // Prepare radar chart data for overall subject mastery
   const subjects = ["Science", "Math", "English", "Social Studies"];
@@ -135,7 +140,7 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
       <Card className="lg:col-span-2 border-border shadow-sm bg-card overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2">
-            <Brain className="text-indigo-500" />
+            <BookOpen className="text-indigo-500" />
             Interactive Knowledge Graph
           </CardTitle>
           <CardDescription>
@@ -242,28 +247,49 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
               if (node.subject === "English") subjectColor = "stroke-purple-500";
               if (node.subject === "Social Studies") subjectColor = "stroke-rose-500";
 
+              const isHovered = hoveredNodeId === node.id;
               return (
                 <g
                   key={node.id}
                   transform={`translate(${pos.x}, ${pos.y})`}
-                  className="cursor-pointer group"
+                  className="cursor-pointer group outline-none"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Concept: ${node.name}. Progress: ${node.mastery}%. Press enter to view learning actions.`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedNodeId(node.id);
+                      setIsActionModalOpen(true);
+                      if (onSelectConcept) onSelectConcept(node.id);
+                    }
+                  }}
                   onClick={() => {
                     setSelectedNodeId(node.id);
+                    setIsActionModalOpen(true);
                     if (onSelectConcept) onSelectConcept(node.id);
                   }}
+                  onMouseEnter={() => setHoveredNodeId(node.id)}
+                  onMouseLeave={() => setHoveredNodeId(null)}
                 >
+                  {/* Invisible touch target overlay for mobile screens */}
                   <circle
-                    r={isSelected ? 16 : 12}
+                    r={24}
+                    fill="transparent"
+                    className="cursor-pointer"
+                  />
+                  <circle
+                    r={isSelected ? 16 : (isHovered ? 15 : 12)}
                     fill={colors.hex}
                     fillOpacity={isSelected ? 0.35 : 0.15}
                     className={`stroke-2 transition-all ${subjectColor} group-hover:scale-110`}
                   />
                   {/* Outer glow for active nodes */}
                   <circle
-                    r={isSelected ? 18 : 12}
+                    r={isSelected ? 18 : (isHovered ? 17 : 12)}
                     fill="none"
                     stroke={colors.hex}
-                    strokeWidth={isSelected ? 2 : 1}
+                    strokeWidth={isSelected || isHovered ? 2 : 1}
                     className="transition-all opacity-80"
                   />
                   <text
@@ -285,8 +311,180 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#eab308]/20 border border-[#eab308]"></span> 41-70%</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#10b981]/20 border border-[#10b981]"></span> 71-100%</span>
           </div>
+
+          {/* Floating Tooltip */}
+          {hoveredNodeId && hoveredNode && (
+            <div
+              className="absolute bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/50 p-2.5 rounded-lg shadow-xl text-xs pointer-events-none z-30 transition-all flex flex-col gap-1 w-48 text-left text-slate-100"
+              style={{
+                left: `${(nodePositions[hoveredNodeId].x / 600) * 100}%`,
+                top: `${(nodePositions[hoveredNodeId].y / 440) * 100 - 8}%`,
+                transform: 'translate(-50%, -100%)',
+              }}
+            >
+              <div className="font-bold flex justify-between gap-2">
+                <span className="truncate">{hoveredNode.name}</span>
+                <span className="text-[10px] text-indigo-400 font-semibold">{hoveredNode.mastery}%</span>
+              </div>
+              <div className="text-[10px] text-slate-400 capitalize">{hoveredNode.subject}</div>
+              <div className="w-full bg-slate-800 rounded-full h-1 mt-1">
+                <div
+                  className="h-1 bg-indigo-500 rounded-full"
+                  style={{ width: `${hoveredNode.mastery}%` }}
+                ></div>
+              </div>
+              <p className="text-[9px] text-slate-500 mt-1 italic">Click node to take action</p>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Contextual Action Modal */}
+      {isActionModalOpen && selectedNode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-border rounded-xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-4 rounded-full h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsActionModalOpen(false)}
+            >
+              <X size={16} />
+            </Button>
+
+            <div className="space-y-4">
+              <div>
+                <Badge className="mb-2 capitalize" variant="secondary">
+                  {selectedNode.subject}
+                </Badge>
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <span>📚</span> {selectedNode.name}
+                </h3>
+                {selectedNode.description && (
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    {selectedNode.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Progress details */}
+              <div className="bg-slate-50 dark:bg-slate-950/40 p-3.5 rounded-lg border border-border space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs font-semibold mb-1">
+                    <span>Well Learned Progress</span>
+                    <span className={getMasteryColor(selectedNode.mastery).text}>
+                      {selectedNode.mastery}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${selectedNode.mastery}%`,
+                        backgroundColor: getMasteryColor(selectedNode.mastery).hex
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-xs pt-1">
+                  <div>
+                    <span className="text-muted-foreground">Memory Strength:</span>
+                    <p className="font-bold text-foreground mt-0.5">{selectedNode.retention}%</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Confidence Level:</span>
+                    <p className="font-bold text-foreground mt-0.5">{selectedNode.confidence}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions list */}
+              <div className="space-y-2 pt-2">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Choose an Action:</span>
+                
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    className="flex items-center gap-3 w-full p-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 rounded-lg text-indigo-700 dark:text-indigo-300 text-sm font-semibold transition-all group text-left"
+                    onClick={() => {
+                      setIsActionModalOpen(false);
+                      if (onActionClick) onActionClick(selectedNode.id, "summaries");
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-indigo-600/10 dark:bg-indigo-400/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                      <BookOpen size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>📖 Read Notes & Summaries</span>
+                        <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-[10px] text-indigo-600/70 dark:text-indigo-400/70 font-normal mt-0.5">Open summaries, notes, and definitions</p>
+                    </div>
+                  </button>
+
+                  <button
+                    className="flex items-center gap-3 w-full p-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 border border-amber-100 dark:border-amber-900/50 rounded-lg text-amber-700 dark:text-amber-300 text-sm font-semibold transition-all group text-left"
+                    onClick={() => {
+                      setIsActionModalOpen(false);
+                      if (onActionClick) onActionClick(selectedNode.id, "flashcard");
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-amber-600/10 dark:bg-amber-400/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                      <FileText size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>🔄 Practice Flashcards</span>
+                        <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-normal mt-0.5">Review question and answer cards</p>
+                    </div>
+                  </button>
+
+                  <button
+                    className="flex items-center gap-3 w-full p-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/50 rounded-lg text-emerald-700 dark:text-emerald-300 text-sm font-semibold transition-all group text-left"
+                    onClick={() => {
+                      setIsActionModalOpen(false);
+                      if (onActionClick) onActionClick(selectedNode.id, "quiz");
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-emerald-600/10 dark:bg-emerald-400/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                      <Target size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>📝 Take Practice Quiz</span>
+                        <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-normal mt-0.5">Test your knowledge with dynamic questions</p>
+                    </div>
+                  </button>
+
+                  <button
+                    className="flex items-center gap-3 w-full p-3 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/30 dark:hover:bg-purple-950/50 border border-purple-100 dark:border-purple-900/50 rounded-lg text-purple-700 dark:text-purple-300 text-sm font-semibold transition-all group text-left"
+                    onClick={() => {
+                      setIsActionModalOpen(false);
+                      if (onActionClick) onActionClick(selectedNode.id, "tutor");
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-purple-600/10 dark:bg-purple-400/10 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+                      <Sparkles size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>🤖 Ask AI Tutor</span>
+                        <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 font-normal mt-0.5">Get a personalized explanation from Gemini AI</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Recharts Sidebar Widget (Treemap/Radar Chart) */}
       <div className="flex flex-col gap-6">
@@ -373,7 +571,7 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
                   {/* Retention Progress Bar */}
                   <div>
                     <div className="flex justify-between text-xs font-medium mb-1">
-                      <span>Cognitive Retention</span>
+                      <span>Memory Strength</span>
                       <span>{selectedNode.retention}%</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
@@ -398,6 +596,38 @@ export function KnowledgeGraph({ graph, onSelectConcept }: KnowledgeGraphProps) 
                       : "Never"}
                   </span>
                 </div>
+
+                {onActionClick && (
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border mt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "flashcard")}
+                    >
+                      <span>🔄</span>
+                      <span>Revise Topic</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "quiz")}
+                    >
+                      <span>📝</span>
+                      <span>Take Quiz</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] h-8 px-1 flex flex-col items-center justify-center gap-0.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                      onClick={() => onActionClick(selectedNode.id, "tutor")}
+                    >
+                      <span>🤖</span>
+                      <span>Ask AI Tutor</span>
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground gap-2">

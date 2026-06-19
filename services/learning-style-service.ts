@@ -232,11 +232,15 @@ export function generateLearningStylePrompt(
     prompt += `The student currently appears ${emotionData.emotion}`;
     
     if (emotionData.fatigueScore !== undefined && emotionData.fatigueScore > 60) {
-      prompt += ` and may be experiencing fatigue (${emotionData.fatigueScore}% fatigue detected)`;
+      prompt += ` and may be experiencing fatigue`;
     }
     
     if (emotionData.attentionScore !== undefined) {
-      prompt += `. Their attention level is approximately ${emotionData.attentionScore}%`;
+      if (emotionData.attentionScore < 40) {
+        prompt += `. Their attention level is low`;
+      } else if (emotionData.attentionScore > 70) {
+        prompt += `. Their attention level is high`;
+      }
     }
     
     prompt += '. ';

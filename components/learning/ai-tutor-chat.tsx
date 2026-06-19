@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { motion } from "framer-motion"
-import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
+import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -29,6 +29,7 @@ interface AiTutorChatProps {
   learningStyle?: LearningStyleProfile
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
+  prefilledPrompt?: string
 }
 
 function MessageContent({ content }: { content: string }) {
@@ -77,7 +78,8 @@ export function AiTutorChat({
   emotionState,
   learningStyle = initialLearningStyleProfile,
   onLearningStyleUpdate,
-  studentId = "S001"
+  studentId = "S001",
+  prefilledPrompt
 }: AiTutorChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -131,20 +133,44 @@ export function AiTutorChat({
     if (learningStyle) setCurrentLearningStyle(learningStyle)
   }, [learningStyle])
 
-  // Explicit User Option Overrides
-  const handleManualStyleOverride = (style: LearningStyle) => {
-    const forcedProfile: LearningStyleProfile = {
-      primaryStyle: style,
-      secondaryStyle: "unknown",
-      visualScore: style === "visual" ? 100 : 0,
-      auditoryScore: style === "auditory" ? 100 : 0,
-      kinestheticScore: style === "kinesthetic" ? 100 : 0,
-      lastUpdated: new Date()
+  // Prefill prompt when supplied
+  useEffect(() => {
+    if (prefilledPrompt) {
+      setInputValue(prefilledPrompt)
     }
-    setCurrentLearningStyle(forcedProfile)
-    if (onLearningStyleUpdate) {
-      onLearningStyleUpdate(forcedProfile)
-    }
+  }, [prefilledPrompt])
+
+  const handleSendMessage = async () => {
+  if (!inputValue.trim()) return
+
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: inputValue,
+    sender: "user",
+    timestamp: new Date(),
+  }
+
+  setMessages((prev) => [...prev, userMessage])
+  setInputValue("")
+  setIsTyping(true)
+
+  const updatedLearningStyle = updateLearningStyleProfile(currentLearningStyle, {
+    textInteractions: 1,
+    videoInteractions: userMessage.content.toLowerCase().includes('video') ||
+                      userMessage.content.toLowerCase().includes('see') ||
+                      userMessage.content.toLowerCase().includes('show') ? 1 : 0,
+    audioInteractions: userMessage.content.toLowerCase().includes('audio') ||
+                       userMessage.content.toLowerCase().includes('hear') ||
+                       userMessage.content.toLowerCase().includes('listen') ? 1 : 0,
+    practicalInteractions: userMessage.content.toLowerCase().includes('practice') ||
+                           userMessage.content.toLowerCase().includes('try') ||
+                           userMessage.content.toLowerCase().includes('do') ? 1 : 0
+  })
+
+  setCurrentLearningStyle(updatedLearningStyle)
+
+  if (onLearningStyleUpdate) {
+    onLearningStyleUpdate(updatedLearningStyle)
   }
 
   const handleSendMessage = async () => {
@@ -182,21 +208,23 @@ export function AiTutorChat({
     const detectedConcept = detectConceptFromText(userMessage.content)
     
     if (detectedConcept) {
-      detectedConceptId = detectedConcept.id
-      const graph = LearningMemoryService.getConceptGraph(studentId)
-      const node = graph.find(n => n.id === detectedConceptId)
+      detectedConceptId = detectedConcept.id;
+      const graph = await LearningMemoryService.getConceptGraph(studentId);
+      const node = graph.find(n => n.id === detectedConceptId);
       
       if (node) {
         if (node.mastery < 50) {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has LOW mastery (${node.mastery}%) in this topic. Provide an extremely simple, basic explanation with extra examples, broken down step-by-step.]`
+          personalizationInstructions = `[PERSONALIZATION INFO: Provide a beginner-friendly explanation with extra examples, broken down step-by-step.]`;
         } else if (node.mastery > 75) {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has HIGH mastery (${node.mastery}%) in this topic. Provide an advanced explanation with deep insights and challenge them with a tough question.]`
+          personalizationInstructions = `[PERSONALIZATION INFO: Provide a detailed, advanced explanation with deep insights and challenge them with a tough question.]`;
         } else {
-          personalizationInstructions = `[PERSONALIZATION INFO: The student has MODERATE mastery (${node.mastery}%) in this topic. Reinforce their understanding and check for clarity.]`
+          personalizationInstructions = `[PERSONALIZATION INFO: Reinforce understanding and check for clarity.]`;
         }
       }
 
-      LearningMemoryService.recordActivity(studentId, detectedConceptId, {
+      // Record tutor interaction in memory graph
+      const confusion = currentEmotionState?.emotion === "confused";
+      await LearningMemoryService.recordActivity(studentId, detectedConceptId, {
         activityType: "tutor",
         confusionDetected: currentEmotionState?.emotion === "confused",
         engagement: 80
@@ -417,26 +445,58 @@ export function AiTutorChat({
                 </div>
               </div>
             </div>
-          )}
+            <div className="text-xs mt-1 text-muted-foreground">
+              Content is being personalized to your learning style.
+            </div>
+          </div>
+        )}
 
-          {/* Interactive Chat Canvas */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`flex gap-2 max-w-[80%] ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.sender === "user" ? "bg-secondary/20" : "bg-primary/20"}`}>
-                    {message.sender === "user" ? <User size={16} className="text-secondary" /> : <Bot size={16} className="text-primary" />}
-                  </div>
+        {/* Subject selector */}
+        <div className="flex gap-1 mt-2">
+          <Button
+            variant={currentSubject === "math" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 px-2"
+            onClick={() => setCurrentSubject("math")}
+          >
+            <BookOpen size={16} className="mr-1" />
+            Math
+          </Button>
+          <Button
+            variant={currentSubject === "science" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 px-2"
+            onClick={() => setCurrentSubject("science")}
+          >
+            <Atom size={16} className="mr-1" />
+            Science
+          </Button>
+          <Button
+            variant={currentSubject === "general" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 px-2"
+            onClick={() => setCurrentSubject("general")}
+          >
+            <BookOpen size={16} className="mr-1" />
+            General
+          </Button>
+        </div>
+      </div>
 
-                  <div className={`p-3 rounded-lg ${message.sender === "user" ? "bg-secondary text-secondary-foreground" : "bg-muted text-foreground"}`}>
-                    <MessageContent content={message.content} />
-                    <div className="text-[10px] opacity-60 mt-1 text-right">
-                      {new Intl.DateTimeFormat(language === "en" ? "en-US" : language === "hi" ? "hi-IN" : "te-IN", {
-                        hour: "2-digit", minute: "2-digit",
-                      }).format(message.timestamp)}
-                    </div>
-                  </div>
-                </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`flex gap-2 max-w-[80%] ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  message.sender === "user" ? "bg-secondary/20" : "bg-primary/20"
+                }`}
+              >
+                {message.sender === "user" ? (
+                  <User size={16} className="text-secondary" />
+                ) : (
+                  <Bot size={16} className="text-primary" />
+                )}
               </div>
             ))}
 
