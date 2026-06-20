@@ -6,6 +6,7 @@ import { Smile, Frown, Meh, AlertTriangle, Eye, X, Maximize2, Minimize2 } from "
 import { Button } from "@/components/ui/button"
 import { EmotionData } from "./improved-emotion-detector"
 import { EmotionDisplay } from "./emotion-display"
+import { getLearnerStatusLabel } from "@/services/learner-status-service"
 
 interface FloatingEmotionTrackerProps {
   lastEmotionData: EmotionData | null
@@ -146,26 +147,7 @@ export function FloatingEmotionTracker({
             <div className={`w-3 h-3 rounded-full ${lastEmotionData?.faceDetected ? 'bg-green-500' : 'bg-amber-500'}`} />
             <span className="text-xs">
               {lastEmotionData?.faceDetected ?
-                (() => {
-                  if (!lastEmotionData || lastEmotionData.emotion === "unknown") return translations.unknown[language];
-                  const fatigue = lastEmotionData.fatigueScore || 0;
-                  const attention = lastEmotionData.attentionScore ?? 100;
-                  if (fatigue > 70) return "Needs a Short Break";
-                  if (attention < 30) return "Focus Tracking Active";
-                  switch (lastEmotionData.emotion) {
-                    case "happy":     return "Focus Level: High";
-                    case "focused":
-                    case "neutral":   return "Focus Tracking Active";
-                    case "surprised": return "Focus Level: Moderate";
-                    case "sad":
-                    case "fearful":
-                    case "angry":
-                    case "disgusted":
-                    case "confused":
-                    case "bored":     return "Learning Support Recommended";
-                    default:          return "Focus Tracking Active";
-                  }
-                })() :
+                (getLearnerStatusLabel(lastEmotionData, language) ?? translations.unknown[language]) :
                 translations.outOfFrame[language]
               }
             </span>

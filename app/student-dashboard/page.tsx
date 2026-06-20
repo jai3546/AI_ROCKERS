@@ -66,6 +66,8 @@ import { FloatingEmotionTracker } from "@/components/tracking/floating-emotion-t
 import { LearningStyleProfile, initialLearningStyleProfile } from "@/services/learning-style-service"
 import { type EmotionState } from "@/services/gemini-api"
 import { EmotionStatusIndicator } from "@/components/emotion-status-indicator"
+import { LearnerStatusBadge } from "@/components/learning/learner-status-badge"
+import { getLearnerStatusLabel } from "@/services/learner-status-service"
 import { StudentDetailsDialog } from "@/components/student-details-dialog"
 import { allQuizQuestions } from "@/data/quiz-questions"
 import { allFlashcards } from "@/data/flashcards"
@@ -209,28 +211,15 @@ export default function StudentDashboardPage() {
 
   // Update document title with learner-friendly status
   useEffect(() => {
-    if (emotionState) {
+    if (emotionState && autoEmotionTracking) {
       const originalTitle = "VidyAI - Student Dashboard";
-      const getFriendlyStatus = () => {
-        const fatigue = emotionState.fatigueScore || 0;
-        const attention = emotionState.attentionScore ?? 100;
-        if (fatigue > 70) return "Needs a Short Break";
-        if (attention < 30) return "Focus Tracking Active";
-        switch (emotionState.emotion) {
-          case "happy":     return "Focus Level: High";
-          case "neutral":   return "Focus Tracking Active";
-          case "surprised": return "Focus Level: Moderate";
-          case "sad":
-          case "fearful":
-          case "angry":
-          case "disgusted": return "Learning Support Recommended";
-          default:          return "Focus Tracking Active";
-        }
-      };
-      document.title = `${originalTitle} | ${getFriendlyStatus()}`;
+      const friendlyStatus = getLearnerStatusLabel(emotionState, language);
+      document.title = friendlyStatus
+        ? `${originalTitle} | ${friendlyStatus}`
+        : originalTitle;
       return () => { document.title = originalTitle; };
     }
-  }, [emotionState])
+  }, [emotionState, autoEmotionTracking, language])
 
   // Mock data for gamification
   const [studentLevel, setStudentLevel] = useState(5)
@@ -1531,28 +1520,12 @@ export default function StudentDashboardPage() {
                     <p className="text-sm text-foreground/70 dark:text-foreground/80">
                       Analyze facial expressions to adapt learning content to your emotional state.
                     </p>
-                    {lastEmotionData && (
-                      <div className="flex items-center gap-2">
-                        {lastEmotionData.emotion !== "unknown" && (
-                          <Badge variant="outline">
-                            {(() => {
-                              switch (lastEmotionData.emotion) {
-                                case "happy":     return "Focus Level: High";
-                                case "focused":
-                                case "neutral":   return "Focus Tracking Active";
-                                case "surprised": return "Focus Level: Moderate";
-                                case "sad":
-                                case "fearful":
-                                case "angry":
-                                case "disgusted":
-                                case "confused":
-                                case "bored":     return "Learning Support Recommended";
-                                default:          return "Focus Tracking Active";
-                              }
-                            })()}
-                          </Badge>
-                        )}
-                      </div>
+                    {lastEmotionData && autoEmotionTracking && (
+                      <LearnerStatusBadge
+                        status={lastEmotionData}
+                        language={language}
+                        trackingActive={autoEmotionTracking}
+                      />
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1789,6 +1762,7 @@ export default function StudentDashboardPage() {
                 language={language}
                 onClose={() => setShowAiTutor(false)}
                 emotionState={emotionState}
+                emotionTrackingActive={autoEmotionTracking}
                 learningStyle={learningStyle}
                 onLearningStyleUpdate={setLearningStyle}
                 studentId={user?.id || "S001"}
@@ -2190,6 +2164,12 @@ export default function StudentDashboardPage() {
           />
         )}
       </AnimatePresence>
+
+      <EmotionStatusIndicator
+        emotionState={emotionState}
+        trackingActive={autoEmotionTracking}
+        language={language}
+      />
 
       {/* Hidden Face Emotion Detector for background processing */}
       {autoEmotionTracking && (

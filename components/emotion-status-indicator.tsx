@@ -1,152 +1,90 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Smile, Frown, Meh, AlertTriangle, Activity, Brain } from "lucide-react"
+import { Activity, Brain, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { type EmotionState } from "@/services/gemini-api"
+import {
+  getEnergyLevelLabel,
+  getFocusLevelLabel,
+  getLearnerStatusKey,
+  getLearnerStatusLabel,
+  getLearnerStatusTip,
+  shouldShowLearnerStatus,
+  type LearnerStatusLanguage,
+} from "@/services/learner-status-service"
 
 interface EmotionStatusIndicatorProps {
   emotionState?: EmotionState
+  trackingActive?: boolean
+  language?: LearnerStatusLanguage
   className?: string
+}
+
+const STATUS_BORDER: Record<
+  NonNullable<ReturnType<typeof getLearnerStatusKey>>,
+  string
+> = {
+  needsBreak: "border-l-amber-500",
+  focusModerate: "border-l-blue-500",
+  focusHigh: "border-l-green-500",
+  focusTracking: "border-l-primary",
+  learningSupport: "border-l-violet-500",
 }
 
 export function EmotionStatusIndicator({
   emotionState,
-  className = ""
+  trackingActive = false,
+  language = "en",
+  className = "",
 }: EmotionStatusIndicatorProps) {
-  const [visible, setVisible] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
-  // Show indicator when emotion state changes
+  const visible = shouldShowLearnerStatus(emotionState, trackingActive)
+  const statusKey = getLearnerStatusKey(emotionState)
+  const statusLabel = getLearnerStatusLabel(emotionState, language)
+  const statusTip = getLearnerStatusTip(emotionState, language)
+
   useEffect(() => {
-    if (emotionState) {
-      setVisible(true)
-      // Keep visible longer and don't auto-hide for important emotions
-      const isImportantEmotion = ['sad', 'angry', 'fearful'].includes(emotionState.emotion);
+    if (!visible) setShowDetails(false)
+  }, [visible])
 
-      // Auto-hide after longer time if not interacted with (except for important emotions)
-      if (!isImportantEmotion) {
-        const timer = setTimeout(() => {
-          if (!showDetails) {
-            setVisible(false)
-          }
-        }, 20000) // Increased from 10s to 20s
-
-        return () => clearTimeout(timer)
-      }
-    }
-  }, [emotionState, showDetails])
-
-  if (!emotionState || !visible) return null
-
-  // Get emotion icon
-  const getEmotionIcon = () => {
-    switch (emotionState.emotion) {
-      case 'happy':
-        return <Smile className="text-green-500" />
-      case 'sad':
-        return <Frown className="text-blue-500" />
-      case 'angry':
-        return <Frown className="text-red-500" />
-      case 'fearful':
-        return <AlertTriangle className="text-amber-500" />
-      case 'surprised':
-        return <Smile className="text-purple-500" />
-      case 'disgusted':
-        return <Frown className="text-orange-500" />
-      default:
-        return <Meh className="text-gray-500" />
-    }
-  }
-
-  // Get emotion color
-  const getEmotionColor = () => {
-    switch (emotionState.emotion) {
-      case 'happy':
-        return 'border-l-green-500'
-      case 'sad':
-        return 'border-l-blue-500'
-      case 'angry':
-        return 'border-l-red-500'
-      case 'fearful':
-        return 'border-l-amber-500'
-      case 'surprised':
-        return 'border-l-purple-500'
-      case 'disgusted':
-        return 'border-l-orange-500'
-      default:
-        return 'border-l-gray-500'
-    }
-  }
-
-  // Get fatigue level text
-  const getFatigueLevel = () => {
-    const score = emotionState.fatigueScore || 0
-    if (score > 75) return 'High'
-    if (score > 50) return 'Moderate'
-    if (score > 25) return 'Low'
-    return 'None'
-  }
-
-  // Get attention level text
-  const getAttentionLevel = () => {
-    const score = emotionState.attentionScore || 100
-    if (score > 75) return 'High'
-    if (score > 50) return 'Moderate'
-    if (score > 25) return 'Low'
-    return 'Very Low'
-  }
-
-  // Learner-friendly status label (replaces raw emotion name)
-  const getFriendlyStatus = () => {
-    const fatigue = emotionState.fatigueScore || 0
-    const attention = emotionState.attentionScore ?? 100
-    if (fatigue > 70) return 'Needs a Short Break'
-    if (attention < 30) return 'Focus Tracking Active'
-    switch (emotionState.emotion) {
-      case 'happy':     return 'Focus Level: High'
-      case 'neutral':   return 'Focus Tracking Active'
-      case 'surprised': return 'Focus Level: Moderate'
-      case 'sad':
-      case 'fearful':
-      case 'angry':
-      case 'disgusted': return 'Learning Support Recommended'
-      default:          return 'Focus Tracking Active'
-    }
-  }
+  if (!visible || !emotionState || !statusKey || !statusLabel) return null
 
   return (
     <AnimatePresence mode="wait">
-      {visible && (
-        <motion.div
-          key="emotion-indicator"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{
-            opacity: 1,
-            x: 0,
-            transition: {
-              type: "spring",
-              stiffness: 300,
-              damping: 20
-            }
-          }}
-          exit={{ opacity: 0, x: 50 }}
-          className={`fixed top-20 right-4 z-40 ${className}`}
-        >
+      <motion.div
+        key="emotion-indicator"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{
+          opacity: 1,
+          x: 0,
+          transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 20,
+          },
+        }}
+        exit={{ opacity: 0, x: 50 }}
+        className={`fixed top-20 right-4 z-40 ${className}`}
+      >
         <Card
-          className={`w-64 shadow-lg border-l-4 cursor-pointer overflow-hidden ${getEmotionColor()}`}
+          className={`w-64 shadow-lg border-l-4 cursor-pointer overflow-hidden ${STATUS_BORDER[statusKey]}`}
           onClick={() => setShowDetails(!showDetails)}
         >
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {getEmotionIcon()}
-                <span className="font-medium">{getFriendlyStatus()}</span>
+                <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span className="font-medium text-sm">{statusLabel}</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </div>
             </div>
 
@@ -154,7 +92,7 @@ export function EmotionStatusIndicator({
               {showDetails && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
+                  animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   className="mt-3 space-y-2 overflow-hidden"
                 >
@@ -162,16 +100,24 @@ export function EmotionStatusIndicator({
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <div className="flex items-center gap-1 text-xs">
-                          <Activity size={12} />
-                          <span>Fatigue Level: {getFatigueLevel()}</span>
+                          <Activity size={12} aria-hidden="true" />
+                          <span>
+                            Energy Level:{" "}
+                            {getEnergyLevelLabel(emotionState.fatigueScore, language)}
+                          </span>
                         </div>
-                        <span className="text-xs">{emotionState.fatigueScore}%</span>
+                        <span className="text-xs">{100 - emotionState.fatigueScore}%</span>
                       </div>
                       <Progress
-                        value={emotionState.fatigueScore}
+                        value={100 - emotionState.fatigueScore}
                         className="h-1.5"
-                        indicatorClassName={emotionState.fatigueScore > 70 ? 'bg-red-500' :
-                                           emotionState.fatigueScore > 40 ? 'bg-amber-500' : 'bg-green-500'}
+                        indicatorClassName={
+                          emotionState.fatigueScore > 70
+                            ? "bg-red-500"
+                            : emotionState.fatigueScore > 40
+                              ? "bg-amber-500"
+                              : "bg-green-500"
+                        }
                       />
                     </div>
                   )}
@@ -180,39 +126,37 @@ export function EmotionStatusIndicator({
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <div className="flex items-center gap-1 text-xs">
-                          <Brain size={12} />
-                          <span>Attention Level: {getAttentionLevel()}</span>
+                          <Brain size={12} aria-hidden="true" />
+                          <span>
+                            Focus Level:{" "}
+                            {getFocusLevelLabel(emotionState.attentionScore, language)}
+                          </span>
                         </div>
                         <span className="text-xs">{emotionState.attentionScore}%</span>
                       </div>
                       <Progress
                         value={emotionState.attentionScore}
                         className="h-1.5"
-                        indicatorClassName={emotionState.attentionScore < 30 ? 'bg-red-500' :
-                                           emotionState.attentionScore < 60 ? 'bg-amber-500' : 'bg-green-500'}
+                        indicatorClassName={
+                          emotionState.attentionScore < 30
+                            ? "bg-red-500"
+                            : emotionState.attentionScore < 60
+                              ? "bg-amber-500"
+                              : "bg-green-500"
+                        }
                       />
                     </div>
                   )}
 
-                  <div className="text-xs text-muted-foreground mt-2">
-                    {(emotionState.emotion === 'sad' || emotionState.emotion === 'fearful') &&
-                      "It looks like you might benefit from a short break or some extra support."}
-                    {emotionState.emotion === 'angry' &&
-                      "Let's slow down — breaking the topic into smaller steps can help."}
-                    {emotionState.emotion === 'disgusted' &&
-                      "Switching topics or taking a quick pause might help refresh your focus."}
-                    {emotionState.emotion === 'happy' &&
-                      "Great energy! This is a perfect moment to tackle something challenging."}
-                    {(emotionState.emotion === 'neutral' || emotionState.emotion === 'surprised') &&
-                      "You're engaged and ready. Keep going!"}
-                  </div>
+                  {statusTip && (
+                    <p className="text-xs text-muted-foreground mt-2">{statusTip}</p>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
           </CardContent>
         </Card>
       </motion.div>
-      )}
     </AnimatePresence>
   )
 }
