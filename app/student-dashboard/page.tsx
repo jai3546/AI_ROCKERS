@@ -1159,85 +1159,96 @@ export default function StudentDashboardPage() {
         </Card>
 
         {/* Daily Challenge */}
-        <Card className="border-red-300">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              🍅 Pomodoro Study Timer
-            </CardTitle>
-          </CardHeader>
+<Card className="border-red-300/30 bg-card/50 backdrop-blur-sm">
+  <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    
+    {/* Left Side: Title & Dynamic Timer Badge */}
+    <div className="flex items-center gap-4">
+      <span className="text-sm font-semibold tracking-wide text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
+        🍅 Timer:
+      </span>
+      <p className="text-2xl font-black tabular-nums tracking-tight bg-primary/10 text-primary px-3 py-0.5 rounded-lg border border-primary/20 min-w-[85px] text-center">
+        {formatStudyTime()}
+      </p>
+    </div>
 
-          <CardContent>
-            <div className="flex gap-2 mb-4">
+    {/* Center: Presets grouped closely */}
+    <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-lg border border-border/40">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
+        onClick={() => {
+          setIsRunning(false)
+          setSessionLength(25)
+          setTimeLeft(25 * 60)
+        }}
+      >
+        25m
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
+        onClick={() => {
+          setIsRunning(false)
+          setSessionLength(30)
+          setTimeLeft(30 * 60)
+        }}
+      >
+        30m
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
+        onClick={() => {
+          setIsRunning(false)
+          setSessionLength(45)
+          setTimeLeft(45 * 60)
+        }}
+      >
+        45m
+      </Button>
+    </div>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(25)
-                  setTimeLeft(25 * 60)
-                }}
-              >
-                25 Min
-              </Button>
+    {/* Right Side: Execution controls */}
+    <div className="flex items-center gap-2 sm:ml-auto">
+      {!isRunning ? (
+        <Button
+          size="sm"
+          className="h-8 text-xs font-semibold px-4 shadow-sm"
+          onClick={() => setIsRunning(true)}
+        >
+          Start
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs font-semibold px-4 bg-pink-500 hover:bg-pink-600 text-white border-none shadow-sm"
+          onClick={() => setIsRunning(false)}
+        >
+          Stop
+        </Button>
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 text-xs font-semibold px-3 text-muted-foreground hover:bg-accent"
+        onClick={() => {
+          setIsRunning(false)
+          setTimeLeft(sessionLength * 60)
+          setStudyTime(0)
+          setShowBreakSuggestion(false)
+        }}
+      >
+        Reset
+      </Button>
+    </div>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(30)
-                  setTimeLeft(30 * 60)
-                }}
-              >
-                30 Min
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(45)
-                  setTimeLeft(45 * 60)
-                }}
-              >
-                45 Min
-              </Button>
-
-            </div>
-
-            <p className="text-3xl font-bold">
-              {formatStudyTime()}
-            </p>
-
-
-            <Button
-              className="mt-4"
-              onClick={() => setIsRunning(true)}
-            >
-              Start Session
-            </Button>
-            <Button
-              variant="outline"
-              className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-              onClick={() => setIsRunning(false)}
-            >
-              Stop Session
-            </Button>
-            <Button
-              variant="outline"
-              className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-              onClick={() => {
-                setIsRunning(false)
-                setTimeLeft(sessionLength * 60)
-                setStudyTime(0)
-                setShowBreakSuggestion(false)
-
-              }}
-            >
-              Reset Session
-            </Button>
-
-          </CardContent>
-        </Card>
+  </CardContent>
+</Card>
 
         {
           showBreakSuggestion && (
