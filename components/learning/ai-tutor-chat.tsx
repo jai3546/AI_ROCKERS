@@ -306,9 +306,24 @@ export function AiTutorChat({
 
                     {currentEmotionState && (
                       <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full text-[11px] font-medium">
-                        <span className="capitalize">{currentEmotionState.emotion}</span>
+                        <span>{(() => {
+                          const fatigue = currentEmotionState.fatigueScore || 0;
+                          const attention = currentEmotionState.attentionScore ?? 100;
+                          if (fatigue > 70) return "Needs a Short Break";
+                          if (attention < 30) return "Focus Tracking Active";
+                          switch (currentEmotionState.emotion) {
+                            case "happy":     return "Focus Level: High";
+                            case "neutral":   return "Focus Tracking Active";
+                            case "surprised": return "Focus Level: Moderate";
+                            case "sad":
+                            case "fearful":
+                            case "angry":
+                            case "disgusted": return "Learning Support Recommended";
+                            default:          return "Focus Tracking Active";
+                          }
+                        })()}</span>
                         {currentEmotionState.fatigueScore !== undefined && currentEmotionState.fatigueScore > 50 && (
-                          <span className="text-destructive font-semibold">• Fatigue</span>
+                          <span className="text-destructive font-semibold">• High Fatigue</span>
                         )}
                       </div>
                     )}

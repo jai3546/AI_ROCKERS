@@ -103,10 +103,8 @@ export function EmotionStatusIndicator({
   const getFriendlyStatus = () => {
     const fatigue = emotionState.fatigueScore || 0
     const attention = emotionState.attentionScore ?? 100
-
     if (fatigue > 70) return 'Needs a Short Break'
     if (attention < 30) return 'Focus Tracking Active'
-
     switch (emotionState.emotion) {
       case 'happy':     return 'Focus Level: High'
       case 'neutral':   return 'Focus Tracking Active'

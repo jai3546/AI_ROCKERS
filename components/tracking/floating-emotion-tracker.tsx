@@ -145,8 +145,27 @@ export function FloatingEmotionTracker({
           <div className="p-2 flex items-center gap-2 bg-card dark:bg-card">
             <div className={`w-3 h-3 rounded-full ${lastEmotionData?.faceDetected ? 'bg-green-500' : 'bg-amber-500'}`} />
             <span className="text-xs">
-              {lastEmotionData?.faceDetected ? 
-                `${lastEmotionData.emotion !== "unknown" ? lastEmotionData.emotion : translations.unknown[language]}: ${Math.round(lastEmotionData.confidence)}%` : 
+              {lastEmotionData?.faceDetected ?
+                (() => {
+                  if (!lastEmotionData || lastEmotionData.emotion === "unknown") return translations.unknown[language];
+                  const fatigue = lastEmotionData.fatigueScore || 0;
+                  const attention = lastEmotionData.attentionScore ?? 100;
+                  if (fatigue > 70) return "Needs a Short Break";
+                  if (attention < 30) return "Focus Tracking Active";
+                  switch (lastEmotionData.emotion) {
+                    case "happy":     return "Focus Level: High";
+                    case "focused":
+                    case "neutral":   return "Focus Tracking Active";
+                    case "surprised": return "Focus Level: Moderate";
+                    case "sad":
+                    case "fearful":
+                    case "angry":
+                    case "disgusted":
+                    case "confused":
+                    case "bored":     return "Learning Support Recommended";
+                    default:          return "Focus Tracking Active";
+                  }
+                })() :
                 translations.outOfFrame[language]
               }
             </span>
