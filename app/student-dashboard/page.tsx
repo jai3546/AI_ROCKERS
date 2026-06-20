@@ -1145,7 +1145,7 @@ export default function StudentDashboardPage() {
               className="flex items-center gap-2 self-end sm:self-center shrink-0 shadow-md transition-transform hover:scale-[1.02]"
               onClick={() => {
                 if (autoEmotionTracking) {
-                  setActiveQuizSubject("Science");
+                  setActiveQuizSubject(dashboardSubject === "all" ? undefined : dashboardSubject);
                   setShowQuiz(true);
                 } else {
                   setShowAiTutor(true);
