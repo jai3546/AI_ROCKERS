@@ -41,6 +41,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/components/theme-provider"
 import { LevelProgress } from "@/components/gamification/level-progress"
+import { TodayProgress } from "@/components/gamification/today-progress"
 import { DailyChallenge } from "@/components/gamification/daily-challenge"
 import { AchievementCard } from "@/components/gamification/achievement-card"
 import { Leaderboard } from "@/components/gamification/leaderboard"
@@ -74,6 +75,14 @@ import { updateSchoolPortal } from "@/services/school-portal-service"
 import { toast } from "@/components/ui/use-toast"
 import { LearningMemoryService } from "@/services/learning-memory-service"
 import { tagQuizTopicToConcept, tagFlashcardToConcept } from "@/services/concept-tagging-service"
+import {
+  type DailyProgressStats,
+  getTodayProgress,
+  recordStudyTime,
+  recordQuizCompleted,
+  recordFlashcardsReviewed,
+  recordXpEarned,
+} from "@/services/daily-progress-service"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -129,6 +138,13 @@ export default function StudentDashboardPage() {
     avatar: string
     isDemo: boolean
   } | null>(null)
+  const studentId = user?.id || "S001"
+  const [todayProgress, setTodayProgress] = useState<DailyProgressStats>({
+    studyTimeMinutes: 0,
+    quizzesCompleted: 0,
+    flashcardsReviewed: 0,
+    xpEarned: 0,
+  })
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
   const [selectedSyllabus, setSelectedSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">("General")
@@ -172,7 +188,7 @@ export default function StudentDashboardPage() {
             `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
           )
 
-          setShowBreakSuggestion(true)
+           setShowBreakSuggestion(true)
 
           return 0
         }
@@ -184,7 +200,7 @@ export default function StudentDashboardPage() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isRunning, sessionLength])
+   }, [isRunning, sessionLength])
 
 
 
@@ -369,6 +385,12 @@ export default function StudentDashboardPage() {
 
     loadUser()
   }, [router])
+
+  useEffect(() => {
+    if (user?.id) {
+      setTodayProgress(getTodayProgress(user.id))
+    }
+  }, [user?.id])
 
   // Check redirect actions from Learning Brain
   useEffect(() => {
@@ -664,6 +686,7 @@ export default function StudentDashboardPage() {
     // Update XP and potentially level
     const newXP = currentXP + xpReward;
     setCurrentXP(newXP);
+    let todayXpEarned = xpReward;
 
     // Check if level up is needed
     if (newXP >= requiredXP) {
@@ -719,6 +742,7 @@ export default function StudentDashboardPage() {
 
       // Add any additional XP from the portal response
       if (portalResponse.xpAwarded) {
+        todayXpEarned += portalResponse.xpAwarded;
         const totalNewXP = newXP + portalResponse.xpAwarded;
         setCurrentXP(totalNewXP);
 
@@ -730,6 +754,8 @@ export default function StudentDashboardPage() {
     } catch (error) {
       console.error('Failed to update school portal:', error);
     }
+
+    setTodayProgress(recordQuizCompleted(studentId, todayXpEarned));
 
     // Show reward popup
     setTimeout(() => {
@@ -749,6 +775,13 @@ export default function StudentDashboardPage() {
         setShowReward(true)
       }, 1000)
     }
+  }
+
+  const handleFlashcardDeckComplete = (cardsReviewed: number, xpAwarded: number) => {
+    if (xpAwarded > 0) {
+      setCurrentXP((prev) => prev + xpAwarded)
+    }
+    setTodayProgress(recordFlashcardsReviewed(studentId, cardsReviewed, xpAwarded))
   }
 
   const handleFlashcardActions = {
@@ -778,6 +811,7 @@ export default function StudentDashboardPage() {
     if (motionData.inFrame && Math.random() < 0.02) {
       // Award a small amount of XP for motion tracking
       setCurrentXP(prev => prev + 1)
+      setTodayProgress(recordXpEarned(studentId, 1))
     }
   }
 
@@ -1115,17 +1149,18 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="page-container space-y-8 py-6 pb-20 md:pl-20">
+      <div className="page-container space-y-6 py-4 pb-20 md:pl-20">
         {/* Level Progress */}
-        <div id="dashboard-section">
+        <div id="dashboard-section" className="space-y-3">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
+          <TodayProgress stats={todayProgress} language={language} />
         </div>
 
         {/* Next Suggested Action Banner */}
         <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 via-transparent to-transparent shadow-sm">
-          <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
                 <Brain size={22} className="animate-pulse" />
               </div>
               <div>
@@ -1160,15 +1195,14 @@ export default function StudentDashboardPage() {
 
         {/* Daily Challenge */}
         <Card className="border-red-300">
-          <CardHeader>
+          <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2">
               🍅 Pomodoro Study Timer
             </CardTitle>
           </CardHeader>
 
-          <CardContent>
-            <div className="flex gap-2 mb-4">
-
+          <CardContent className="p-4 pt-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1201,41 +1235,34 @@ export default function StudentDashboardPage() {
               >
                 45 Min
               </Button>
-
             </div>
 
-            <p className="text-3xl font-bold">
-              {formatStudyTime()}
-            </p>
+            <p className="text-3xl font-bold">{formatStudyTime()}</p>
 
-
-            <Button
-              className="mt-4"
-              onClick={() => setIsRunning(true)}
-            >
-              Start Session
-            </Button>
-            <Button
-              variant="outline"
-              className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-              onClick={() => setIsRunning(false)}
-            >
-              Stop Session
-            </Button>
-            <Button
-              variant="outline"
-              className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-              onClick={() => {
-                setIsRunning(false)
-                setTimeLeft(sessionLength * 60)
-                setStudyTime(0)
-                setShowBreakSuggestion(false)
-
-              }}
-            >
-              Reset Session
-            </Button>
-
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button onClick={() => setIsRunning(true)}>
+                Start Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => setIsRunning(false)}
+              >
+                Stop Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => {
+                  setIsRunning(false)
+                  setTimeLeft(sessionLength * 60)
+                  setStudyTime(0)
+                  setShowBreakSuggestion(false)
+                }}
+              >
+                Reset Session
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -1851,6 +1878,7 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
+                  onDeckComplete={handleFlashcardDeckComplete}
                   onClose={() => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
