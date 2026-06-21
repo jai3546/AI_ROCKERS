@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, AnimatePresence } from "framer-motion"
+import { assignStudentToMentor } from "@/services/mentor-assignment-service"
 
 // Types for the mentor matching API
 interface Student {
@@ -366,6 +367,16 @@ gujarati: {
   // Handle mentor selection
   const handleSelectMentor = (mentor: Mentor) => {
     setSelectedMentor(mentor)
+    if (matchResult?.student) {
+      assignStudentToMentor(mentor.id, {
+        id: matchResult.student.id,
+        name: matchResult.student.name,
+        class: matchResult.student.class,
+        subjectNeed: matchResult.student.subject_need,
+        performanceLevel: matchResult.student.performance_level,
+        lastActiveAt: Date.now(),
+      })
+    }
     if (onSelectMentor) {
       onSelectMentor(mentor.id)
     }

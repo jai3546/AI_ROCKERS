@@ -74,6 +74,10 @@ import { updateSchoolPortal } from "@/services/school-portal-service"
 import { toast } from "@/components/ui/use-toast"
 import { LearningMemoryService } from "@/services/learning-memory-service"
 import { tagQuizTopicToConcept, tagFlashcardToConcept } from "@/services/concept-tagging-service"
+import { getDashboardForRole } from "@/lib/auth/session"
+import type { VidyaiSession } from "@/lib/auth/types"
+import { useLogout } from "@/hooks/use-logout"
+import { useAuthSession } from "@/hooks/use-auth-session"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -95,6 +99,8 @@ function ThemeToggle() {
 
 export default function StudentDashboardPage() {
   const router = useRouter()
+  const { requestLogout, LogoutConfirmDialog } = useLogout()
+  const { session, isReady } = useAuthSession()
   const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [showAiTutor, setShowAiTutor] = useState(false)
   const [showQuiz, setShowQuiz] = useState(false)
@@ -121,14 +127,7 @@ export default function StudentDashboardPage() {
   const [lastMotionData, setLastMotionData] = useState<MotionData | null>(null)
   const [lastEmotionData, setLastEmotionData] = useState<EmotionData | null>(null)
   const [learningStyle, setLearningStyle] = useState<LearningStyleProfile>(initialLearningStyleProfile)
-  const [user, setUser] = useState<{
-    id: string
-    name: string
-    class: string
-    role: string
-    avatar: string
-    isDemo: boolean
-  } | null>(null)
+  const [user, setUser] = useState<VidyaiSession | null>(null)
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
   const [selectedSyllabus, setSelectedSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">("General")
@@ -348,27 +347,24 @@ export default function StudentDashboardPage() {
     }
   ])
 
-  // Load user data from localStorage
+  // Enforce student session on load, navigation, and after logout/back button
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        const userData = localStorage.getItem("demoUser")
-        if (userData) {
-          const parsedUser = JSON.parse(userData)
-          console.log("Loaded user data:", parsedUser)
-          setUser(parsedUser)
-        } else {
-          // If no user data, redirect to login
-          router.push("/student-login")
-        }
-      } catch (error) {
-        console.error("Error loading user data:", error)
-        router.push("/student-login")
-      }
+    if (!isReady) return
+
+    if (!session) {
+      setUser(null)
+      router.replace("/student-login")
+      return
     }
 
-    loadUser()
-  }, [router])
+    if (session.role !== "student") {
+      setUser(null)
+      router.replace(getDashboardForRole(session.role))
+      return
+    }
+
+    setUser(session)
+  }, [isReady, router, session])
 
   // Check redirect actions from Learning Brain
   useEffect(() => {
@@ -414,12 +410,6 @@ export default function StudentDashboardPage() {
       }
     }
   }, [user]);
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("demoUser")
-    router.push("/")
-  }
 
   // Mock leaderboard data
   const leaderboardEntries = [
@@ -594,7 +584,7 @@ export default function StudentDashboardPage() {
 
     // Handle logout command
     if (lowerCommand.includes("logout") || lowerCommand.includes("लॉगआउट") || lowerCommand.includes("లాగౌట్")) {
-      router.push("/")
+      requestLogout()
     }
 
     // Handle AI tutor command
@@ -958,14 +948,23 @@ export default function StudentDashboardPage() {
   const flashcardDetails = getFlashcardDetails()
   const summaryDetails = getSummaryDetails()
 
+  if (!isReady || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+      </div>
+    )
+  }
+
   return (
+    <>
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
         <div className="page-container flex h-16 items-center justify-between md:pl-20">
           <div
             className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
-            onClick={() => setShowStudentDetails(true)}
+            onClick={() => router.push("/student-profile")}
           >
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
               {user?.avatar ? (
@@ -987,7 +986,7 @@ export default function StudentDashboardPage() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-foreground/70">
+            <Button variant="ghost" size="icon" onClick={requestLogout} className="text-foreground/70">
               <LogOut size={20} />
               <span className="sr-only">{translations.logout[language]}</span>
             </Button>
@@ -1103,7 +1102,7 @@ export default function StudentDashboardPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleLogout}
+          onClick={requestLogout}
           className="text-foreground/70 relative group"
         >
           <LogOut size={20} />
@@ -2279,5 +2278,7 @@ export default function StudentDashboardPage() {
         </Button>
       </nav>
     </main>
+    <LogoutConfirmDialog />
+    </>
   )
 }

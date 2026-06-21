@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getSession } from "@/lib/auth/session"
 
 interface StudentDetailsDialogProps {
   open?: boolean
@@ -132,9 +133,8 @@ export function StudentDetailsDialog({
       setLocalStudent(propStudent)
     } else if (open) {
       try {
-        const userData = localStorage.getItem("demoUser")
-        if (userData) {
-          const parsedUser = JSON.parse(userData)
+        const parsedUser = getSession()
+        if (parsedUser) {
           setLocalStudent({
             id: parsedUser.id || '1',
             name: parsedUser.name || 'Riya',
