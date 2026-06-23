@@ -64,7 +64,7 @@ const translations = {
     },
     bored: {
       en: "Learning Support Recommended",
-      hi: "शिक्षण सहायता అనుशंसित",
+      hi: "शिक्षण सहायता अनुशंसित",
       te: "అభ్యాస మద్దతు సిఫార్సు చేయబడింది",
     },
     focused: {
