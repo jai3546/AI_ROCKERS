@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getLearnerStatusLabel, getLearnerStatusTip } from "@/services/learner-status-service"
 import { motion, AnimatePresence } from "framer-motion"
 import { Smile, Frown, Meh, AlertTriangle, Eye, X, Brain, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -51,9 +52,9 @@ export function EmotionDisplay({
       te: "శ్రద్ధ",
     },
     fatigue: {
-      en: "Fatigue",
-      hi: "थकान",
-      te: "అలసట",
+      en: "Energy Level",
+      hi: "ऊर्जा स्तर",
+      te: "శక్తి స్థాయి",
     },
     emotionHistory: {
       en: "Emotion History",
@@ -72,29 +73,29 @@ export function EmotionDisplay({
     },
     emotionNames: {
       happy: {
-        en: "Happy",
-        hi: "खुश",
-        te: "సంతోషంగా",
+        en: "Focus Level: High",
+        hi: "फोकस स्तर: उच्च",
+        te: "ఫోకస్ స్థాయి: అధిక",
       },
       sad: {
-        en: "Sad",
-        hi: "उदास",
-        te: "విచారంగా",
+        en: "Learning Support Recommended",
+        hi: "शिक्षण सहायता अनुशंसित",
+        te: "అభ్యాస మద్దతు సిఫార్సు చేయబడింది",
       },
       confused: {
-        en: "Confused",
-        hi: "भ्रमित",
-        te: "గందరగోళంగా",
+        en: "Learning Support Recommended",
+        hi: "शिक्षण सहायता अनुशंसित",
+        te: "అభ్యాస మద్దతు సిఫార్సు చేయబడింది",
       },
       bored: {
-        en: "Bored",
-        hi: "ऊबा हुआ",
-        te: "విసుగుగా",
+        en: "Learning Support Recommended",
+        hi: "शिक्षण सहायता अनुशंसित",
+        te: "అభ్యాస మద్దతు సిఫార్సు చేయబడింది",
       },
       focused: {
-        en: "Focused",
-        hi: "केंद्रित",
-        te: "కేంద్రీకృతంగా",
+        en: "Focus Tracking Active",
+        hi: "फोकस ट्रैकिंग सक्रिय",
+        te: "ఫోకస్ ట్రాకింగ్ యాక్టివ్",
       },
       unknown: {
         en: "Unknown",
@@ -464,7 +465,7 @@ export function EmotionDisplay({
                 {emotionData.emotion !== "unknown"
                   ? (
                     <>
-                      {translations.emotionNames[emotionData.emotion][language]}{" "}
+                      {getLearnerStatusLabel(emotionData, language)}{" "}
                       {getEmotionEmoji(emotionData.emotion, true)}
                     </>
                   )
@@ -513,17 +514,17 @@ export function EmotionDisplay({
             </div>
           )}
 
-          {/* Fatigue Score */}
+          {/* Energy Level (derived from fatigue score) */}
           {emotionData.fatigueScore !== undefined && (
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-foreground/70 dark:text-foreground/80">
                   {translations.fatigue[language]}
                 </span>
-                <span className="text-xs font-medium">{Math.round(emotionData.fatigueScore)}%</span>
+                <span className="text-xs font-medium">{Math.round(100 - emotionData.fatigueScore)}%</span>
               </div>
               <Progress
-                value={emotionData.fatigueScore}
+                value={100 - emotionData.fatigueScore}
                 className="h-1.5"
                 indicatorClassName={
                   emotionData.fatigueScore > 80 ? "bg-red-500" :
@@ -549,7 +550,8 @@ export function EmotionDisplay({
                 <div>
                   <h4 className="text-sm font-medium mb-1">{translations.feedback[language]}</h4>
                   <p className="text-sm text-foreground/80 dark:text-foreground/80">
-                    {translations.feedbackMessages[emotionData.emotion][language]}
+                    {getLearnerStatusTip(emotionData, language) ??
+                      translations.feedbackMessages[emotionData.emotion]?.[language]}
                   </p>
                 </div>
               </div>

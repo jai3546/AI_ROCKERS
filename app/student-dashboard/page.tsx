@@ -67,6 +67,8 @@ import { FloatingEmotionTracker } from "@/components/tracking/floating-emotion-t
 import { LearningStyleProfile, initialLearningStyleProfile } from "@/services/learning-style-service"
 import { type EmotionState } from "@/services/gemini-api"
 import { EmotionStatusIndicator } from "@/components/emotion-status-indicator"
+import { LearnerStatusBadge } from "@/components/learning/learner-status-badge"
+import { getLearnerStatusLabel } from "@/services/learner-status-service"
 import { StudentDetailsDialog } from "@/components/student-details-dialog"
 import { allQuizQuestions } from "@/data/quiz-questions"
 import { allFlashcards } from "@/data/flashcards"
@@ -180,7 +182,7 @@ export default function StudentDashboardPage() {
             `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
           )
 
-           setShowBreakSuggestion(true)
+          setShowBreakSuggestion(true)
 
           return 0
         }
@@ -192,7 +194,7 @@ export default function StudentDashboardPage() {
     }, 1000)
 
     return () => clearInterval(interval)
-   }, [isRunning, sessionLength])
+  }, [isRunning, sessionLength])
 
 
 
@@ -215,19 +217,17 @@ export default function StudentDashboardPage() {
     }
   }, [autoEmotionTracking])
 
-  // Update document title with current emotion
+  // Update document title with learner-friendly status
   useEffect(() => {
-    if (emotionState) {
-      // Update the document title with the current emotion
+    if (emotionState && autoEmotionTracking) {
       const originalTitle = "VidyAI - Student Dashboard";
-      document.title = `${originalTitle} | Emotion: ${emotionState.emotion.charAt(0).toUpperCase() + emotionState.emotion.slice(1)}`;
-
-      // Reset title when component unmounts
-      return () => {
-        document.title = originalTitle;
-      };
+      const friendlyStatus = getLearnerStatusLabel(emotionState, language);
+      document.title = friendlyStatus
+        ? `${originalTitle} | ${friendlyStatus}`
+        : originalTitle;
+      return () => { document.title = originalTitle; };
     }
-  }, [emotionState])
+  }, [emotionState, autoEmotionTracking, language])
 
   // Mock data for gamification
   const [studentLevel, setStudentLevel] = useState(5)
@@ -1539,14 +1539,12 @@ export default function StudentDashboardPage() {
                     <p className="text-sm text-foreground/70 dark:text-foreground/80">
                       Analyze facial expressions to adapt learning content to your emotional state.
                     </p>
-                    {lastEmotionData && (
-                      <div className="flex items-center gap-2">
-                        {lastEmotionData.emotion !== "unknown" && (
-                          <Badge variant="outline" className="capitalize">
-                            {lastEmotionData.emotion}
-                          </Badge>
-                        )}
-                      </div>
+                    {lastEmotionData && autoEmotionTracking && (
+                      <LearnerStatusBadge
+                        status={lastEmotionData}
+                        language={language}
+                        trackingActive={autoEmotionTracking}
+                      />
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1783,6 +1781,7 @@ export default function StudentDashboardPage() {
                 language={language}
                 onClose={() => setShowAiTutor(false)}
                 emotionState={emotionState}
+                emotionTrackingActive={autoEmotionTracking}
                 learningStyle={learningStyle}
                 onLearningStyleUpdate={setLearningStyle}
                 studentId={user?.id || "S001"}
@@ -2190,6 +2189,12 @@ export default function StudentDashboardPage() {
           />
         )}
       </AnimatePresence>
+
+      <EmotionStatusIndicator
+        emotionState={emotionState}
+        trackingActive={autoEmotionTracking}
+        language={language}
+      />
 
       {/* Hidden Face Emotion Detector for background processing */}
       {autoEmotionTracking && (

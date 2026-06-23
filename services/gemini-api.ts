@@ -3,6 +3,7 @@
  * This service handles communication with the Google Gemini API
  */
 import { LearningStyleProfile, generateLearningStylePrompt } from './learning-style-service';
+import { getLearnerStatusLabel } from './learner-status-service';
 
 // Define response type
 interface GeminiResponse {
