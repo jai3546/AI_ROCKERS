@@ -41,6 +41,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/components/theme-provider"
 import { LevelProgress } from "@/components/gamification/level-progress"
+import { TodayProgress } from "@/components/gamification/today-progress"
 import { DailyChallenge } from "@/components/gamification/daily-challenge"
 import { AchievementCard } from "@/components/gamification/achievement-card"
 import { Leaderboard } from "@/components/gamification/leaderboard"
@@ -66,6 +67,8 @@ import { FloatingEmotionTracker } from "@/components/tracking/floating-emotion-t
 import { LearningStyleProfile, initialLearningStyleProfile } from "@/services/learning-style-service"
 import { type EmotionState } from "@/services/gemini-api"
 import { EmotionStatusIndicator } from "@/components/emotion-status-indicator"
+import { LearnerStatusBadge } from "@/components/learning/learner-status-badge"
+import { getLearnerStatusLabel } from "@/services/learner-status-service"
 import { StudentDetailsDialog } from "@/components/student-details-dialog"
 import { allQuizQuestions } from "@/data/quiz-questions"
 import { allFlashcards } from "@/data/flashcards"
@@ -74,6 +77,14 @@ import { updateSchoolPortal } from "@/services/school-portal-service"
 import { toast } from "@/components/ui/use-toast"
 import { LearningMemoryService } from "@/services/learning-memory-service"
 import { tagQuizTopicToConcept, tagFlashcardToConcept } from "@/services/concept-tagging-service"
+import {
+  type DailyProgressStats,
+  getTodayProgress,
+  recordStudyTime,
+  recordQuizCompleted,
+  recordFlashcardsReviewed,
+  recordXpEarned,
+} from "@/services/daily-progress-service"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -129,6 +140,13 @@ export default function StudentDashboardPage() {
     avatar: string
     isDemo: boolean
   } | null>(null)
+  const studentId = user?.id || "S001"
+  const [todayProgress, setTodayProgress] = useState<DailyProgressStats>({
+    studyTimeMinutes: 0,
+    quizzesCompleted: 0,
+    flashcardsReviewed: 0,
+    xpEarned: 0,
+  })
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
   const [selectedSyllabus, setSelectedSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">("General")
@@ -207,19 +225,17 @@ export default function StudentDashboardPage() {
     }
   }, [autoEmotionTracking])
 
-  // Update document title with current emotion
+  // Update document title with learner-friendly status
   useEffect(() => {
-    if (emotionState) {
-      // Update the document title with the current emotion
+    if (emotionState && autoEmotionTracking) {
       const originalTitle = "VidyAI - Student Dashboard";
-      document.title = `${originalTitle} | Emotion: ${emotionState.emotion.charAt(0).toUpperCase() + emotionState.emotion.slice(1)}`;
-
-      // Reset title when component unmounts
-      return () => {
-        document.title = originalTitle;
-      };
+      const friendlyStatus = getLearnerStatusLabel(emotionState, language);
+      document.title = friendlyStatus
+        ? `${originalTitle} | ${friendlyStatus}`
+        : originalTitle;
+      return () => { document.title = originalTitle; };
     }
-  }, [emotionState])
+  }, [emotionState, autoEmotionTracking, language])
 
   // Mock data for gamification
   const [studentLevel, setStudentLevel] = useState(5)
@@ -369,6 +385,12 @@ export default function StudentDashboardPage() {
 
     loadUser()
   }, [router])
+
+  useEffect(() => {
+    if (user?.id) {
+      setTodayProgress(getTodayProgress(user.id))
+    }
+  }, [user?.id])
 
   // Check redirect actions from Learning Brain
   useEffect(() => {
@@ -664,6 +686,7 @@ export default function StudentDashboardPage() {
     // Update XP and potentially level
     const newXP = currentXP + xpReward;
     setCurrentXP(newXP);
+    let todayXpEarned = xpReward;
 
     // Check if level up is needed
     if (newXP >= requiredXP) {
@@ -719,6 +742,7 @@ export default function StudentDashboardPage() {
 
       // Add any additional XP from the portal response
       if (portalResponse.xpAwarded) {
+        todayXpEarned += portalResponse.xpAwarded;
         const totalNewXP = newXP + portalResponse.xpAwarded;
         setCurrentXP(totalNewXP);
 
@@ -730,6 +754,8 @@ export default function StudentDashboardPage() {
     } catch (error) {
       console.error('Failed to update school portal:', error);
     }
+
+    setTodayProgress(recordQuizCompleted(studentId, todayXpEarned));
 
     // Show reward popup
     setTimeout(() => {
@@ -749,6 +775,13 @@ export default function StudentDashboardPage() {
         setShowReward(true)
       }, 1000)
     }
+  }
+
+  const handleFlashcardDeckComplete = (cardsReviewed: number, xpAwarded: number) => {
+    if (xpAwarded > 0) {
+      setCurrentXP((prev) => prev + xpAwarded)
+    }
+    setTodayProgress(recordFlashcardsReviewed(studentId, cardsReviewed, xpAwarded))
   }
 
   const handleFlashcardActions = {
@@ -778,6 +811,7 @@ export default function StudentDashboardPage() {
     if (motionData.inFrame && Math.random() < 0.02) {
       // Award a small amount of XP for motion tracking
       setCurrentXP(prev => prev + 1)
+      setTodayProgress(recordXpEarned(studentId, 1))
     }
   }
 
@@ -1115,17 +1149,18 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="page-container space-y-8 py-6 pb-20 md:pl-20">
+      <div className="page-container space-y-6 py-4 pb-20 md:pl-20">
         {/* Level Progress */}
-        <div id="dashboard-section">
+        <div id="dashboard-section" className="space-y-3">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
+          <TodayProgress stats={todayProgress} language={language} />
         </div>
 
         {/* Next Suggested Action Banner */}
         <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 via-transparent to-transparent shadow-sm">
-          <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
                 <Brain size={22} className="animate-pulse" />
               </div>
               <div>
@@ -1145,7 +1180,7 @@ export default function StudentDashboardPage() {
               className="flex items-center gap-2 self-end sm:self-center shrink-0 shadow-md transition-transform hover:scale-[1.02]"
               onClick={() => {
                 if (autoEmotionTracking) {
-                  setActiveQuizSubject("Science");
+                  setActiveQuizSubject(dashboardSubject === "all" ? undefined : dashboardSubject);
                   setShowQuiz(true);
                 } else {
                   setShowAiTutor(true);
@@ -1158,6 +1193,7 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
+        feature/issue-74-compact-timer
        {/* Daily Challenge */}
 <Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
   <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1233,6 +1269,80 @@ export default function StudentDashboardPage() {
 
   </CardContent>
 </Card>
+        
+        {/* Daily Challenge */}
+        <Card className="border-red-300">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="flex items-center gap-2">
+              🍅 Pomodoro Study Timer
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="p-4 pt-2">
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(25)
+                  setTimeLeft(25 * 60)
+                }}
+              >
+                25 Min
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(30)
+                  setTimeLeft(30 * 60)
+                }}
+              >
+                30 Min
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(45)
+                  setTimeLeft(45 * 60)
+                }}
+              >
+                45 Min
+              </Button>
+            </div>
+
+            <p className="text-3xl font-bold">{formatStudyTime()}</p>
+
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button onClick={() => setIsRunning(true)}>
+                Start Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => setIsRunning(false)}
+              >
+                Stop Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => {
+                  setIsRunning(false)
+                  setTimeLeft(sessionLength * 60)
+                  setStudyTime(0)
+                  setShowBreakSuggestion(false)
+                }}
+              >
+                Reset Session
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+         main
 
         {
           showBreakSuggestion && (
@@ -1515,14 +1625,12 @@ export default function StudentDashboardPage() {
                     <p className="text-sm text-foreground/70 dark:text-foreground/80">
                       Analyze facial expressions to adapt learning content to your emotional state.
                     </p>
-                    {lastEmotionData && (
-                      <div className="flex items-center gap-2">
-                        {lastEmotionData.emotion !== "unknown" && (
-                          <Badge variant="outline" className="capitalize">
-                            {lastEmotionData.emotion}
-                          </Badge>
-                        )}
-                      </div>
+                    {lastEmotionData && autoEmotionTracking && (
+                      <LearnerStatusBadge
+                        status={lastEmotionData}
+                        language={language}
+                        trackingActive={autoEmotionTracking}
+                      />
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1759,6 +1867,7 @@ export default function StudentDashboardPage() {
                 language={language}
                 onClose={() => setShowAiTutor(false)}
                 emotionState={emotionState}
+                emotionTrackingActive={autoEmotionTracking}
                 learningStyle={learningStyle}
                 onLearningStyleUpdate={setLearningStyle}
                 studentId={user?.id || "S001"}
@@ -1846,6 +1955,7 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
+                  onDeckComplete={handleFlashcardDeckComplete}
                   onClose={() => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
@@ -2160,6 +2270,12 @@ export default function StudentDashboardPage() {
           />
         )}
       </AnimatePresence>
+
+      <EmotionStatusIndicator
+        emotionState={emotionState}
+        trackingActive={autoEmotionTracking}
+        language={language}
+      />
 
       {/* Hidden Face Emotion Detector for background processing */}
       {autoEmotionTracking && (
