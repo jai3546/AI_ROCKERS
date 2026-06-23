@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Activity, Brain, Sparkles } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { type EmotionState } from "@/services/gemini-api"
+import { useState, useEffect } from "react";
+import { Activity, Brain, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { type EmotionState } from "@/services/gemini-api";
 import {
   getEnergyLevelLabel,
   getFocusLevelLabel,
@@ -14,13 +14,13 @@ import {
   getLearnerStatusTip,
   shouldShowLearnerStatus,
   type LearnerStatusLanguage,
-} from "@/services/learner-status-service"
+} from "@/services/learner-status-service";
 
 interface EmotionStatusIndicatorProps {
-  emotionState?: EmotionState
-  trackingActive?: boolean
-  language?: LearnerStatusLanguage
-  className?: string
+  emotionState?: EmotionState;
+  trackingActive?: boolean;
+  language?: LearnerStatusLanguage;
+  className?: string;
 }
 
 const STATUS_BORDER: Record<
@@ -32,7 +32,7 @@ const STATUS_BORDER: Record<
   focusHigh: "border-l-green-500",
   focusTracking: "border-l-primary",
   learningSupport: "border-l-violet-500",
-}
+};
 
 export function EmotionStatusIndicator({
   emotionState,
@@ -40,18 +40,34 @@ export function EmotionStatusIndicator({
   language = "en",
   className = "",
 }: EmotionStatusIndicatorProps) {
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  const visible = shouldShowLearnerStatus(emotionState, trackingActive)
-  const statusKey = getLearnerStatusKey(emotionState)
-  const statusLabel = getLearnerStatusLabel(emotionState, language)
-  const statusTip = getLearnerStatusTip(emotionState, language)
+  const visible = shouldShowLearnerStatus(emotionState, trackingActive);
+  const statusKey = getLearnerStatusKey(emotionState);
+  const statusLabel = getLearnerStatusLabel(emotionState, language);
+  const statusTip = getLearnerStatusTip(emotionState, language);
+
+  // Reset dismissed state whenever the emotion changes
+  useEffect(() => {
+    setDismissed(false);
+  }, [emotionState?.emotion]);
+
+  // Auto-dismiss after 6 seconds; pauses if details panel is open
+  useEffect(() => {
+    if (!visible || dismissed) return;
+    const timer = setTimeout(() => {
+      if (!showDetails) setDismissed(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [visible, dismissed, showDetails, emotionState?.emotion]);
 
   useEffect(() => {
-    if (!visible) setShowDetails(false)
-  }, [visible])
+    if (!visible) setShowDetails(false);
+  }, [visible]);
 
-  if (!visible || !emotionState || !statusKey || !statusLabel) return null
+  if (!visible || !emotionState || !statusKey || !statusLabel || dismissed)
+    return null;
 
   return (
     <AnimatePresence mode="wait">
@@ -68,7 +84,7 @@ export function EmotionStatusIndicator({
           },
         }}
         exit={{ opacity: 0, x: 50 }}
-        className={`fixed top-20 right-4 z-40 ${className}`}
+        className={`fixed top-20 right-6 z-40 ${className}`}
       >
         <Card
           className={`w-64 shadow-lg border-l-4 cursor-pointer overflow-hidden ${STATUS_BORDER[statusKey]}`}
@@ -103,10 +119,15 @@ export function EmotionStatusIndicator({
                           <Activity size={12} aria-hidden="true" />
                           <span>
                             Energy Level:{" "}
-                            {getEnergyLevelLabel(emotionState.fatigueScore, language)}
+                            {getEnergyLevelLabel(
+                              emotionState.fatigueScore,
+                              language,
+                            )}
                           </span>
                         </div>
-                        <span className="text-xs">{100 - emotionState.fatigueScore}%</span>
+                        <span className="text-xs">
+                          {100 - emotionState.fatigueScore}%
+                        </span>
                       </div>
                       <Progress
                         value={100 - emotionState.fatigueScore}
@@ -129,10 +150,15 @@ export function EmotionStatusIndicator({
                           <Brain size={12} aria-hidden="true" />
                           <span>
                             Focus Level:{" "}
-                            {getFocusLevelLabel(emotionState.attentionScore, language)}
+                            {getFocusLevelLabel(
+                              emotionState.attentionScore,
+                              language,
+                            )}
                           </span>
                         </div>
-                        <span className="text-xs">{emotionState.attentionScore}%</span>
+                        <span className="text-xs">
+                          {emotionState.attentionScore}%
+                        </span>
                       </div>
                       <Progress
                         value={emotionState.attentionScore}
@@ -149,7 +175,9 @@ export function EmotionStatusIndicator({
                   )}
 
                   {statusTip && (
-                    <p className="text-xs text-muted-foreground mt-2">{statusTip}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {statusTip}
+                    </p>
                   )}
                 </motion.div>
               )}
@@ -158,5 +186,5 @@ export function EmotionStatusIndicator({
         </Card>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }
