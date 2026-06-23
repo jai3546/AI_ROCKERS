@@ -1158,58 +1158,42 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Daily Challenge */}
-<Card className="border-red-300/30 bg-card/50 backdrop-blur-sm">
+       {/* Daily Challenge */}
+<Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
   <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     
-    {/* Left Side: Title & Dynamic Timer Badge */}
-    <div className="flex items-center gap-4">
-      <span className="text-sm font-semibold tracking-wide text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
-        🍅 Timer:
+    {/* Left Side: Full Title & High-Visibility Timer Badge */}
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-semibold tracking-wide text-foreground flex items-center gap-1.5 whitespace-nowrap">
+        🍅 Pomodoro Timer:
       </span>
-      <p className="text-2xl font-black tabular-nums tracking-tight bg-primary/10 text-primary px-3 py-0.5 rounded-lg border border-primary/20 min-w-[85px] text-center">
+      <p className="text-2xl font-black tabular-nums tracking-tight bg-primary/10 text-primary dark:text-primary px-3 py-0.5 rounded-lg border border-primary/30 min-w-[85px] text-center shadow-inner">
         {formatStudyTime()}
       </p>
     </div>
 
-    {/* Center: Presets grouped closely */}
-    <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-lg border border-border/40">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
-        onClick={() => {
-          setIsRunning(false)
-          setSessionLength(25)
-          setTimeLeft(25 * 60)
+    {/* Center: Dropdown Selector Menu styled for Light and Dark visibility */}
+    <div className="flex items-center gap-2">
+      <label htmlFor="time-select" className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+        Duration:
+      </label>
+      <select
+        id="time-select"
+        disabled={isRunning}
+        value={sessionLength}
+        onChange={(e) => {
+          const mins = Number(e.target.value);
+          setIsRunning(false);
+          setSessionLength(mins);
+          setTimeLeft(mins * 60);
         }}
+        className="h-8 text-xs rounded-md border border-input bg-background px-2.5 py-1 font-medium text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-900 dark:text-zinc-100"
       >
-        25m
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
-        onClick={() => {
-          setIsRunning(false)
-          setSessionLength(30)
-          setTimeLeft(30 * 60)
-        }}
-      >
-        30m
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs px-2.5 font-medium hover:bg-background"
-        onClick={() => {
-          setIsRunning(false)
-          setSessionLength(45)
-          setTimeLeft(45 * 60)
-        }}
-      >
-        45m
-      </Button>
+        <option value={25} className="bg-background text-foreground">25 Minutes</option>
+        <option value={30} className="bg-background text-foreground">30 Minutes</option>
+        <option value={45} className="bg-background text-foreground">45 Minutes</option>
+        <option value={60} className="bg-background text-foreground">60 Minutes</option>
+      </select>
     </div>
 
     {/* Right Side: Execution controls */}
@@ -1227,7 +1211,7 @@ export default function StudentDashboardPage() {
           variant="outline"
           size="sm"
           className="h-8 text-xs font-semibold px-4 bg-pink-500 hover:bg-pink-600 text-white border-none shadow-sm"
-          onClick={() => setIsRunning(false)}
+          onClick={() => AppRunner.setIsRunning(false)}
         >
           Stop
         </Button>
