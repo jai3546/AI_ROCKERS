@@ -22,6 +22,7 @@ export interface Flashcard {
 interface FlashcardDeckProps {
   cards: Flashcard[]
   onClose: () => void
+  onDeckComplete?: (cardsReviewed: number, xpAwarded: number) => void
   language?: "en" | "hi" | "te"
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
   subject?: string
@@ -65,6 +66,7 @@ const SUBJECTS_CONFIG = {
 export function FlashcardDeck({
   cards,
   onClose,
+  onDeckComplete,
   onFlashcardsGenerated, // Optional prop in case parent wants to listen, but local state manages rendering
   language = "en",
   syllabus = "General",
@@ -211,8 +213,7 @@ export function FlashcardDeck({
 
         console.log('School portal updated for flashcard completion:', portalResponse);
 
-        // You could show a reward popup or update XP here
-        // This would typically be handled by the parent component
+        onDeckComplete?.(filteredCards.length, portalResponse.xpAwarded ?? 0)
       } catch (error) {
         console.error('Failed to update school portal:', error);
       }

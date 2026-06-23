@@ -1,6 +1,7 @@
 
 import { LearningStyleProfile, generateLearningStylePrompt } from './learning-style-service';
 import { generateFlashcardsFromSourceContent, generateQuizFromSourceContent } from './content-quiz-generator';
+import { getLearnerStatusLabel } from './learner-status-service';
 
 interface GeminiResponse {
   text: string;
@@ -63,23 +64,26 @@ graph TD
 
     // Inject emotion context
     if (emotionState) {
-      systemPrompt += `\n\nEMOTION AWARENESS:\nThe student currently appears ${emotionState.emotion}.`;
+      const learnerStatus = getLearnerStatusLabel(emotionState, language) ?? 'actively learning';
+      systemPrompt += `\n\nEMOTION AWARENESS:\nThe student's current learning status is: ${learnerStatus}.`;
       const emotionGuide: Record<string, string> = {
         sad: 'Be extra warm and encouraging. Use positive reinforcement to build their confidence.',
         angry: 'Acknowledge their frustration calmly. Take a step back and offer a fresh, simpler approach.',
         fearful: 'Be deeply reassuring. Reassure them that it is okay to struggle. Break the topic into the smallest possible steps.',
         confused: 'Use a simple, vivid analogy first. Gently ask what part confused them.',
+        bored: 'Re-engage with a quick challenge, fun fact, or interactive example.',
         happy: 'Match their energy! Celebrate their enthusiasm and introduce a fun challenge or a slightly deeper angle.',
+        focused: 'They are in a strong learning zone — build on this momentum.',
         neutral: 'Keep a steady, friendly, and supportive tone.',
       };
       const guide = emotionGuide[emotionState.emotion.toLowerCase()] || emotionGuide.neutral;
       systemPrompt += ` ${guide}`;
 
       if (emotionState.fatigueScore !== undefined && emotionState.fatigueScore > 60) {
-        systemPrompt += ` Student shows ${emotionState.fatigueScore}% fatigue — keep the response extra short and suggest a break if needed.`;
+        systemPrompt += ` Energy is running low — keep the response extra short and suggest a break if needed.`;
       }
       if (emotionState.attentionScore !== undefined && emotionState.attentionScore < 40) {
-        systemPrompt += ` Attention is low — use an engaging hook or fun fact to start.`;
+        systemPrompt += ` Focus is low — use an engaging hook or fun fact to start.`;
       }
     }
 
