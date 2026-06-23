@@ -30,6 +30,7 @@ import {
   Camera,
   RefreshCw,
   TrendingUp,
+  ArrowRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -40,6 +41,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/components/theme-provider"
 import { LevelProgress } from "@/components/gamification/level-progress"
+import { TodayProgress } from "@/components/gamification/today-progress"
 import { DailyChallenge } from "@/components/gamification/daily-challenge"
 import { AchievementCard } from "@/components/gamification/achievement-card"
 import { Leaderboard } from "@/components/gamification/leaderboard"
@@ -128,6 +130,13 @@ export default function StudentDashboardPage() {
     avatar: string
     isDemo: boolean
   } | null>(null)
+  const studentId = user?.id || "S001"
+  const [todayProgress, setTodayProgress] = useState<DailyProgressStats>({
+    studyTimeMinutes: 0,
+    quizzesCompleted: 0,
+    flashcardsReviewed: 0,
+    xpEarned: 0,
+  })
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
   const [selectedSyllabus, setSelectedSyllabus] = useState<"AP" | "Telangana" | "CBSE" | "General">("General")
@@ -141,12 +150,12 @@ export default function StudentDashboardPage() {
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const formatStudyTime = () => {
-     const minutes = Math.floor(timeLeft / 60)
-     const seconds = timeLeft % 60
+    const minutes = Math.floor(timeLeft / 60)
+    const seconds = timeLeft % 60
 
-     return `${minutes.toString().padStart(2, "0")}:${seconds
-       .toString()
-       .padStart(2, "0")}`
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`
   }
 
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
@@ -163,30 +172,30 @@ export default function StudentDashboardPage() {
     if (!isRunning) return
 
     const interval = setInterval(() => {
-       setTimeLeft((prev) => {
-         if (prev <= 1) {
-           setIsRunning(false)
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setIsRunning(false)
 
-           setBreakMessage(
-              `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
-           )
+          setBreakMessage(
+            `You completed a ${sessionLength}-minute study session. Consider taking a short break, stretching, or drinking water.`
+          )
 
            setShowBreakSuggestion(true)
 
-           return 0
-         }
+          return 0
+        }
 
-         setStudyTime((prevStudy) => prevStudy + 1)
+        setStudyTime((prevStudy) => prevStudy + 1)
 
-         return prev - 1
-       })
-     }, 1000)
+        return prev - 1
+      })
+    }, 1000)
 
     return () => clearInterval(interval)
    }, [isRunning, sessionLength])
 
 
- 
+
 
   // Auto-start emotion tracking immediately
   useEffect(() => {
@@ -368,6 +377,12 @@ export default function StudentDashboardPage() {
 
     loadUser()
   }, [router])
+
+  useEffect(() => {
+    if (user?.id) {
+      setTodayProgress(getTodayProgress(user.id))
+    }
+  }, [user?.id])
 
   // Check redirect actions from Learning Brain
   useEffect(() => {
@@ -613,13 +628,13 @@ export default function StudentDashboardPage() {
 
     // Handle motion tracking command
     if (lowerCommand.includes("motion") || lowerCommand.includes("tracking") ||
-        lowerCommand.includes("गति") || lowerCommand.includes("చలనం")) {
+      lowerCommand.includes("गति") || lowerCommand.includes("చలనం")) {
       setShowMotionTracker(true)
     }
 
     // Handle emotion detection command
     if (lowerCommand.includes("emotion") || lowerCommand.includes("face") ||
-        lowerCommand.includes("भावना") || lowerCommand.includes("భావోద్వేగం")) {
+      lowerCommand.includes("भावना") || lowerCommand.includes("భావోద్వేగం")) {
       setShowEmotionDetector(true)
     }
 
@@ -663,6 +678,7 @@ export default function StudentDashboardPage() {
     // Update XP and potentially level
     const newXP = currentXP + xpReward;
     setCurrentXP(newXP);
+    let todayXpEarned = xpReward;
 
     // Check if level up is needed
     if (newXP >= requiredXP) {
@@ -718,6 +734,7 @@ export default function StudentDashboardPage() {
 
       // Add any additional XP from the portal response
       if (portalResponse.xpAwarded) {
+        todayXpEarned += portalResponse.xpAwarded;
         const totalNewXP = newXP + portalResponse.xpAwarded;
         setCurrentXP(totalNewXP);
 
@@ -729,6 +746,8 @@ export default function StudentDashboardPage() {
     } catch (error) {
       console.error('Failed to update school portal:', error);
     }
+
+    setTodayProgress(recordQuizCompleted(studentId, todayXpEarned));
 
     // Show reward popup
     setTimeout(() => {
@@ -748,6 +767,13 @@ export default function StudentDashboardPage() {
         setShowReward(true)
       }, 1000)
     }
+  }
+
+  const handleFlashcardDeckComplete = (cardsReviewed: number, xpAwarded: number) => {
+    if (xpAwarded > 0) {
+      setCurrentXP((prev) => prev + xpAwarded)
+    }
+    setTodayProgress(recordFlashcardsReviewed(studentId, cardsReviewed, xpAwarded))
   }
 
   const handleFlashcardActions = {
@@ -777,6 +803,7 @@ export default function StudentDashboardPage() {
     if (motionData.inFrame && Math.random() < 0.02) {
       // Award a small amount of XP for motion tracking
       setCurrentXP(prev => prev + 1)
+      setTodayProgress(recordXpEarned(studentId, 1))
     }
   }
 
@@ -785,15 +812,15 @@ export default function StudentDashboardPage() {
     // Update last emotion data
     setLastEmotionData(emotionData)
     if (
-       (emotionData?.fatigueScore ?? 0) > 75 ||
-       (emotionData?.attentionScore ?? 100) < 30
+      (emotionData?.fatigueScore ?? 0) > 75 ||
+      (emotionData?.attentionScore ?? 100) < 30
     ) {
-       setBreakMessage(
-          "You seem tired. Consider taking a short break, stretching, or drinking water."
-       )
+      setBreakMessage(
+        "You seem tired. Consider taking a short break, stretching, or drinking water."
+      )
 
-       setShowBreakSuggestion(true)
-       }
+      setShowBreakSuggestion(true)
+    }
     console.log('Emotion detected:', emotionData)
 
     // Update emotion history
@@ -824,20 +851,20 @@ export default function StudentDashboardPage() {
 
       // Show floating emotion tracker for significant emotions
       if (autoEmotionTracking &&
-          emotionData.emotion !== 'unknown' &&
-          emotionData.confidence > 60 &&
-          !showFloatingEmotionTracker &&
-          !userDismissedEmotionTracker) {
+        emotionData.emotion !== 'unknown' &&
+        emotionData.confidence > 60 &&
+        !showFloatingEmotionTracker &&
+        !userDismissedEmotionTracker) {
         setShowFloatingEmotionTracker(true)
       }
 
       // Handle negative emotions
       if (autoEmotionTracking &&
-          (emotionData.emotion === 'sad' ||
-           emotionData.emotion === 'confused' ||
-           emotionData.emotion === 'bored') &&
-          emotionData.confidence > 70 &&
-          !userDismissedEmotionTracker) {
+        (emotionData.emotion === 'sad' ||
+          emotionData.emotion === 'confused' ||
+          emotionData.emotion === 'bored') &&
+        emotionData.confidence > 70 &&
+        !userDismissedEmotionTracker) {
 
         console.log('Detected negative emotion:', emotionData.emotion, 'with confidence:', emotionData.confidence);
         // Show emotion display with feedback
@@ -848,10 +875,10 @@ export default function StudentDashboardPage() {
 
       // Handle fatigue detection
       if (autoEmotionTracking &&
-          emotionData.fatigueScore !== undefined &&
-          emotionData.fatigueScore > 75 &&
-          emotionData.confidence > 60 &&
-          !userDismissedEmotionTracker) {
+        emotionData.fatigueScore !== undefined &&
+        emotionData.fatigueScore > 75 &&
+        emotionData.confidence > 60 &&
+        !userDismissedEmotionTracker) {
 
         console.log('Detected high fatigue:', emotionData.fatigueScore, 'with confidence:', emotionData.confidence);
         // Show emotion display with feedback
@@ -862,9 +889,9 @@ export default function StudentDashboardPage() {
 
       // Handle attention level
       if (emotionData.attentionScore !== undefined &&
-          emotionData.attentionScore < 30 &&
-          emotionData.confidence > 60 &&
-          !userDismissedEmotionTracker) {
+        emotionData.attentionScore < 30 &&
+        emotionData.confidence > 60 &&
+        !userDismissedEmotionTracker) {
 
         // Low attention might need intervention or a change of pace
         console.log('Low attention detected. Consider changing the learning activity.');
@@ -960,8 +987,8 @@ export default function StudentDashboardPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-card border-b border-border dark:border-border shadow-sm">
-        <div className="container flex items-center justify-between h-16 px-4">
+      <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
+        <div className="page-container flex h-16 items-center justify-between md:pl-20">
           <div
             className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
             onClick={() => setShowStudentDetails(true)}
@@ -1114,116 +1141,146 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container px-4 py-6 space-y-8 md:ml-16">
+      <div className="page-container space-y-6 py-4 pb-20 md:pl-20">
         {/* Level Progress */}
-        <div id="dashboard-section">
+        <div id="dashboard-section" className="space-y-3">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
+          <TodayProgress stats={todayProgress} language={language} />
         </div>
+
+        {/* Next Suggested Action Banner */}
+        <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 via-transparent to-transparent shadow-sm">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
+                <Brain size={22} className="animate-pulse" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-primary tracking-wider uppercase">Next Suggested Action</span>
+                <h4 className="text-base font-bold text-foreground mt-0.5">
+                  {autoEmotionTracking ? "Keep up the great momentum!" : "Ready to dive back in?"}
+                </h4>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {autoEmotionTracking
+                    ? "Your focus tracking is active. Challenge your understanding with the daily Science Quiz to lock in bonus XP!"
+                    : "Fire up your personalized AI path or start your Pomodoro timer to pick up exactly where you left off."}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              className="flex items-center gap-2 self-end sm:self-center shrink-0 shadow-md transition-transform hover:scale-[1.02]"
+              onClick={() => {
+                if (autoEmotionTracking) {
+                  setActiveQuizSubject(dashboardSubject === "all" ? undefined : dashboardSubject);
+                  setShowQuiz(true);
+                } else {
+                  setShowAiTutor(true);
+                }
+              }}
+            >
+              {autoEmotionTracking ? "Start Challenge" : "Resume Learning"}
+              <ArrowRight size={16} />
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Daily Challenge */}
         <Card className="border-red-300">
-           <CardHeader>
-             <CardTitle className="flex items-center gap-2">
-                 🍅 Pomodoro Study Timer
-             </CardTitle>
-           </CardHeader>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="flex items-center gap-2">
+              🍅 Pomodoro Study Timer
+            </CardTitle>
+          </CardHeader>
 
-           <CardContent>
-             <div className="flex gap-2 mb-4">
-
-               <Button
-                  variant="outline"
-                  onClick={() => {
-                      setIsRunning(false)
-                      setSessionLength(25)
-                      setTimeLeft(25 * 60)
-                   }}
+          <CardContent className="p-4 pt-2">
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(25)
+                  setTimeLeft(25 * 60)
+                }}
               >
-                   25 Min
-              </Button>
-
-               <Button
-                  variant="outline"
-                  onClick={() => {
-                      setIsRunning(false)
-                      setSessionLength(30)
-                      setTimeLeft(30 * 60)
-                  }}
-               >
-                   30 Min
+                25 Min
               </Button>
 
               <Button
-                  variant="outline"
-                  onClick={() => {
-                      setIsRunning(false)
-                      setSessionLength(45)
-                      setTimeLeft(45 * 60)
-                   }}
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(30)
+                  setTimeLeft(30 * 60)
+                }}
               >
-                   45 Min
-               </Button>
+                30 Min
+              </Button>
 
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsRunning(false)
+                  setSessionLength(45)
+                  setTimeLeft(45 * 60)
+                }}
+              >
+                45 Min
+              </Button>
             </div>
 
-              <p className="text-3xl font-bold">
-                 {formatStudyTime()}
-              </p>
-             
+            <p className="text-3xl font-bold">{formatStudyTime()}</p>
 
-             <Button
-                 className="mt-4"
-                 onClick={() => setIsRunning(true)}
-             >
-                 Start Session
-             </Button>
-             <Button
-                   variant="outline"
-                   className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-                   onClick={() => setIsRunning(false)}
-             >
-                   Stop Session
-             </Button>
-             <Button
-                    variant="outline"
-                    className="ml-3 bg-pink-500 hover:bg-pink-600 text-white"
-                    onClick={() => {
-                       setIsRunning(false)
-                       setTimeLeft(sessionLength * 60)
-                       setStudyTime(0)
-                       setShowBreakSuggestion(false)
-
-                  }}
-             >
-                 Reset Session
-             </Button>
-             
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button onClick={() => setIsRunning(true)}>
+                Start Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => setIsRunning(false)}
+              >
+                Stop Session
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => {
+                  setIsRunning(false)
+                  setTimeLeft(sessionLength * 60)
+                  setStudyTime(0)
+                  setShowBreakSuggestion(false)
+                }}
+              >
+                Reset Session
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
         {
           showBreakSuggestion && (
-           <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
-             <CardHeader>
-               <CardTitle className="flex items-center gap-2">
-                 <AlertTriangle size={18} />
+            <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle size={18} />
                   Smart Break Suggestion
                 </CardTitle>
-             </CardHeader>
+              </CardHeader>
 
-            <CardContent>
-               <p>{breakMessage}</p>
+              <CardContent>
+                <p>{breakMessage}</p>
 
-               <Button
-                 className="mt-3"
-                 onClick={() => setShowBreakSuggestion(false)}
-               >
-                 Got It
+                <Button
+                  className="mt-3"
+                  onClick={() => setShowBreakSuggestion(false)}
+                >
+                  Got It
                 </Button>
-             </CardContent>
-           </Card>
+              </CardContent>
+            </Card>
           )
-       }
+        }
         <DailyChallenge
           title="Science Challenge"
           description="Complete a quiz about photosynthesis and earn bonus XP!"
@@ -1274,11 +1331,10 @@ export default function StudentDashboardPage() {
                     variant={dashboardSubject === subj ? "default" : "outline"}
                     size="sm"
                     onClick={() => setDashboardSubject(subj)}
-                    className={`rounded-full px-4 h-9 text-xs font-medium transition-all ${
-                      dashboardSubject === subj
-                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        : ""
-                    }`}
+                    className={`rounded-full px-4 h-9 text-xs font-medium transition-all ${dashboardSubject === subj
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      : ""
+                      }`}
                   >
                     {subj === "all" ? "All Subjects" : subj}
                   </Button>
@@ -1342,8 +1398,8 @@ export default function StudentDashboardPage() {
                       {quizDetails.timeText}
                     </div>
                   </div>
-                  <Button 
-                    className="w-full bg-secondary hover:bg-secondary/90" 
+                  <Button
+                    className="w-full bg-secondary hover:bg-secondary/90"
                     onClick={() => {
                       setActiveQuizSubject(quizDetails.subject)
                       setShowQuiz(true)
@@ -1443,21 +1499,21 @@ export default function StudentDashboardPage() {
           </div>
 
           {/* Status display - always visible */}
-            <Card className="bg-card dark:bg-card p-3 border border-primary/20">
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>
-                <div>
-                  <p className="font-medium">
-                    Motion Tracking {showMotionTracker ? "Active" : "Ready"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {showMotionTracker ?
-                      "Camera is currently monitoring your presence" :
-                      "Click 'Start Camera' to begin motion tracking"}
-                  </p>
-                </div>
+          <Card className="bg-card dark:bg-card p-3 border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>
+              <div>
+                <p className="font-medium">
+                  Motion Tracking {showMotionTracker ? "Active" : "Ready"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {showMotionTracker ?
+                    "Camera is currently monitoring your presence" :
+                    "Click 'Start Camera' to begin motion tracking"}
+                </p>
               </div>
-            </Card>
+            </div>
+          </Card>
         </section>
 
         {/* Interactive Learning Tools Section */}
@@ -1690,7 +1746,7 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Voice Command Component */}
-     <div className="fixed bottom-36 right-4 z-30">
+      <div className="fixed bottom-36 right-4 z-30">
         <VoiceCommand
           onCommand={handleVoiceCommand}
           language={language}
@@ -1814,6 +1870,7 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
+                  onDeckComplete={handleFlashcardDeckComplete}
                   onClose={() => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
@@ -2040,7 +2097,7 @@ export default function StudentDashboardPage() {
                 syllabus={selectedSyllabus}
               />
             </motion.div>
-</motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -2157,11 +2214,11 @@ export default function StudentDashboardPage() {
       )}
 
       {/* Student Details Dialog */}
-      <StudentDetailsDialog 
-        open={showStudentDetails} 
-        onOpenChange={setShowStudentDetails} 
-        initialProfile={learningStyle} 
-        onProfileUpdate={setLearningStyle} 
+      <StudentDetailsDialog
+        open={showStudentDetails}
+        onOpenChange={setShowStudentDetails}
+        initialProfile={learningStyle}
+        onProfileUpdate={setLearningStyle}
       />
 
       {/* Out of Frame Warning */}
@@ -2220,14 +2277,16 @@ export default function StudentDashboardPage() {
 	</AnimatePresence>
 	
       {/* Reward Popup */}
-      {showReward && (
-        <RewardPopup 
-          open={showReward} 
-          onOpenChange={setShowReward} 
-          xpEarned={quizScore.earned * 5} 
-          badgeUnlocked={selectedBadge} 
-        />
-      )}
+      {showReward && (() => {
+        const Component = RewardPopup as any;
+        return (
+          <Component
+            onOpenChange={setShowReward}
+            xpEarned={quizScore.earned * 5}
+            badgeUnlocked={selectedBadge}
+          />
+        );
+      })()}
 
       {/* Mobile Sticky Tab Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-border shadow-lg flex justify-around items-center h-16 md:hidden z-30 px-2">
@@ -2251,25 +2310,25 @@ export default function StudentDashboardPage() {
           <TrendingUp size={20} />
           <span className="text-xs">History</span>
         </Button> */}
-         <Button
-            variant="ghost"
-            className="flex flex-col items-center gap-1 h-auto py-2"
-            onClick={() => {
-              setAutoEmotionTracking(!autoEmotionTracking);
-              setShowEmotionDetector(!autoEmotionTracking);
-            }}
-          >
-            <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
-            <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className="flex flex-col items-center gap-1 h-auto py-2"
-            onClick={() => router.push("/session-history")}
-          >
-            <TrendingUp size={20} />
-            <span className="text-xs">History</span>
-          </Button>
+        <Button
+          variant="ghost"
+          className="flex flex-col items-center gap-1 h-auto py-2"
+          onClick={() => {
+            setAutoEmotionTracking(!autoEmotionTracking);
+            setShowEmotionDetector(!autoEmotionTracking);
+          }}
+        >
+          <Smile size={20} color={autoEmotionTracking ? "#4f46e5" : undefined} />
+          <span className="text-xs">{autoEmotionTracking ? "Tracking On" : "Tracking Off"}</span>
+        </Button>
+        <Button
+          variant="ghost"
+          className="flex flex-col items-center gap-1 h-auto py-2"
+          onClick={() => router.push("/session-history")}
+        >
+          <TrendingUp size={20} />
+          <span className="text-xs">History</span>
+        </Button>
       </nav>
     </main>
   )

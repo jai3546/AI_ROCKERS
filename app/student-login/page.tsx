@@ -264,7 +264,7 @@ export default function StudentLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-secondary/20 via-background to-primary/20">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-secondary/20 via-background to-primary/20 px-4 py-10 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
