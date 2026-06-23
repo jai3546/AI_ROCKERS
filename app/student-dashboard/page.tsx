@@ -75,16 +75,7 @@ import { allFlashcards } from "@/data/flashcards"
 import { allSummaries } from "@/data/summaries"
 import { updateSchoolPortal } from "@/services/school-portal-service"
 import { toast } from "@/components/ui/use-toast"
-import { LearningMemoryService } from "@/services/learning-memory-service"
-import { tagQuizTopicToConcept, tagFlashcardToConcept } from "@/services/concept-tagging-service"
-import {
-  type DailyProgressStats,
-  getTodayProgress,
-  recordStudyTime,
-  recordQuizCompleted,
-  recordFlashcardsReviewed,
-  recordXpEarned,
-} from "@/services/daily-progress-service"
+import ContentUpload from "@/components/learning/content-upload"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -120,6 +111,7 @@ export default function StudentDashboardPage() {
   const [showLearningOptions, setShowLearningOptions] = useState(false)
   const [showTextbooks, setShowTextbooks] = useState(false)
   const [showMindMap, setShowMindMap] = useState(false)
+  const [showContentUpload, setShowContentUpload] = useState(false)
   const [activeMindMapTopic, setActiveMindMapTopic] = useState<string>("Photosynthesis")
   const [activeMindMapSubject, setActiveMindMapSubject] = useState<string>("Science")
   const [showReward, setShowReward] = useState(false)
@@ -2072,6 +2064,10 @@ export default function StudentDashboardPage() {
                 setActiveMindMapSubject("Science")
                 setShowMindMap(true)
               }}
+			  onSelectUploadMaterial={() => {
+				setShowLearningOptions(false)
+				setShowContentUpload(true)
+			}}
               language={language}
             />
           </div>
@@ -2139,6 +2135,7 @@ export default function StudentDashboardPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* Emotion Display Modal */}
       <AnimatePresence mode="wait">
@@ -2256,7 +2253,34 @@ export default function StudentDashboardPage() {
           </motion.div>
         )}
       </AnimatePresence>
+	<AnimatePresence>
+	{showContentUpload && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white dark:bg-card rounded-xl shadow-lg border w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative"
+      >
+        <Button
+          variant="ghost"
+          className="absolute top-4 right-4"
+          onClick={() => setShowContentUpload(false)}
+        >
+          ✕
+        </Button>
 
+        <ContentUpload />
+		</motion.div>
+		</motion.div>
+		)}
+	</AnimatePresence>
+	
       {/* Reward Popup */}
       {showReward && (() => {
         const Component = RewardPopup as any;
