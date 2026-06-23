@@ -141,6 +141,7 @@ export default function StudentDashboardPage() {
   const [sessionLength, setSessionLength] = useState(25)
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
   const formatStudyTime = () => {
     const minutes = Math.floor(timeLeft / 60)
     const seconds = timeLeft % 60
@@ -959,7 +960,7 @@ export default function StudentDashboardPage() {
   const summaryDetails = getSummaryDetails()
 
   return (
-    <main className="min-h-screen bg-background pb-20">
+    <main className="h-[calc(100vh-4rem)] overflow-y-auto bg-background pb-32">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
         <div className="page-container flex h-16 items-center justify-between md:pl-20">
@@ -1330,7 +1331,7 @@ export default function StudentDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* AI Tutor Card */}
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-primary/50 dark:border-primary/40 shadow-md h-full bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
+              <Card className="overflow-y-auto border-2 border-primary/50 dark:border-primary/40 shadow-md h-full bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
                 <CardHeader className="bg-primary/10 dark:bg-primary/20 pb-2">
                   <CardTitle className="flex items-center gap-2 text-primary">
                     <MessageSquare size={18} />
@@ -1351,7 +1352,7 @@ export default function StudentDashboardPage() {
 
             {/* Quizzes Card */}
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-secondary/50 shadow-md h-full">
+              <Card className="overflow-y-auto border-2 border-secondary/50 shadow-md h-full">
                 <CardHeader className="bg-secondary/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-secondary">
                     <Goal size={18} />
@@ -1389,7 +1390,7 @@ export default function StudentDashboardPage() {
 
             {/* Flashcards Card */}
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-accent/50 shadow-md h-full">
+              <Card className="overflow-y-auto border-2 border-accent/50 shadow-md h-full">
                 <CardHeader className="bg-accent/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-accent">
                     <FileText size={18} />
@@ -1421,7 +1422,7 @@ export default function StudentDashboardPage() {
 
             {/* Summaries Card */}
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-highlight/50 shadow-md h-full">
+              <Card className="overflow-y-auto border-2 border-highlight/50 shadow-md h-full">
                 <CardHeader className="bg-highlight/10 pb-2">
                   <CardTitle className="flex items-center gap-2 text-highlight">
                     <BookOpen size={18} />
@@ -1492,86 +1493,103 @@ export default function StudentDashboardPage() {
           </Card>
         </section>
 
-        {/* Interactive Learning Tools Section */}
-        <section className="space-y-4 mt-8">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Activity size={20} className="text-primary" />
-            Interactive Learning Tools
-          </h2>
+       {/* Collapsible Advanced Learning Tools Section */}
+<section className="space-y-4 mt-8">
+  <button
+    onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+    className="flex items-center justify-between w-full p-4 bg-secondary/10 dark:bg-secondary/20 rounded-xl border border-secondary/30 hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-all group shadow-sm"
+  >
+    <div className="flex items-center gap-3">
+      <Activity size={22} className="text-secondary animate-pulse" />
+      <div className="text-left">
+        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+          Advanced Learning Tools
+        </h2>
+        <p className="text-xs text-muted-foreground">Click to toggle Emotion Detection & Motion Tracking systems</p>
+      </div>
+    </div>
+    <span className={`transform transition-transform duration-200 text-muted-foreground group-hover:text-foreground font-mono ${showAdvancedTools ? 'rotate-180' : ''}`}>
+      ▼
+    </span>
+  </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {showAdvancedTools && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-3 duration-200 mt-4">
 
-            {/* Face Emotion Card */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-secondary/50 dark:border-secondary/40 shadow-md h-full cursor-pointer bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
-                <CardHeader className="bg-secondary/10 dark:bg-secondary/20 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-secondary">
-                    <Smile size={18} />
-                    Emotion Detection
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-foreground/70 dark:text-foreground/80">
-                      Analyze facial expressions to adapt learning content to your emotional state.
-                    </p>
-                    {lastEmotionData && (
-                      <div className="flex items-center gap-2">
-                        {lastEmotionData.emotion !== "unknown" && (
-                          <Badge variant="outline" className="capitalize">
-                            {lastEmotionData.emotion}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      className="w-full bg-secondary hover:bg-secondary/90"
-                      onClick={() => setShowEmotionDisplay(true)}
-                    >
-                      View Emotions
-                    </Button>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setUserDismissedEmotionTracker(false);
-                          setAutoEmotionTracking(true);
-                          // Force immediate emotion detection
-                          setTimeout(() => {
-                            const emotionData: EmotionData = {
-                              timestamp: new Date(),
-                              emotion: 'focused',
-                              confidence: 85,
-                              faceDetected: true,
-                              fatigueScore: 20,
-                              attentionScore: 80
-                            };
-                            handleEmotionDetectedRef.current(emotionData);
-                          }, 100);
-                        }}
-                      >
-                        Start Tracking
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setUserDismissedEmotionTracker(false);
-                          setShowFloatingEmotionTracker(true);
-                        }}
-                      >
-                        Show Tracker
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-        </section>
+      {/* Face Emotion Card */}
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <Card className="overflow-hidden border-2 border-secondary/50 dark:border-secondary/40 shadow-md h-full cursor-pointer bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
+          <CardHeader className="bg-secondary/10 dark:bg-secondary/20 pb-2">
+            <CardTitle className="flex items-center gap-2 text-secondary">
+              <Smile size={18} />
+              Emotion Detection
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-foreground/70 dark:text-foreground/80">
+                Analyze facial expressions to adapt learning content to your emotional state.
+              </p>
+              {lastEmotionData && (
+                <div className="flex items-center gap-2">
+                  {lastEmotionData.emotion !== "unknown" && (
+                    <Badge variant="outline" className="capitalize">
+                      {lastEmotionData.emotion}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                className="w-full bg-secondary hover:bg-secondary/90"
+                onClick={() => setShowEmotionDisplay(true)}
+              >
+                View Emotions
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setUserDismissedEmotionTracker(false);
+                    setAutoEmotionTracking(true);
+                    setTimeout(() => {
+                      const emotionData: EmotionData = {
+                        timestamp: new Date(),
+                        emotion: 'focused',
+                        confidence: 85,
+                        faceDetected: true,
+                        fatigueScore: 20,
+                        attentionScore: 80
+                      };
+                      handleEmotionDetectedRef.current(emotionData);
+                    }, 100);
+                  }}
+                >
+                  Start Tracking
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setUserDismissedEmotionTracker(false);
+                    setShowFloatingEmotionTracker(true);
+                  }}
+                >
+                  Show Tracker
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* NOTE: If you have a separate Motion Tracking card, you can drop it right here inside this wrapper! */}
+
+    </div>
+  )}
+</section>
 
         {/* Achievements and Leaderboard Section */}
         <div id="achievements-section" className="grid grid-cols-1 md:grid-cols-3 gap-6">
