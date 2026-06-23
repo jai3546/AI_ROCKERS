@@ -1211,7 +1211,7 @@ export default function StudentDashboardPage() {
           variant="outline"
           size="sm"
           className="h-8 text-xs font-semibold px-4 bg-pink-500 hover:bg-pink-600 text-white border-none shadow-sm"
-          onClick={() => AppRunner.setIsRunning(false)}
+          onClick={() => setIsRunning(false)}
         >
           Stop
         </Button>
