@@ -13,6 +13,8 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { QuizCard } from "./quiz-card"
 import { AiQuizGenerator } from "./ai-quiz-generator"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 interface QuizOption {
   id: string
@@ -322,6 +324,15 @@ export function QuizContainer({
         } else {
           setQuizComplete(true)
           const percentageScore = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0
+          captureEvent(POSTHOG_EVENTS.QUIZ_COMPLETED, {
+            subject: selectedSubject ?? "",
+            topic: selectedTopic ?? "",
+            syllabus,
+            score: earnedPoints,
+            total_points: totalPoints,
+            percentage: percentageScore,
+            num_questions: filteredQuestions.length,
+          })
           onComplete(earnedPoints, totalPoints, percentageScore)
         }
       }, 1500)
@@ -334,6 +345,15 @@ export function QuizContainer({
     } else {
       setQuizComplete(true)
       const percentageScore = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0
+      captureEvent(POSTHOG_EVENTS.QUIZ_COMPLETED, {
+        subject: selectedSubject ?? "",
+        topic: selectedTopic ?? "",
+        syllabus,
+        score: earnedPoints,
+        total_points: totalPoints,
+        percentage: percentageScore,
+        num_questions: filteredQuestions.length,
+      })
       onComplete(earnedPoints, totalPoints, percentageScore)
     }
   }
@@ -415,6 +435,12 @@ ${index + 1}. ${q.question}
     if (newQuestions.length > 0) {
       setSelectedSubject(newQuestions[0].subject)
       setSelectedTopic(newQuestions[0].topic) // Directly set so selectTopic wrapper doesn't reset isAiActive
+      captureEvent(POSTHOG_EVENTS.QUIZ_STARTED, {
+        subject: newQuestions[0].subject,
+        topic: newQuestions[0].topic,
+        syllabus,
+        num_questions: newQuestions.length,
+      })
     }
     setShowAiGenerator(false)
     setViewMode("quiz")
@@ -681,12 +707,18 @@ ${index + 1}. ${q.question}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 shrink-0">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={() => {
                         selectTopic(topic)
                         setViewMode("quiz")
                         handleTryAgain()
+                        captureEvent(POSTHOG_EVENTS.QUIZ_STARTED, {
+                          subject: selectedSubject ?? "",
+                          topic,
+                          syllabus,
+                          num_questions: topicQuestionsCount,
+                        })
                       }}
                       className="bg-secondary hover:bg-secondary/90 flex items-center gap-1"
                     >
