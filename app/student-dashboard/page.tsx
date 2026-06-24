@@ -1681,6 +1681,7 @@ feature/issue-73-advanced-tools
  feature/issue-73-advanced-tools
 
           </Card>
+
         </section>
 
         {/* Interactive Learning Tools Section */}
