@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AIFlashcardGenerator } from "./ai-flashcard-generator"
 import { updateSchoolPortal } from "@/services/school-portal-service"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 export interface Flashcard {
   id: string
@@ -100,10 +102,18 @@ export function FlashcardDeck({
       filtered = filtered.filter(card => card.subject === selectedSubject)
     }
 
-    setFilteredCards(filtered.length > 0 ? filtered : allCardsList)
-    // Reset current index when filters change
+    const finalCards = filtered.length > 0 ? filtered : allCardsList
+    setFilteredCards(finalCards)
     setCurrentIndex(0)
     setFlipped(false)
+
+    if (selectedSubject && selectedSubject !== "all" && finalCards.length > 0) {
+      captureEvent(POSTHOG_EVENTS.FLASHCARD_DECK_STARTED, {
+        subject: selectedSubject,
+        syllabus,
+        num_cards: finalCards.length,
+      })
+    }
   }, [allCardsList, syllabus, selectedSubject])
 
   // Get unique subjects from the cards
@@ -194,10 +204,9 @@ export function FlashcardDeck({
         setCurrentIndex(currentIndex + 1)
       }, 200)
     } else if (currentIndex === filteredCards.length - 1) {
-      // This is the last card, update the school portal
       try {
         const portalResponse = await updateSchoolPortal({
-          studentId: "current-user", // In a real app, this would be the actual student ID
+          studentId: "current-user",
           activityType: 'flashcard',
           activityDetails: {
             subject: currentCard.subject,
@@ -207,7 +216,11 @@ export function FlashcardDeck({
           }
         });
 
-        console.log('School portal updated for flashcard completion:', portalResponse);
+        captureEvent(POSTHOG_EVENTS.FLASHCARD_DECK_COMPLETED, {
+          subject: currentCard.subject,
+          syllabus,
+          cards_reviewed: filteredCards.length,
+        })
 
         onDeckComplete?.(filteredCards.length, portalResponse.xpAwarded ?? 0)
       } catch (error) {
