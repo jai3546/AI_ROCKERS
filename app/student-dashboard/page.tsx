@@ -1193,7 +1193,7 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
-        feature/issue-74-compact-timer
+       {/* Compact Pomodoro Study Timer */}
        {/* Daily Challenge */}
 <Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
   <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
