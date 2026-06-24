@@ -8,6 +8,7 @@ import useEmblaCarousel from "embla-carousel-react"
 
 import { ReviewCard, type ReviewData } from "./review-card"
 import { ReviewForm } from "./review-form"
+import TestimonialCarousel from "./carosel"
 
 interface ReviewsSectionProps {
   eyebrow?: string
@@ -17,136 +18,63 @@ interface ReviewsSectionProps {
   language?: "en" | "hi" | "te"
 }
 
-const localizedReviews: Record<"en" | "hi" | "te", ReviewData[]> = {
-  en: [
-       {
-         id: "1",
-         name: "Arjun Mehta",
-         role: "B.Tech Student",
-         avatar: "/avatars/arjun.jpg",
-         rating: 5,
-         comment: "VidyaAI has completely changed the way I study. The AI explains everything so clearly!",
-         date: "",
-       },
-       {
-         id: "2",
-         name: "Priya Sharma",
-         role: "BCA Student",
-         avatar: "/avatars/priya.jpg",
-         rating: 5,
-         comment: "The doubt solving and notes generation features are incredible. It’s like having a personal tutor 24/7!",
-         date: "",
-       },
-       {
-         id: "3",
-         name: "Rohan Verma",
-         role: "Class 10",
-         avatar: "/avatars/rohan.jpg",
-         rating: 5,
-         comment: "Super easy to use and saves so much time. Perfect study buddy for exam preparation.",
-         date: "",
-       },
-       {
-         id: "4",
-         name: "Ananya Gupta",
-         role: "Class 12",
-         avatar: "/avatars/ananya.jpg",
-         rating: 5,
-         comment: "I love how accurate and instant the answers are. VidyaAI is truly a game-changer!",
-         date: "",
-       },
-  ],
-  hi: [
-       {
-         id: "1",
-         name: "Arjun Mehta",
-         role: "बी.टेक छात्र",
-         avatar: "/avatars/arjun.jpg",
-         rating: 5,
-         comment: "VidyaAI ने मेरे पढ़ने का तरीका पूरी तरह बदल दिया है। AI सब कुछ बहुत साफ़ तरीके से समझाता है!",
-         date: "",
-       },
-       {
-         id: "2",
-         name: "Priya Sharma",
-         role: "बीसीए छात्रा",
-         avatar: "/avatars/priya.jpg",
-         rating: 5,
-         comment: "डाउट सॉल्विंग और नोट्स जनरेशन फीचर बहुत शानदार हैं। ऐसा लगता है जैसे 24/7 एक निजी ट्यूटर साथ हो!",
-         date: "",
-       },
-       {
-         id: "3",
-         name: "Rohan Verma",
-         role: "कक्षा 10",
-         avatar: "/avatars/rohan.jpg",
-         rating: 5,
-         comment: "इसे इस्तेमाल करना बहुत आसान है और बहुत समय बचता है। परीक्षा की तैयारी के लिए यह सबसे अच्छा साथी है।",
-         date: "",
-       },
-       {
-         id: "4",
-         name: "Ananya Gupta",
-         role: "कक्षा 12",
-         avatar: "/avatars/ananya.jpg",
-         rating: 5,
-         comment: "मुझे बहुत पसंद है कि जवाब कितने सटीक और तुरंत मिलते हैं। VidyaAI सच में एक गेम-चेंजर है!",
-         date: "",
-       },
-  ],
-  te: [
-       {
-         id: "1",
-         name: "Arjun Mehta",
-         role: "బీ.టెక్ విద్యార్థి",
-         avatar: "/avatars/arjun.jpg",
-         rating: 5,
-         comment: "VidyaAI నా చదువు విధానాన్ని పూర్తిగా మార్చేసింది. AI అన్నీ చాలా స్పష్టంగా వివరించింది!",
-         date: "",
-       },
-       {
-         id: "2",
-         name: "Priya Sharma",
-         role: "బీసీఏ విద్యార్థిని",
-         avatar: "/avatars/priya.jpg",
-         rating: 5,
-         comment: "డౌట్ సాల్వింగ్ మరియు నోట్స్ జనరేషన్ ఫీచర్లు అద్భుతం. 24/7 వ్యక్తిగత ట్యూటర్ ఉన్నట్లుగా అనిపిస్తుంది!",
-         date: "",
-       },
-     {
-       id: "3",
-       name: "Rohan Verma",
-       role: "వర్గం 10",
-       avatar: "/avatars/rohan.jpg",
-       rating: 5,
-       comment: "ఇది ఉపయోగించడం చాలా సులభం మరియు చాలా సమయం ఆదా అవుతుంది. పరీక్షల సిద్ధతకు ఇది సరైన సహాయకుడు.",
-       date: "",
-     },
-     {
-       id: "4",
-       name: "Ananya Gupta",
-       role: "వర్గం 12",
-       avatar: "/avatars/ananya.jpg",
-       rating: 5,
-       comment: "జవాబులు ఎంత ఖచ్చితంగా, तక్షణంగా వస్తాయో నాకు చాలా ఇష్టం. VidyaAI నిజంగా గేమ్-చేంజర్!",
-       date: "",
-     },
-  ],
-}
-
-export function ReviewsSection({ eyebrow, title, subtitle, footerText, language = "en" }: ReviewsSectionProps) {
-  const [reviews, setReviews] = React.useState<ReviewData[]>(localizedReviews[language])
-  const titleParts = language === "en" && title.includes("Thousands") ? title.split("Thousands") : [title, ""]
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" })
-  const [selectedIndex, setSelectedIndex] = React.useState(0)
-  const [slidesToShow, setSlidesToShow] = React.useState(1)
-  const [showReviewForm, setShowReviewForm] = React.useState(false)
-
-  React.useEffect(() => {
-    setReviews(localizedReviews[language])
-    setSelectedIndex(0)
-    emblaApi?.scrollTo(0)
-  }, [language, emblaApi])
+// Sample reviews data not used in production
+const sampleReviews: ReviewData[] = [
+  {
+    id: "1",
+    name: "Priya Sharma",
+    role: "Student, Class 10",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    rating: 5,
+    comment: "Vidya AI has completely transformed my learning experience. The voice commands make it so easy to navigate, and the emotional tracking helps me stay focused. I've improved my grades significantly!",
+    date: "2 weeks ago"
+  },
+  {
+    id: "2",
+    name: "Rahul Patel",
+    role: "Student, Class 8",
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    rating: 4,
+    comment: "I love using the flashcards and quizzes. They make studying fun and interactive. The dark mode is also great for studying at night without straining my eyes.",
+    date: "1 month ago"
+  },
+  {
+    id: "3",
+    name: "Ananya Reddy",
+    role: "Student, Class 9",
+    avatar: "/avatars/ananya.jpg",
+    rating: 5,
+    comment: "The AI tutor is like having a personal teacher available 24/7. It explains concepts in a way that's easy to understand and adapts to my learning style.",
+    date: "3 weeks ago"
+  },
+  {
+    id: "4",
+    name: "Vikram Singh",
+    role: "Teacher, Science",
+    avatar: "/avatars/vikram.jpg",
+    rating: 5,
+    comment: "As a teacher, I find the school portal incredibly useful. It helps me track student progress and identify areas where they need additional support. The weekly reports are comprehensive and insightful.",
+    date: "1 month ago"
+  },
+  {
+    id: "5",
+    name: "Meera Desai",
+    role: "Parent",
+    avatar: '',
+    rating: 4,
+    comment: "I appreciate being able to monitor my child's learning progress. The emotional tracking feature gives me insights into how they're engaging with the material, which helps me provide better support at home.",
+    date: "2 months ago"
+  },
+  {
+    id: "6",
+    name: "Arjun Kumar",
+    role: "Student, Class 11",
+    avatar: '',
+    rating: 5,
+    comment: "The summaries feature has been a game-changer for my exam preparation. It helps me quickly review key concepts and saves so much time. The voice navigation is also very intuitive.",
+    date: "3 weeks ago"
+  }
+]
 
   React.useEffect(() => {
     function onResize() {
@@ -254,16 +182,13 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
           </div>
         </div>
 
-        <div className="relative mt-12 sm:mt-16">
-          <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2 hidden sm:flex">
-            <button
-              type="button"
-              aria-label="Previous testimonials"
-              onClick={() => emblaApi && emblaApi.scrollPrev()}
-              className="h-12 w-12 items-center justify-center rounded-full border border-[#CCFBF1] bg-white text-[#0F766E] shadow-[0_10px_30px_rgba(15,118,110,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-[#0F766E]/30 dark:bg-card"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
+  return (
+    <section className="w-full py-12">
+      <div className="container px-4 mx-auto">
+        {/* <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+            {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
           </div>
 
           <div ref={emblaRef} className="embla overflow-hidden h-auto sm:h-[30rem] lg:h-[32rem]">
@@ -281,55 +206,59 @@ export function ReviewsSection({ eyebrow, title, subtitle, footerText, language 
                 </div>
               ))}
             </div>
+           
           </div>
+        </div> */}
 
-          <div className="absolute right-0 top-1/2 z-10 -translate-y-1/2 hidden sm:flex">
-            <button
-              type="button"
-              aria-label="Next testimonials"
-              onClick={() => emblaApi && emblaApi.scrollNext()}
-              className="h-12 w-12 items-center justify-center rounded-full border border-[#CCFBF1] bg-white text-[#0F766E] shadow-[0_10px_30px_rgba(15,118,110,0.18)] transition-transform hover:scale-105 flex focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-[#0F766E]/30 dark:bg-card"
+                <TestimonialCarousel/>
+
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {currentReviews.map((review, index) => (
+            <ReviewCard key={review.id} review={review} index={index} />
+          ))}
+        </div> */}
+              {/* pages movement */}
+        {/* {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0 || isAnimating}
             >
-              <ChevronRight className="h-6 w-6" />
-            </button>
+              <ChevronLeft size={16} className="mr-2" />
+              {translations.prev[language]}
+            </Button>
+
+            <span className="text-sm text-muted-foreground">
+              {translations.page[language]} {currentPage + 1} {translations.of[language]} {totalPages}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages - 1 || isAnimating}
+            >
+              {translations.next[language]}
+              <ChevronRight size={16} className="ml-2" />
+            </Button>
           </div>
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-3">
-          {(() => {
-            const pages = Math.max(1, Math.ceil(reviews.length / slidesToShow))
-            const activePage = Math.floor(selectedIndex / Math.max(1, slidesToShow))
-
-            return Array.from({ length: pages }).map((_, pageIndex) => (
-              <button
-                key={pageIndex}
-                type="button"
-                aria-label={`Go to testimonials page ${pageIndex + 1}`}
-                onClick={() => emblaApi && emblaApi.scrollTo(pageIndex * slidesToShow)}
-                className={`h-3.5 w-3.5 rounded-full transition-all ${activePage === pageIndex
- ? "bg-[#F59E0B] shadow-[0_0_0_6px_rgba(245,158,11,0.18)]"
-: "bg-[#CCFBF1]"}`}
-              />
-            ))
-          })()}
-        </div>
-
-        {footerText && (
-          <div className="mt-10 text-center text-lg font-medium text-slate-700 dark:text-foreground">
-            {footerText}
-          </div>
-        )}
+        )} */}
       </div>
-
-      {showReviewForm && (
-        <ReviewForm
-          onClose={() => setShowReviewForm(false)}
-          onSubmit={handleSubmitReview}
-          language={language}
-        />
-      )}
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.08),transparent_70%)]" />
+ <Button onClick={handleAddReview} variant="outline" size="sm">
+              {translations.writeReview[language]}
+</Button>
+      {/* Review Form */}
+      <AnimatePresence>
+        {showReviewForm && (
+          <ReviewForm
+            onClose={() => setShowReviewForm(false)}
+            onSubmit={handleSubmitReview}
+            language={language}
+          />
+        )}
+      </AnimatePresence>
     </section>
   )
 }
