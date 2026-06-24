@@ -1759,7 +1759,8 @@ feature/issue-73-advanced-tools
                 </CardContent>
               </Card>
             </motion.div>
-             main
+            </div>
+
           </div>
         </Card>
 
