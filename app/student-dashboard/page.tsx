@@ -55,7 +55,7 @@ import { QuizContainer } from "@/components/learning/quiz-container"
 import { FlashcardDeck } from "@/components/learning/flashcard-deck"
 import { StudySummaries } from "@/components/learning/study-summaries"
 import { LearningOptionsMenu } from "@/components/learning/learning-options-menu"
-import { CourseHub } from "@/components/learning/course-hub"
+import { ContinueLearning, type ContinueLearningTopic } from "@/components/learning/continue-learning"
 import { Textbooks } from "@/components/learning/textbooks"
 import { MindMap } from "@/components/learning/mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
@@ -150,6 +150,12 @@ export default function StudentDashboardPage() {
     quizzesCompleted: 0,
     flashcardsReviewed: 0,
     xpEarned: 0,
+  })
+  const [continueLearningTopic, setContinueLearningTopic] = useState<ContinueLearningTopic>({
+    title: "Photosynthesis",
+    subject: "Science",
+    progress: 65,
+    lastPracticed: new Date().toISOString(),
   })
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
@@ -393,6 +399,25 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     if (user?.id) {
       setTodayProgress(getTodayProgress(user.id))
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    const graph = LearningMemoryService.getConceptGraph(user?.id || "S001")
+    const lastStudiedConcept = graph
+      .filter((concept) => concept.lastPracticed)
+      .sort(
+        (a, b) =>
+          new Date(b.lastPracticed).getTime() - new Date(a.lastPracticed).getTime()
+      )[0]
+
+    if (lastStudiedConcept) {
+      setContinueLearningTopic({
+        title: lastStudiedConcept.name,
+        subject: lastStudiedConcept.subject,
+        progress: lastStudiedConcept.mastery,
+        lastPracticed: lastStudiedConcept.lastPracticed,
+      })
     }
   }, [user?.id])
 
@@ -996,6 +1021,12 @@ export default function StudentDashboardPage() {
   const flashcardDetails = getFlashcardDetails()
   const summaryDetails = getSummaryDetails()
 
+  const handleContinueLearning = () => {
+    setActiveMindMapTopic(continueLearningTopic.title)
+    setActiveMindMapSubject(continueLearningTopic.subject)
+    setShowMindMap(true)
+  }
+
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -1158,6 +1189,7 @@ export default function StudentDashboardPage() {
         <div id="dashboard-section" className="space-y-3">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
           <TodayProgress stats={todayProgress} language={language} />
+          <ContinueLearning topic={continueLearningTopic} onContinue={handleContinueLearning} />
         </div>
 
         {/* Next Suggested Action Banner */}
