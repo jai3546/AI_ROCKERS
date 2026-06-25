@@ -724,7 +724,6 @@ export function AiQuizGenerator({
         }
         console.warn("AI generation failed, falling back to templates:", e)
       }
-      }
 
       // Get templates for the selected subject
       let templates = questionTemplates[selectedSubject as keyof typeof questionTemplates] || []

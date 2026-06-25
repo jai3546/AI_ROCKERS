@@ -102,7 +102,6 @@ export function AIFlashcardGenerator({
         }
         console.warn("AI generation failed, falling back to templates:", e)
       }
-      }
 
       // Generate flashcards based on the subject
       const flashcards: Flashcard[] = []
