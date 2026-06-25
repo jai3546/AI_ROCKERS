@@ -228,6 +228,11 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
                     </p>
                  </div>
               </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
           {/* Focus Trend Chart */}
           <Card className="border border-border/60 bg-card/40 backdrop-blur-md shadow-sm">
             <CardHeader className="pb-2 pt-4">
