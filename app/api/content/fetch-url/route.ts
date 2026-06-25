@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
 
     const hostname = parsed.hostname
-    const isPrivateIp = /^(10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|127\.|169\.254\.|::1|localhost)/i.test(hostname)
+    const isPrivateIp = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|169\.254\.|localhost$|::1$|::$|fe80:|fc[0-9a-f]{2}:)/i.test(hostname)
     if (isPrivateIp) {
       return Response.json({ error: "Access to private network addresses is not allowed" }, { status: 400 })
     }
