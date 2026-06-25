@@ -119,9 +119,9 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
   }
 
   const sorted = topologicalSort(lessonIds, prereqMap)
+  const sorted = topologicalSort(lessonIds, prereqMap)
+  const sortedIndex = new Map(sorted.map((id, idx) => [id, idx]))
   const sortedWithStableOrder = [...sorted].sort((a, b) => {
-    const idxA = sorted.indexOf(a)
-    const idxB = sorted.indexOf(b)
     const prereqsA = (prereqMap.get(a) || []).length
     const prereqsB = (prereqMap.get(b) || []).length
     if (prereqsA !== prereqsB) return prereqsA - prereqsB
@@ -131,8 +131,9 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
     const lessonA = allLessons.find((l) => l.id === a)
     const lessonB = allLessons.find((l) => l.id === b)
     if ((lessonA?.order ?? 0) !== (lessonB?.order ?? 0)) return (lessonA?.order ?? 0) - (lessonB?.order ?? 0)
-    return idxA - idxB
+    return (sortedIndex.get(a) ?? 0) - (sortedIndex.get(b) ?? 0)
   })
+  return sortedWithStableOrder
   return sortedWithStableOrder
 }
 
