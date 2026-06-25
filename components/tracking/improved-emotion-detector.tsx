@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Smile, Frown, Meh, AlertTriangle, Eye, RefreshCw, Camera, X, Zap } from "lucide-react"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
@@ -163,16 +165,16 @@ export function ImprovedEmotionDetector({
         audio: false
       })
 
-      // Store the stream
       streamRef.current = stream
+      captureEvent(POSTHOG_EVENTS.WEBCAM_PERMISSION_GRANTED, {})
 
       if (videoRef.current) {
-        // Set up the video element
         videoRef.current.srcObject = stream
         await videoRef.current.play()
       }
     } catch (error) {
       console.error('Error accessing camera:', error)
+      captureEvent(POSTHOG_EVENTS.WEBCAM_PERMISSION_DENIED, {})
       setCameraError('Could not access camera. Please check permissions.')
     }
   }
@@ -245,6 +247,7 @@ export function ImprovedEmotionDetector({
     }
 
     let lastEmotion: EmotionType = 'focused'
+    let tickCount = 0
 
     // Set up interval to update emotion
     emotionInterval.current = setInterval(() => {
@@ -295,7 +298,12 @@ export function ImprovedEmotionDetector({
       setFatigueScore(newFatigueScore)
       lastEmotion = selectedEmotion
 
-      // Call callback if provided
+      tickCount++
+      // Sample every 5th tick (~30s at default interval) to avoid flooding
+      if (tickCount % 5 === 0) {
+        captureEvent(POSTHOG_EVENTS.EMOTION_DETECTED, { emotion: selectedEmotion, confidence_score: confidence })
+      }
+
       if (onEmotionDetected) {
         onEmotionDetected({
           emotion: selectedEmotion,

@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { generateAiQuiz } from "@/services/gemini-api"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 interface QuizOption {
   id: string
@@ -696,22 +698,32 @@ export function AiQuizGenerator({
     setError(null)
 
     try {
-      const generated = await generateAiQuiz(
-        selectedSubject,
-        syllabus,
-        numQuestions,
-        hasSourceContent
-          ? { topic: selectedTopic, sourceContent: defaultSourceContent }
-          : { topic: subject === "custom" ? customSubject : undefined }
-      )
+      // First attempt to generate using Gemini AI
+      try {
+        const generated = await generateAiQuiz(
+          selectedSubject,
+          syllabus,
+          numQuestions,
+          hasSourceContent
+            ? { topic: selectedTopic, sourceContent: defaultSourceContent }
+            : { topic: subject === "custom" ? customSubject : undefined }
+        )
 
-      if (generated && generated.length > 0) {
-        onQuestionsGenerated(generated)
-        return
+        if (generated && generated.length > 0) {
+          captureEvent(POSTHOG_EVENTS.AI_QUIZ_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_questions: generated.length })
+          onQuestionsGenerated(generated)
+          return
+        }
+
+        if (hasSourceContent) {
+          throw new Error("Could not generate quiz from your uploaded material. The content may be too short.")
+        }
+      } catch (e) {
+        if (hasSourceContent && e instanceof Error && e.message.includes("uploaded material")) {
+          throw e;
+        }
+        console.warn("AI generation failed, falling back to templates:", e)
       }
-
-      if (hasSourceContent) {
-        throw new Error("Could not generate quiz from your uploaded material. The content may be too short.")
       }
 
       // Get templates for the selected subject
@@ -773,6 +785,7 @@ export function AiQuizGenerator({
         }
       }
 
+      captureEvent(POSTHOG_EVENTS.AI_QUIZ_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_questions: questions.length })
       onQuestionsGenerated(questions)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate questions. Please try again.")
