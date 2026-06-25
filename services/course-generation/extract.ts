@@ -90,11 +90,13 @@ export async function extractConceptsFromChunks(
   options: CourseGenerationOptions,
   onProgress?: (current: number, total: number) => void
 ): Promise<ChunkExtractionResult[]> {
-  const results: ChunkExtractionResult[] = []
-  for (let i = 0; i < chunks.length; i++) {
-    const result = await extractConceptsFromChunk(chunks[i], options)
-    results.push(result)
-    onProgress?.(i + 1, chunks.length)
-  }
-  return results
+  let completed = 0
+  const promises = chunks.map(async (chunk) => {
+    const result = await extractConceptsFromChunk(chunk, options)
+    completed++
+    onProgress?.(completed, chunks.length)
+    return result
+  })
+  return Promise.all(promises)
+}
 }
