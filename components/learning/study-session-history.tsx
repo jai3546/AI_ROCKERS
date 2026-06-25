@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Clock, Brain, Smile, TrendingUp, X } from "lucide-react"
+import { Clock, Brain, Smile, TrendingUp, X, BookOpen } from "lucide-react"
 
 interface SessionRecord {
   id: string
@@ -25,7 +25,15 @@ const EMOTION_COLORS: Record<string, string> = {
   excited:   "#8b5cf6",
   unknown:   "#d1d5db",
 }
-
+const EMOTION_EMOJIS: Record<string, string> = {
+  focused: "🎯",
+  happy: "😊",
+  confused: "😕",
+  bored: "😴",
+  sad: "😔",
+  excited: "🤩",
+  unknown: "😐",
+}
 const SAMPLE_SESSIONS: SessionRecord[] = [
   { id: "1", date: "Mon", duration: 45, dominantEmotion: "focused",  focusScore: 82, activitiesCompleted: 3 },
   { id: "2", date: "Tue", duration: 30, dominantEmotion: "happy",    focusScore: 75, activitiesCompleted: 2 },
@@ -155,13 +163,13 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
       </Card>
 
       {/* Session List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
           Recent Sessions
         </h3>
         {sessions.map((session) => (
-          <Card key={session.id} className="border border-border/50">
-            <CardContent className="py-3 px-4 flex items-center justify-between">
+          <Card key={session.id} className="border border-border/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div
                   className="w-3 h-3 rounded-full"
@@ -169,18 +177,34 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
                 />
                 <div>
                   <p className="font-medium text-sm">{session.date}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {session.duration} min · {session.activitiesCompleted} activities
-                  </p>
+                  <div className="flex flex-wrap gap-3 mt-1 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                    <Clock size={12} />
+                     {session.duration} min
+                    </span>
+
+                    <span className="flex items-center gap-1">
+                    <BookOpen size={12} />
+                      {session.activitiesCompleted} activities
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="capitalize text-xs">
+                <Badge variant="outline" className="capitalize text-xs flex items-center gap-1">
+                <span>{EMOTION_EMOJIS[session.dominantEmotion] || "😐"}</span>
                   {session.dominantEmotion}
                 </Badge>
-                <span className="text-sm font-bold text-primary">
-                  {session.focusScore}%
-                </span>
+                 <div className="w-24">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full"
+                          style={{ width: `${session.focusScore}%` }}
+                    />
+                  </div>
+                    <p className="text-xs font-semibold text-right mt-1">
+                    {session.focusScore}%
+                    </p>
+                 </div>
               </div>
             </CardContent>
           </Card>
