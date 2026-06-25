@@ -2226,9 +2226,8 @@ export default function StudentDashboardPage() {
         )}
       </AnimatePresence>
 
-      </div>
-      )}
-      </section>
+
+
 
       {/* Emotion Display Modal */}
       <AnimatePresence mode="wait">
