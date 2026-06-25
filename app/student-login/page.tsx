@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 // Demo credentials for different classes
 const demoCredentials = {
@@ -139,6 +141,7 @@ export default function StudentLoginPage() {
 
     // Validate inputs
     if (!schoolCode.trim() || !studentId.trim()) {
+      captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "missing_fields", login_method: "credentials" })
       setLoginError("Please enter both School Code and Student ID")
       setIsLoggingIn(false)
       return
@@ -171,7 +174,7 @@ export default function StudentLoginPage() {
             isDemo: false
           }))
 
-          // Navigate to student dashboard
+          captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: foundStudent.class, role: "student" })
           router.push("/student-dashboard")
         } else {
           // For demo purposes, allow login with any credentials
@@ -184,11 +187,12 @@ export default function StudentLoginPage() {
             isDemo: true
           }))
 
-          // Navigate to student dashboard
+          captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: "Class 10", role: "student" })
           router.push("/student-dashboard")
         }
       } catch (error) {
         console.error("Login error:", error)
+        captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "unexpected_error", login_method: "credentials" })
         setLoginError("An error occurred during login. Please try again.")
         setIsLoggingIn(false)
       }
@@ -226,10 +230,11 @@ export default function StudentLoginPage() {
         isDemo: true
       }))
 
-      // Navigate to student dashboard
+      captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", class: selectedClass, role: "student" })
       router.push("/student-dashboard")
     } catch (err) {
       console.error("Login error:", err)
+      captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "demo_login_failed", login_method: "demo" })
       setLoginError("Failed to log in. Please try again.")
     } finally {
       setIsLoggingIn(false)
@@ -264,7 +269,7 @@ export default function StudentLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-secondary/20 via-background to-primary/20">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-secondary/20 via-background to-primary/20 px-4 py-10 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -295,7 +300,7 @@ export default function StudentLoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Info size={16} className="text-secondary" />
-                    <label htmlFor="schoolCode" className="text-sm font-medium">
+                    <label htmlFor="schoolCode" className="text-sm font-medium text-foreground dark:text-foreground">
                       {translations.schoolCode[language]}
                     </label>
                   </div>
@@ -312,7 +317,7 @@ export default function StudentLoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Info size={16} className="text-secondary" />
-                    <label htmlFor="studentId" className="text-sm font-medium">
+                    <label htmlFor="studentId" className="text-sm font-medium text-foreground dark:text-foreground">
                       {translations.studentId[language]}
                     </label>
                   </div>

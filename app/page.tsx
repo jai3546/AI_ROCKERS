@@ -24,6 +24,8 @@ import { LanguageSelector } from "@/components/language-selector"
 import { VoiceCommand } from "@/components/voice-command"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 type Language = "en" | "hi" | "te"
 
@@ -40,9 +42,12 @@ export default function LandingPage() {
     if (storedLanguage) {
       setLanguage(storedLanguage)
     }
+
+    captureEvent(POSTHOG_EVENTS.LANDING_PAGE_VIEWED, { language: storedLanguage ?? "en" })
   }, [])
 
   const handleLanguageChange = (newLanguage: Language) => {
+    captureEvent(POSTHOG_EVENTS.LANGUAGE_CHANGED, { from: language, to: newLanguage })
     setLanguage(newLanguage)
 
     if (typeof window !== "undefined") {
@@ -411,30 +416,65 @@ export default function LandingPage() {
   return (
     <main
       suppressHydrationWarning
-      className="relative min-h-screen overflow-hidden bg-background"
+      className="relative min-h-screen overflow-x-hidden bg-background"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute right-8 top-24 h-40 w-40 rounded-full bg-primary/6 blur-2xl dark:bg-primary/4" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-4 sm:px-6 lg:px-8">
-        <motion.header
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="sticky top-2 z-40 mb-4 rounded-2xl border border-border/70 bg-background/85 px-3 py-2 shadow-sm backdrop-blur-xl"
-        >
-          <div className="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto,1fr,auto] lg:gap-4">
-            <div className="flex min-w-0 items-center gap-3 justify-self-start">
-              <Link href="#hero" className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-highlight text-sm font-bold text-white shadow-lg shadow-primary/20">
-                  V+
-                </div>
-                <div className="block sm:block">
-                  <p className="text-sm font-semibold tracking-tight text-foreground sm:text-sm">{translations.title[language]}</p>
-                  <p className="text-[11px] leading-none text-muted-foreground">{translations.hero.label[language]}</p>
-                </div>
-              </Link>
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="site-header"
+      >
+        <div className="site-header-inner">
+          <div className="flex min-w-0 shrink-0 items-center gap-3">
+            <Link href="#hero" className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-highlight text-sm font-bold text-white shadow-lg shadow-primary/20">
+                V+
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-semibold tracking-tight text-foreground">{translations.title[language]}</p>
+                <p className="text-[11px] leading-none text-muted-foreground">{translations.hero.label[language]}</p>
+              </div>
+            </Link>
+          </div>
+
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 text-sm text-muted-foreground lg:flex">
+            {translations.nav[language].map((item, index) => {
+              const anchor = ["#features", "#portal", "#reviews"][index]
+
+              return (
+                <Link
+                  key={item}
+                  href={anchor}
+                  className="rounded-full px-3 py-1.5 transition-colors hover:bg-primary/10 hover:text-foreground"
+                >
+                  {item}
+                </Link>
+              )
+            })}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden items-center gap-2 rounded-full border border-border/60 bg-background/70 px-2 py-1 shadow-sm backdrop-blur dark:bg-card/70 lg:flex">
+              <LanguageSelector
+                onLanguageChange={handleLanguageChange}
+                initialLanguage={language}
+                label={translations.languageLabel[language]}
+              />
+              {mounted && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="h-8 w-8 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                >
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              )}
             </div>
 
             <div className="flex items-center gap-2 lg:hidden">
@@ -460,65 +500,30 @@ export default function LandingPage() {
                 <span className="sr-only">Open menu</span>
               </button>
             </div>
-
-            <nav className="hidden items-center justify-center gap-1.5 text-sm text-muted-foreground lg:flex">
-              {translations.nav[language].map((item, index) => {
-                const anchor = ["#features", "#portal", "#reviews"][index]
-
-                return (
-                  <Link
-                    key={item}
-                    href={anchor}
-                    className="rounded-full px-2.5 py-1 transition-colors hover:bg-primary/10 hover:text-foreground"
-                  >
-                    {item}
-                  </Link>
-                )
-              })}
-            </nav>
-
-            <div className="hidden items-center justify-self-end lg:flex">
-              <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-2 py-1 shadow-sm backdrop-blur dark:bg-card/70">
-                <LanguageSelector
-                  onLanguageChange={handleLanguageChange}
-                  initialLanguage={language}
-                  label={translations.languageLabel[language]}
-                />
-                {mounted && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="h-8 w-8 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-                  >
-                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                    <span className="sr-only">Toggle theme</span>
-                  </Button>
-                )}
-              </div>
-            </div>
           </div>
-          {isMenuOpen && (
-            <motion.div
-              id="mobile-menu"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm lg:hidden"
-            >
-              <div className="mt-20 w-[92%] max-w-md rounded-2xl border border-border/60 bg-background/95 p-4 shadow-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-highlight text-sm font-bold text-white">V+</div>
-                    <p className="text-sm font-semibold">{translations.title[language]}</p>
-                  </div>
-                  <button onClick={() => setIsMenuOpen(false)} className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted/50">
-                    <X className="h-5 w-5" />
-                    <span className="sr-only">Close menu</span>
-                  </button>
-                </div>
+        </div>
 
-                <nav className="mt-4 flex flex-col gap-3">
+        {isMenuOpen && (
+          <motion.div
+            id="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm pt-20 lg:hidden"
+          >
+            <div className="mx-4 w-full max-w-md rounded-2xl border border-border/60 bg-background/95 p-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-highlight text-sm font-bold text-white">V+</div>
+                  <p className="text-sm font-semibold">{translations.title[language]}</p>
+                </div>
+                <button onClick={() => setIsMenuOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/50">
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close menu</span>
+                </button>
+              </div>
+
+              <nav className="mt-4 flex flex-col gap-3">
                 {translations.nav[language].map((item, index) => {
                   const anchor = ["#features", "#portal", "#reviews"][index]
 
@@ -540,28 +545,32 @@ export default function LandingPage() {
               </nav>
             </div>
           </motion.div>
-          )}
-        </motion.header>
+        )}
+      </motion.header>
 
-        <section id="hero" className="grid items-center gap-14 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-14">
+      <div className="page-container pb-16 pt-16">
+        <section
+          id="hero"
+          className="flex min-h-[calc(100dvh-4rem)] scroll-mt-20 items-center justify-center py-10 lg:py-14"
+        >
+          <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="relative max-w-2xl"
+            className="relative mx-auto w-full max-w-xl text-center lg:mx-0 lg:max-w-none lg:text-left"
           >
-            <div className="absolute -left-12 top-6 h-56 w-56 rounded-full bg-gradient-to-br from-primary/30 to-transparent blur-3xl opacity-80 dark:opacity-0 pointer-events-none" />
-            {/* hero badge removed to simplify layout */}
+            <div className="pointer-events-none absolute -left-12 top-6 hidden h-56 w-56 rounded-full bg-gradient-to-br from-primary/30 to-transparent opacity-80 blur-3xl dark:opacity-0 lg:block" />
 
-            <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+            <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
               <span className="block">{translations.hero.title[language]}</span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground sm:text-lg">
+            <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-muted-foreground sm:text-lg lg:mx-0">
               {translations.hero.description[language]}
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <Button asChild size="lg" className="rounded-full px-7 shadow-lg shadow-primary/20">
                 <Link href="/student-login">
                   {translations.getStarted[language]}
@@ -573,7 +582,7 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="mt-10 grid w-full gap-3 sm:grid-cols-3">
               {heroHighlights.map((item) => (
                 <div
                   key={item.label}
@@ -586,8 +595,8 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <div className="relative mx-auto w-full max-w-lg sm:max-w-xl lg:-translate-y-12">
-            <div className="relative rounded-xl border border-border/60 bg-background/80 p-4 sm:p-6 dark:bg-card/80 overflow-hidden h-64 sm:h-100 lg:h-50">
+          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+            <div className="relative h-auto min-h-[16rem] overflow-hidden rounded-xl border border-border/60 bg-background/80 p-4 sm:min-h-[20rem] sm:p-6 dark:bg-card/80">
               <div className="absolute inset-0 -z-0 bg-gradient-to-br from-primary/30 via-primary/10 to-highlight/20 opacity-80 dark:opacity-0 pointer-events-none" />
               {/* additional pink glare for top-right, visible in dark mode and moved slightly upward */}
               <div className="absolute -right-6 -top-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/40 to-transparent blur-3xl opacity-70 dark:opacity-40 pointer-events-none -z-0" />
@@ -642,9 +651,10 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+          </div>
         </section>
 
-        <section id="features" className="py-12 sm:py-16">
+        <section id="features" className="scroll-mt-20 py-12 sm:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">{translations.features.title[language]}</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
@@ -653,7 +663,7 @@ export default function LandingPage() {
             <p className="mt-4 text-muted-foreground">{translations.features.subtitle[language]}</p>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mx-auto mt-10 grid max-w-6xl gap-5 md:grid-cols-3">
             {featureCards.map((feature, index) => {
               const Icon = feature.icon
 
@@ -677,7 +687,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="portal" className="py-12 sm:py-16">
+        <section id="portal" className="scroll-mt-20 py-12 sm:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-secondary">{translations.portal.title[language]}</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
@@ -685,7 +695,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-2">
             {portalCards.map((portal) => {
               const Icon = portal.icon
 
@@ -718,7 +728,15 @@ export default function LandingPage() {
                         ))}
                       </ul>
 
-                      <Button asChild className="mt-6 rounded-full px-6">
+                      <Button
+                        asChild
+                        className="mt-6 rounded-full px-6"
+                        onClick={() =>
+                          captureEvent(POSTHOG_EVENTS.PORTAL_SELECTED, {
+                            portal_type: portal.href === "/student-login" ? "student" : "school",
+                          })
+                        }
+                      >
                         <Link href={portal.href}>
                           {portal.cta}
                           <ArrowRight className="h-4 w-4" />
@@ -732,7 +750,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <div id="reviews" className="py-8 sm:py-12">
+        <div id="reviews" className="scroll-mt-20 py-8 sm:py-12">
           <ReviewsSection
             eyebrow={translations.testimonials.eyebrow[language]}
             title={translations.testimonials.title[language]}

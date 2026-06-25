@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { generateAiQuiz } from "@/services/gemini-api"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 interface QuizOption {
   id: string
@@ -676,6 +678,7 @@ export function AiQuizGenerator({
       try {
         const generated = await generateAiQuiz(selectedSubject, syllabus, numQuestions)
         if (generated && generated.length > 0) {
+          captureEvent(POSTHOG_EVENTS.AI_QUIZ_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_questions: generated.length })
           onQuestionsGenerated(generated)
           return
         }
@@ -742,6 +745,7 @@ export function AiQuizGenerator({
         }
       }
 
+      captureEvent(POSTHOG_EVENTS.AI_QUIZ_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_questions: questions.length })
       onQuestionsGenerated(questions)
     } catch (err) {
       setError("Failed to generate questions. Please try again.")

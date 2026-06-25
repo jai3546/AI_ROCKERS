@@ -21,12 +21,15 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { VoiceCommand } from "@/components/voice-command"
 import { WeeklyProgress } from "@/components/school/weekly-progress"
 import { StudentManagement } from "@/components/school/student-management"
 import { StudentDetailsDialog } from "@/components/school/student-details-dialog"
 import { SchoolDetailsDialog } from "@/components/school-details-dialog"
 import { useRouter } from "next/navigation"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -166,10 +169,8 @@ export default function AdminDashboardPage() {
       link.setAttribute("download", filename)
       document.body.appendChild(link)
 
-      // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_students" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting student reports:", error)
@@ -207,8 +208,7 @@ export default function AdminDashboardPage() {
 
       // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_performance" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting performance data:", error)
@@ -246,8 +246,7 @@ export default function AdminDashboardPage() {
 
       // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_attendance" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting attendance records:", error)
@@ -272,8 +271,8 @@ export default function AdminDashboardPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-card border-b border-border dark:border-border shadow-sm">
-        <div className="container flex items-center justify-between h-16 px-4">
+      <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
+        <div className="page-container flex h-16 items-center justify-between">
           <div
             className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
             onClick={() => setShowSchoolDetails(true)}
@@ -298,7 +297,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="container px-4 py-6 space-y-8">
+      <div className="page-container space-y-8 py-6">
         {/* Overview Section */}
         <section id="overview-section">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -353,6 +352,78 @@ export default function AdminDashboardPage() {
               </CardContent>
             </Card>
           </div>
+        </section>
+
+        {/* Class Learning Intelligence Summary Section */}
+        <section id="learning-intelligence-section">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Brain size={20} className="text-indigo-500" />
+            Class Learning Intelligence Summary
+          </h2>
+          <Card className="bg-card dark:bg-card text-card-foreground dark:text-card-foreground border-border border">
+            <CardHeader className="bg-indigo-500/5 dark:bg-indigo-500/10 pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                Class Cognitive Mastery Overview
+              </CardTitle>
+              <CardDescription>
+                Aggregated concept-level intelligence from 186 active student profiles.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Avg Mastery */}
+                <div className="flex flex-col items-center justify-center p-4 bg-indigo-50/20 dark:bg-indigo-950/10 rounded-lg border border-indigo-100 dark:border-indigo-950">
+                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Average Class Mastery</span>
+                  <span className="text-5xl font-black text-indigo-600 dark:text-indigo-400 mt-2">74.2%</span>
+                  <span className="text-xs text-muted-foreground mt-2 text-center">Calculated across 18 learning concepts.</span>
+                </div>
+
+                {/* Strongest Concepts */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Strongest Concepts
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">States of Matter</span>
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">86.4% avg</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">Algebra Foundations</span>
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">81.1% avg</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">Basic Geometry</span>
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">79.3% avg</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weakest Concepts */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Weakest Concepts
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">Literature</span>
+                      <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px]">48.7% avg</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">Photosynthesis</span>
+                      <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px]">44.1% avg</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-900 rounded border border-border">
+                      <span className="text-xs font-semibold">Quadratic Equations</span>
+                      <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px]">39.2% avg</Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Weekly Progress Section */}
@@ -416,6 +487,7 @@ export default function AdminDashboardPage() {
                     });
                     setDetailsType("emotional");
                     setShowDetailsDialog(true);
+                    captureEvent(POSTHOG_EVENTS.STUDENT_PROGRESS_VIEWED, { student_id: "s001", metric_type: "emotional" });
                   }}
                 >
                   {translations.viewDetails[language]}
@@ -492,6 +564,7 @@ export default function AdminDashboardPage() {
                     });
                     setDetailsType("quiz");
                     setShowDetailsDialog(true);
+                    captureEvent(POSTHOG_EVENTS.STUDENT_PROGRESS_VIEWED, { student_id: "s001", metric_type: "quiz" });
                   }}
                 >
                   {translations.viewDetails[language]}
@@ -612,6 +685,19 @@ export default function AdminDashboardPage() {
             <span className="sr-only">Progress</span>
             <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
               Weekly Progress
+            </div>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative group text-indigo-600 dark:text-indigo-400"
+            onClick={() => document.getElementById('learning-intelligence-section')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <Brain size={20} />
+            <span className="sr-only">Learning Intelligence</span>
+            <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
+              Learning Intelligence
             </div>
           </Button>
 

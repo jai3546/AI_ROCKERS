@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { generateAiFlashcards } from "@/services/gemini-api"
 import { Flashcard } from "@/data/flashcards"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 interface AIFlashcardGeneratorProps {
   onFlashcardsGenerated: (flashcards: Flashcard[]) => void
@@ -55,6 +57,7 @@ export function AIFlashcardGenerator({
       try {
         const generated = await generateAiFlashcards(selectedSubject, syllabus, numFlashcards)
         if (generated && generated.length > 0) {
+          captureEvent(POSTHOG_EVENTS.AI_FLASHCARD_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_cards: generated.length })
           onFlashcardsGenerated(generated)
           return
         }
@@ -376,6 +379,7 @@ export function AIFlashcardGenerator({
         }
       }
 
+      captureEvent(POSTHOG_EVENTS.AI_FLASHCARD_GENERATED, { topic: selectedSubject, subject: selectedSubject, num_cards: flashcards.length })
       onFlashcardsGenerated(flashcards)
     } catch (err) {
       setError("Failed to generate flashcards. Please try again.")
