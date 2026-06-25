@@ -477,11 +477,11 @@ Subject: ${card.subject}
                 className="w-full"
               >
                 <Card
-                  className="w-full aspect-[4/3] cursor-pointer"
+                  className="w-full aspect-[4/3] cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-purple-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 border-2 border-pink-200 dark:border-purple-700 "
                   onClick={handleFlip}
                 >
                   <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
-                    <div className="text-xl font-medium mb-4">
+                    <div className="text-xl font-medium mb-4 text-primary">
                       {flipped ? currentCard.back : currentCard.front}
                     </div>
                     <div className="text-xs text-muted-foreground mt-auto">
