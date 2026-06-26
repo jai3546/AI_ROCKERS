@@ -119,7 +119,6 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
   }
 
   const sorted = topologicalSort(lessonIds, prereqMap)
-  const sorted = topologicalSort(lessonIds, prereqMap)
   const sortedIndex = new Map(sorted.map((id, idx) => [id, idx]))
   const sortedWithStableOrder = [...sorted].sort((a, b) => {
     const prereqsA = (prereqMap.get(a) || []).length
