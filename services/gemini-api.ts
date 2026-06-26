@@ -1,5 +1,6 @@
 
 import { LearningStyleProfile, generateLearningStylePrompt } from './learning-style-service';
+import { generateFlashcardsFromSourceContent, generateQuizFromSourceContent } from './content-quiz-generator';
 import { getLearnerStatusLabel } from './learner-status-service';
 
 interface GeminiResponse {
@@ -368,13 +369,27 @@ export function extractArray(parsed: any): any[] | null {
   return null;
 }
 
-export async function generateAiQuiz(subject: string, syllabus: string = "General", numQuestions: number = 5): Promise<any[]> {
+export interface AiContentGenerationOptions {
+  topic?: string
+  sourceContent?: string
+}
 
-  
+export async function generateAiQuiz(
+  subject: string,
+  syllabus: string = "General",
+  numQuestions: number = 5,
+  options: AiContentGenerationOptions = {}
+): Promise<any[]> {
+  const { topic, sourceContent } = options
+  const resolvedTopic = topic?.trim() || subject
+
     try {
+      const contentSection = sourceContent?.trim()
+        ? `\n\nIMPORTANT: Base every question ONLY on the source material below. Do NOT use generic textbook facts outside this content.\nTopic: "${resolvedTopic}"\nSubject context: "${subject}"\n\nSOURCE MATERIAL:\n${sourceContent.trim().slice(0, 8000)}`
+        : `\n\nGenerate ${numQuestions} questions for the topic "${resolvedTopic}" in ${subject}.`
 
       const systemPrompt = `You are an expert school teacher creating educational quizzes for K-12 students. 
-You must respond with a JSON array containing ${numQuestions} multiple-choice questions for the subject "${subject}" under the "${syllabus}" syllabus.
+You must respond with a JSON array containing ${numQuestions} multiple-choice questions${sourceContent?.trim() ? " derived strictly from the provided source material" : ` for the subject "${subject}" under the "${syllabus}" syllabus`}.
 Each question object must match:
 interface QuizQuestion {
   question: string;
@@ -383,7 +398,7 @@ interface QuizQuestion {
   topic: string;
 }
 Respond ONLY with a valid JSON array. Do NOT wrap in markdown quotes.`;
-      const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numQuestions} questions for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
+      const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + contentSection }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
       const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {
         const data = await response.json();
@@ -411,25 +426,38 @@ Respond ONLY with a valid JSON array. Do NOT wrap in markdown quotes.`;
             }
           }
         }
-        if (arrayData && arrayData.length > 0) return arrayData.map((q, idx) => ({ id: `ai-quiz-${idx}-${Date.now()}`, question: q.question, options: q.options, points: q.points || 20, subject, syllabus: syllabus as any, topic: q.topic || subject }));
+        if (arrayData && arrayData.length > 0) return arrayData.map((q, idx) => ({ id: `ai-quiz-${idx}-${Date.now()}`, question: q.question, options: q.options, points: q.points || 20, subject, syllabus: syllabus as any, topic: q.topic || resolvedTopic }));
       }
     } catch (e) { console.error("Failed to generate AI quiz:", e); }
-  
+
+  if (sourceContent?.trim()) {
+    const local = generateQuizFromSourceContent(subject, resolvedTopic, sourceContent, syllabus, numQuestions)
+    if (local.length > 0) return local
+  }
+
   return [];
 }
 
-export async function generateAiFlashcards(subject: string, syllabus: string = "General", numFlashcards: number = 5): Promise<any[]> {
+export async function generateAiFlashcards(
+  subject: string,
+  syllabus: string = "General",
+  numFlashcards: number = 5,
+  options: AiContentGenerationOptions = {}
+): Promise<any[]> {
+  const { topic, sourceContent } = options
+  const resolvedTopic = topic?.trim() || subject
 
-  
-    
     try {
+      const contentSection = sourceContent?.trim()
+        ? `\n\nIMPORTANT: Base every flashcard ONLY on the source material below. Do NOT use generic textbook facts outside this content.\nTopic: "${resolvedTopic}"\nSubject context: "${subject}"\n\nSOURCE MATERIAL:\n${sourceContent.trim().slice(0, 8000)}`
+        : `\n\nGenerate ${numFlashcards} flashcards for ${subject}.`
 
       const systemPrompt = `You are a high-quality educational flashcard generator.
-        You must respond with a JSON array containing ${numFlashcards} flashcards for the subject "${subject}" under the "${syllabus}" syllabus.
+        You must respond with a JSON array containing ${numFlashcards} flashcards${sourceContent?.trim() ? " derived strictly from the provided source material" : ` for the subject "${subject}" under the "${syllabus}" syllabus`}.
         Each flashcard must match:
         interface Flashcard { front: string; back: string; }
         Respond ONLY with a valid JSON array. Do NOT wrap in markdown quotes.`;
-      const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + `\n\nGenerate ${numFlashcards} flashcards for ${subject}.` }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
+      const requestBody = { contents: [{ role: "user", parts: [{ text: systemPrompt + contentSection }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 4096, responseMimeType: "application/json" } };
       const response = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.ok) {
         const data = await response.json();
@@ -449,6 +477,11 @@ export async function generateAiFlashcards(subject: string, syllabus: string = "
         if (arrayData && arrayData.length > 0) return arrayData.map((card, idx) => ({ id: `ai-card-${idx}-${Date.now()}`, front: card.front, back: card.back, subject, syllabus: syllabus as any }));
       }
     } catch (e) { console.error("Failed to generate AI flashcards:", e); }
-  
+
+  if (sourceContent?.trim()) {
+    const local = generateFlashcardsFromSourceContent(subject, resolvedTopic, sourceContent, syllabus, numFlashcards)
+    if (local.length > 0) return local
+  }
+
   return [];
 }

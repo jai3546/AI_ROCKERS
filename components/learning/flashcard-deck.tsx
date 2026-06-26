@@ -30,6 +30,8 @@ interface FlashcardDeckProps {
   subject?: string
   defaultShowAiGenerator?: boolean
   defaultAiTopic?: string
+  defaultSourceContent?: string
+  autoGenerateFromContent?: boolean
 }
 
 const SUBJECTS_CONFIG = {
@@ -72,7 +74,9 @@ export function FlashcardDeck({
   syllabus = "General",
   subject = "all",
   defaultShowAiGenerator = false,
-  defaultAiTopic = ""
+  defaultAiTopic = "",
+  defaultSourceContent = "",
+  autoGenerateFromContent = false,
 }: FlashcardDeckProps & { onFlashcardsGenerated?: (cards: Flashcard[]) => void }) {
   const [allCardsList, setAllCardsList] = useState<Flashcard[]>(cards)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -398,6 +402,9 @@ Subject: ${card.subject}
             syllabus={syllabus}
             defaultSubject={selectedSubject === "all" ? "" : selectedSubject}
             defaultCustomSubject={defaultAiTopic}
+            defaultTopic={defaultAiTopic}
+            defaultSourceContent={defaultSourceContent}
+            autoGenerate={autoGenerateFromContent}
           />
         </div>
       ) : (

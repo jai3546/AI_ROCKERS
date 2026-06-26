@@ -114,11 +114,14 @@ export default function StudentDashboardPage() {
   const [showFlashcards, setShowFlashcards] = useState(false)
   const [showSummaries, setShowSummaries] = useState(false)
   const [activeQuizTopic, setActiveQuizTopic] = useState<string | undefined>(undefined)
+  const [activeQuizSourceContent, setActiveQuizSourceContent] = useState<string | undefined>(undefined)
   const [showQuizAi, setShowQuizAi] = useState<boolean>(false)
   const [activeFlashcardTopic, setActiveFlashcardTopic] = useState<string | undefined>(undefined)
+  const [activeFlashcardSourceContent, setActiveFlashcardSourceContent] = useState<string | undefined>(undefined)
   const [showFlashcardAi, setShowFlashcardAi] = useState<boolean>(false)
   const [activeFlashcardSubject, setActiveFlashcardSubject] = useState<string | undefined>(undefined)
   const [showLearningOptions, setShowLearningOptions] = useState(false)
+  const [showCourses, setShowCourses] = useState(false)
   const [showTextbooks, setShowTextbooks] = useState(false)
   const [showMindMap, setShowMindMap] = useState(false)
   const [activeMindMapTopic, setActiveMindMapTopic] = useState<string>("Photosynthesis")
@@ -1864,11 +1867,14 @@ export default function StudentDashboardPage() {
                   subject={activeQuizSubject}
                   defaultShowAiGenerator={showQuizAi}
                   defaultAiTopic={activeQuizTopic}
+                  defaultSourceContent={activeQuizSourceContent}
+                  autoGenerateFromContent={Boolean(activeQuizSourceContent)}
                   onComplete={handleQuizComplete}
                   onClose={() => {
                     setShowQuiz(false)
                     setActiveQuizSubject(undefined)
                     setActiveQuizTopic(undefined)
+                    setActiveQuizSourceContent(undefined)
                     setShowQuizAi(false)
                   }}
                 />
@@ -1910,11 +1916,14 @@ export default function StudentDashboardPage() {
                   subject={activeFlashcardSubject || flashcardDetails.subject}
                   defaultShowAiGenerator={showFlashcardAi}
                   defaultAiTopic={activeFlashcardTopic}
+                  defaultSourceContent={activeFlashcardSourceContent}
+                  autoGenerateFromContent={Boolean(activeFlashcardSourceContent)}
                   onDeckComplete={handleFlashcardDeckComplete}
                   onClose={() => {
                     setShowFlashcards(false)
                     setActiveFlashcardSubject(undefined)
                     setActiveFlashcardTopic(undefined)
+                    setActiveFlashcardSourceContent(undefined)
                     setShowFlashcardAi(false)
                     // Log flashcard activity to Personalized Learning Memory
                     try {
@@ -1973,17 +1982,19 @@ export default function StudentDashboardPage() {
                   syllabus={selectedSyllabus}
                   subject={summaryDetails.subject === "all" ? undefined : summaryDetails.subject}
                   onClose={() => setShowSummaries(false)}
-                  onTriggerQuiz={(subject, topic) => {
+                  onTriggerQuiz={(subject, topic, sourceContent) => {
                     setShowSummaries(false)
                     setActiveQuizSubject(subject)
                     setActiveQuizTopic(topic)
+                    setActiveQuizSourceContent(sourceContent)
                     setShowQuizAi(true)
                     setShowQuiz(true)
                   }}
-                  onTriggerFlashcards={(subject, topic) => {
+                  onTriggerFlashcards={(subject, topic, sourceContent) => {
                     setShowSummaries(false)
                     setActiveFlashcardSubject(subject)
                     setActiveFlashcardTopic(topic)
+                    setActiveFlashcardSourceContent(sourceContent)
                     setShowFlashcardAi(true)
                     setShowFlashcards(true)
                   }}
@@ -2105,9 +2116,40 @@ export default function StudentDashboardPage() {
                 setActiveMindMapSubject("Science")
                 setShowMindMap(true)
               }}
+              onSelectCourses={() => {
+                setShowLearningOptions(false)
+                setShowCourses(true)
+              }}
               language={language}
             />
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Course Builder */}
+      <AnimatePresence>
+        {showCourses && (
+          <CourseHub
+            onClose={() => setShowCourses(false)}
+            syllabus={selectedSyllabus}
+            language={language}
+            onTriggerQuiz={({ subject, topic, sourceContent }) => {
+              setShowCourses(false)
+              setActiveQuizSubject(subject)
+              setActiveQuizTopic(topic)
+              setActiveQuizSourceContent(sourceContent)
+              setShowQuizAi(true)
+              setShowQuiz(true)
+            }}
+            onTriggerFlashcards={({ subject, topic, sourceContent }) => {
+              setShowCourses(false)
+              setActiveFlashcardSubject(subject)
+              setActiveFlashcardTopic(topic)
+              setActiveFlashcardSourceContent(sourceContent)
+              setShowFlashcardAi(true)
+              setShowFlashcards(true)
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -2291,16 +2333,16 @@ export default function StudentDashboardPage() {
       </AnimatePresence>
 
       {/* Reward Popup */}
-      {showReward && (() => {
-        const Component = RewardPopup as any;
-        return (
-          <Component
-            onOpenChange={setShowReward}
-            xpEarned={quizScore.earned * 5}
-            badgeUnlocked={selectedBadge}
-          />
-        );
-      })()}
+      {showReward && (
+        <RewardPopup 
+          isOpen={showReward} 
+          onClose={() => setShowReward(false)} 
+          title={selectedBadge?.title || "Achievement Unlocked!"}
+          description={selectedBadge?.description || "You earned a new reward."}
+          xpAmount={quizScore?.earned ? quizScore.earned * 5 : 50} 
+          language={language}
+        />
+      )}
 
       {/* Mobile Sticky Tab Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-border shadow-lg flex justify-around items-center h-16 md:hidden z-30 px-2">
