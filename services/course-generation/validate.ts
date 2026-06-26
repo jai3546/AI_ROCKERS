@@ -133,7 +133,6 @@ export function buildLearningPath(modules: CourseModule[]): string[] {
     return (sortedIndex.get(a) ?? 0) - (sortedIndex.get(b) ?? 0)
   })
   return sortedWithStableOrder
-  return sortedWithStableOrder
 }
 
 export function findEssentialTopics(modules: CourseModule[]): string[] {
