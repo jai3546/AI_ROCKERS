@@ -93,10 +93,17 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
   }))
 
   return (
+<<<<<<< HEAD
     <div className="bg-background/40 backdrop-blur-sm rounded-xl w-full max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 border-b border-border/40">
         <h2 className="text-2xl font-bold flex items-center gap-2">
+=======
+    <div className="bg-background rounded-xl max-h-[85vh] overflow-y-auto w-full max-w-4xl px-8 py-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="flex items-center gap-2 text-3xl font-bold">
+>>>>>>> ae321b2 (Refine study session history and flashcard UI)
           <TrendingUp size={22} className="text-primary" />
           Study Session Performance
         </h2>
@@ -151,6 +158,7 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* SECONDARY COLUMN: Summary & Weekly Insights (Right on Desktop, Top on Mobile) */}
         <div className="lg:col-span-5 space-y-6 order-1 lg:order-2">
           
@@ -183,14 +191,47 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
               </Card>
             </div>
           </div>
+=======
+      {/* Focus Trend Chart */}
+      <Card className="mb-8 border border-border shadow-sm rounded-xl">
+        <CardHeader className="px-6 pt-5 pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
+            <TrendingUp size={14} className="text-primary" />
+            Weekly Learning Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-2 pt-4">
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={chartData}
+             margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+              <Tooltip
+                formatter={(value: number) => [`${value}%`, "Focus Score"]}
+              />
+              <Line
+                type="monotone"
+                dataKey="focus"
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                dot={{ fill: "#6366f1", r: 5}}
+                activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2,}}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+>>>>>>> ae321b2 (Refine study session history and flashcard UI)
 
       {/* Session List */}
       <div className="space-y-4">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
+        <h3 className="font-semibold text-sm uppercase tracking-wider">
           Recent Sessions
         </h3>
         {sessions.map((session) => (
-          <Card key={session.id} className="border border-border/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <Card className="rounded-xl mb-6 border border-border/60 shadow-md transition-shadow duration-300 hover:-translate-y-1 hover:shadow-lg">
             <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div
