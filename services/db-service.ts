@@ -165,7 +165,8 @@ export async function saveEmotionLog(data: {
   confidence: number;
   attentionScore: number;
 }) {
-  const result = await prisma.$transaction(async (tx) => {
+  // FIXED: Returning the transaction result directly eliminates the out-of-scope variable crash
+  return await prisma.$transaction(async (tx) => {
     const log = await tx.emotionLog.create({
       data: {
         studentId: data.studentId,
@@ -182,8 +183,6 @@ export async function saveEmotionLog(data: {
 
     return log;
   });
-
-  return log;
 }
 
 /**
@@ -260,6 +259,7 @@ export async function updateTopicMastery(
  * Records a quiz attempt, awards XP, and handles student leveling up.
  */
 export async function recordQuizAttempt(studentId: string, quizId: string, score: number) {
+  // FIXED: Returning the transaction block results safely
   return await prisma.$transaction(async (tx) => {
     const attempt = await tx.quizAttempt.create({
       data: {
@@ -296,8 +296,6 @@ export async function recordQuizAttempt(studentId: string, quizId: string, score
 
     return attempt;
   });
-
-  return attempt;
 }
 
 /**
@@ -337,6 +335,7 @@ export async function awardAchievement(studentId: string, achievementId: string)
     return null;
   }
 
+  // FIXED: Returning the transaction result cleanly removes out-of-scope variables
   return await prisma.$transaction(async (tx) => {
     const unlock = await tx.studentAchievement.create({
       data: {
@@ -374,8 +373,6 @@ export async function awardAchievement(studentId: string, achievementId: string)
 
     return unlock;
   });
-
-  return unlock;
 }
 
 /**
@@ -390,7 +387,7 @@ async function addXpToStudent(studentId: string, xpAmount: number) {
 
   let newXp = profile.xpPoints + xpAmount;
   let newLevel = profile.currentLevel;
-  let requiredXp = newLevel * 1000; // Formula: Level 1 requires 1000, Level 2 requires 2000, etc.
+  let requiredXp = newLevel * 1000;
 
   while (newXp >= requiredXp) {
     newXp -= requiredXp;
