@@ -2,21 +2,9 @@
 
 import type React from "react"
 import { motion } from "framer-motion"
-import {
-  Bot,
-  Brain,
-  Lightbulb,
-  Mic,
-  Send,
-  User,
-  BookOpen,
-  Atom,
-  Eye,
-  Headphones,
-  Activity,
-  Users,
-} from "lucide-react"
+import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
@@ -38,6 +26,7 @@ interface Message {
   content: string
   sender: "user" | "bot"
   timestamp: Date
+  bookmarked?: boolean
 }
 
 interface AiTutorChatProps {
@@ -125,6 +114,7 @@ export function AiTutorChat({
       timestamp: new Date(),
     },
   ])
+  const [bookmarks, setBookmarks] = useState<Message[]>([])
 
   const [inputValue, setInputValue] = useState("")
   const [isListening, setIsListening] = useState(false)
@@ -177,6 +167,18 @@ export function AiTutorChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+  useEffect(() => {
+    try {
+      const savedBookmarks = localStorage.getItem("ai-bookmarks")
+
+      if (savedBookmarks) {
+        setBookmarks(JSON.parse(savedBookmarks))
+      }
+    } catch (error) {
+      console.error("Failed to load bookmarks:", error)
+      localStorage.removeItem("ai-bookmarks")
+    }
+  }, [])
 
   useEffect(() => {
     if (emotionState) setCurrentEmotionState(emotionState)
@@ -311,6 +313,32 @@ export function AiTutorChat({
       handleSendMessage()
     }
   }
+
+  const handleBookmark = (message: Message) => {
+  if (message.sender !== "bot") return
+
+  const alreadyBookmarked = bookmarks.some(
+    (bookmark) => bookmark.id === message.id
+  )
+
+  if (alreadyBookmarked) return
+
+  const updatedBookmarks = [...bookmarks, message]
+
+  setBookmarks(updatedBookmarks)
+
+localStorage.setItem(
+  "ai-bookmarks",
+  JSON.stringify(updatedBookmarks)
+)
+console.log("Bookmark clicked", updatedBookmarks)
+
+toast({
+  title: "Bookmarked",
+  description:
+    "AI response saved successfully. Visit the Bookmarks page to view your saved responses.",
+})
+}
 
   const handleSuggestionClick = (suggestion: string) => {
     handleSendMessage(suggestion)
@@ -537,14 +565,42 @@ export function AiTutorChat({
                   </div>
 
                   <div
-                    className={`p-3 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-secondary text-secondary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <MessageContent content={message.content} />
-                  </div>
+  className={`p-3 rounded-lg ${
+    message.sender === "user"
+      ? "bg-secondary text-secondary-foreground"
+      : "bg-muted text-foreground"
+  }`}
+>
+  <MessageContent content={message.content} />
+
+  {/* Bookmark button (only for AI messages) */}
+  {message.sender === "bot" && (
+    <div className="flex justify-end mt-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => handleBookmark(message)}
+      >
+        <Bookmark size={16} />
+      </Button>
+    </div>
+  )}
+
+  <div className="text-[10px] opacity-60 mt-1 text-right">
+    {new Intl.DateTimeFormat(
+      language === "en"
+        ? "en-US"
+        : language === "hi"
+        ? "hi-IN"
+        : "te-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    ).format(message.timestamp)}
+  </div>
+</div>
                 </div>
               </div>
             ))}

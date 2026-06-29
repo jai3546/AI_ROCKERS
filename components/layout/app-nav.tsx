@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, BookOpen, FileText, Download, MessageSquare, Brain, Trophy, LogOut, TrendingUp, BookOpen as Learn } from "lucide-react"
+import { Home, BookOpen, FileText, Download, MessageSquare, Brain, Trophy, LogOut, TrendingUp, Bookmark, BookOpen as Learn } from "lucide-react"
 
 interface AppNavProps {
   user?: { avatar?: string } | null
@@ -44,6 +44,13 @@ export function AppSidebar({ user, onLogout, onOpenQuiz, onOpenFlashcards, onOpe
         <Button variant="ghost" size="icon" onClick={() => router.push("/student-dashboard#achievements-section")}>
           <Trophy size={20} />
         </Button>
+        <Button
+  variant="ghost"
+  size="icon"
+  onClick={() => router.push("/bookmarks")}
+>
+  <Bookmark size={20} />
+</Button>
       </div>
 
       <Button variant="ghost" size="icon" onClick={onLogout}>
@@ -74,10 +81,23 @@ export function AppBottomNav({ onOpenAiTutor }: { onOpenAiTutor?: () => void }) 
         <MessageSquare size={20} />
         <span className="text-xs">Chat</span>
       </Button>
-      <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => router.push("/session-history")}>
-        <TrendingUp size={20} />
-        <span className="text-xs">History</span>
-      </Button>
+      <Button
+  variant="ghost"
+  className="flex flex-col items-center gap-1 h-auto py-2 flex-1"
+  onClick={() => router.push("/bookmarks")}
+>
+  <Bookmark size={20} />
+  <span className="text-xs">Bookmarks</span>
+</Button>
+
+<Button
+  variant="ghost"
+  className="flex flex-col items-center gap-1 h-auto py-2 flex-1"
+  onClick={() => router.push("/session-history")}
+>
+  <TrendingUp size={20} />
+  <span className="text-xs">History</span>
+</Button>
     </nav>
   )
 }
