@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
+import { Toaster } from "@/components/ui/toaster"
 import Footer from "@/components/footer" // 1. Imported the Footer here
 
 const inter = Inter({ subsets: ["latin"] })
@@ -27,15 +28,16 @@ export default function RootLayout({
       {/* 2. Added flex, flex-col, and min-h-screen to the body layout */}
       <body className={`${inter.className} site-tint flex flex-col min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-          <div className="flex-grow">
-            {children}
-          </div>
-          
-          <ServiceWorkerRegistration />
-          
-          {/* 4. Placed the Footer component at the bottom */}
-          <Footer />
-        </ThemeProvider>
+  <div className="flex-grow">
+    {children}
+  </div>
+
+  <ServiceWorkerRegistration />
+
+  <Toaster />
+
+  <Footer />
+</ThemeProvider>
       </body>
     </html>
   )

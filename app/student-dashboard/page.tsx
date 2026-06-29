@@ -30,6 +30,7 @@ import {
   Camera,
   RefreshCw,
   TrendingUp,
+  Bookmark,
   ArrowRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -1164,6 +1165,19 @@ export default function StudentDashboardPage() {
               Achievements
             </div>
           </Button>
+          <Button
+  variant="ghost"
+  size="icon"
+  className="relative group"
+  onClick={() => router.push("/bookmarks")}
+>
+  <Bookmark size={20} />
+  <span className="sr-only">Bookmarks</span>
+
+  <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
+    Bookmarks
+  </div>
+</Button>
         </div>
 
         <Button
