@@ -4,6 +4,8 @@
  * into visual, auditory, or kinesthetic learners and adapt content accordingly.
  */
 
+import { getLearnerStatusLabel } from './learner-status-service';
+
 export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'unknown';
 
 export interface LearningStyleProfile {
@@ -229,20 +231,17 @@ export function generateLearningStylePrompt(
   }
   
   if (emotionData) {
-    prompt += `The student currently appears ${emotionData.emotion}`;
-    
+    const learnerStatus = getLearnerStatusLabel(emotionData) ?? 'actively learning';
+    prompt += `The student's current learning status is: ${learnerStatus}`;
+
     if (emotionData.fatigueScore !== undefined && emotionData.fatigueScore > 60) {
-      prompt += ` and may be experiencing fatigue`;
+      prompt += ` and their energy may be running low`;
     }
-    
+
     if (emotionData.attentionScore !== undefined) {
-      if (emotionData.attentionScore < 40) {
-        prompt += `. Their attention level is low`;
-      } else if (emotionData.attentionScore > 70) {
-        prompt += `. Their attention level is high`;
-      }
+      prompt += `. Their focus level is approximately ${emotionData.attentionScore}%`;
     }
-    
+
     prompt += '. ';
   }
   

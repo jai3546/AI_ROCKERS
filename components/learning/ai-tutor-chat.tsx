@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
+import { LearnerStatusBadge } from "@/components/learning/learner-status-badge"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile, type LearningStyle } from "@/services/learning-style-service"
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
@@ -26,6 +27,7 @@ interface AiTutorChatProps {
   onClose?: () => void
   subject?: Subject
   emotionState?: EmotionState
+  emotionTrackingActive?: boolean
   learningStyle?: LearningStyleProfile
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
@@ -76,6 +78,7 @@ export function AiTutorChat({
   onClose,
   subject = "general",
   emotionState,
+  emotionTrackingActive = false,
   learningStyle = initialLearningStyleProfile,
   onLearningStyleUpdate,
   studentId = "S001",
@@ -332,14 +335,11 @@ export function AiTutorChat({
                       </div>
                     )}
 
-                    {currentEmotionState && (
-                      <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full text-[11px] font-medium">
-                        <span className="capitalize">{currentEmotionState.emotion}</span>
-                        {currentEmotionState.fatigueScore !== undefined && currentEmotionState.fatigueScore > 50 && (
-                          <span className="text-destructive font-semibold">• Fatigue</span>
-                        )}
-                      </div>
-                    )}
+                    <LearnerStatusBadge
+                      status={currentEmotionState}
+                      language={language}
+                      trackingActive={emotionTrackingActive}
+                    />
                   </div>
                 </div>
               </div>

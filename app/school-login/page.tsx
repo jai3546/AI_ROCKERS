@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { VoiceCommand } from "@/components/voice-command"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 export default function SchoolLoginPage() {
   const router = useRouter()
@@ -64,15 +66,15 @@ export default function SchoolLoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    // For demo purposes, navigate to admin dashboard
+    captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", role: "admin" })
     router.push("/admin-dashboard")
   }
 
   const handleDemoLogin = () => {
     setSchoolCode("ADMIN123")
     setAdminPin("1234")
-    // Auto login after a short delay
     setTimeout(() => {
+      captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", role: "admin" })
       router.push("/admin-dashboard")
     }, 500)
   }

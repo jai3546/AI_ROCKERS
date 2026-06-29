@@ -24,6 +24,8 @@ import { LanguageSelector } from "@/components/language-selector"
 import { VoiceCommand } from "@/components/voice-command"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 type Language = "en" | "hi" | "te"
 
@@ -40,9 +42,12 @@ export default function LandingPage() {
     if (storedLanguage) {
       setLanguage(storedLanguage)
     }
+
+    captureEvent(POSTHOG_EVENTS.LANDING_PAGE_VIEWED, { language: storedLanguage ?? "en" })
   }, [])
 
   const handleLanguageChange = (newLanguage: Language) => {
+    captureEvent(POSTHOG_EVENTS.LANGUAGE_CHANGED, { from: language, to: newLanguage })
     setLanguage(newLanguage)
 
     if (typeof window !== "undefined") {
@@ -723,7 +728,15 @@ export default function LandingPage() {
                         ))}
                       </ul>
 
-                      <Button asChild className="mt-6 rounded-full px-6">
+                      <Button
+                        asChild
+                        className="mt-6 rounded-full px-6"
+                        onClick={() =>
+                          captureEvent(POSTHOG_EVENTS.PORTAL_SELECTED, {
+                            portal_type: portal.href === "/student-login" ? "student" : "school",
+                          })
+                        }
+                      >
                         <Link href={portal.href}>
                           {portal.cta}
                           <ArrowRight className="h-4 w-4" />
