@@ -289,7 +289,8 @@ console.log("Bookmark clicked", updatedBookmarks)
 
 toast({
   title: "Bookmarked",
-  description: "AI response saved successfully.",
+  description:
+    "AI response saved successfully. Visit the Bookmarks page to view your saved responses.",
 })
 }
 
