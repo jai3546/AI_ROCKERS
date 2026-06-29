@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Clock, Brain, Smile, TrendingUp, X } from "lucide-react"
+import { Clock, Brain, Smile, TrendingUp, X, BookOpen } from "lucide-react"
 
 interface SessionRecord {
   id: string
@@ -25,7 +25,15 @@ const EMOTION_COLORS: Record<string, string> = {
   excited:   "#8b5cf6",
   unknown:   "#d1d5db",
 }
-
+const EMOTION_EMOJIS: Record<string, string> = {
+  focused: "🎯",
+  happy: "😊",
+  confused: "😕",
+  bored: "😴",
+  sad: "😔",
+  excited: "🤩",
+  unknown: "😐",
+}
 const SAMPLE_SESSIONS: SessionRecord[] = [
   { id: "1", date: "Mon", duration: 45, dominantEmotion: "focused",  focusScore: 82, activitiesCompleted: 3 },
   { id: "2", date: "Tue", duration: 30, dominantEmotion: "happy",    focusScore: 75, activitiesCompleted: 2 },
@@ -85,24 +93,12 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
   }))
 
   return (
-    <div className="bg-background/40 backdrop-blur-sm rounded-xl w-full max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-border/40">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <TrendingUp size={22} className="text-primary" />
-          Study Session Performance
-        </h2>
-        {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-accent/50">
-            <X size={18} />
-          </Button>
-        )}
+  
+  <div className="bg-background rounded-xl max-h-[85vh] overflow-y-auto w-full max-w-4xl px-8 py-6">
+      <div className="flex items-center justify-between mb-8">
       </div>
 
-      {/* Main Responsive Grid Container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* PRIMARY COLUMN: Recent Sessions (Left on Desktop, Bottom on Mobile via HTML source order or ordering) */}
         <div className="lg:col-span-7 space-y-4 order-2 lg:order-1">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
@@ -112,7 +108,7 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
               {sessions.length} recorded entries
             </Badge>
           </div>
-          
+
           <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
             {sessions.map((session) => (
               <Card key={session.id} className="border border-border/40 bg-card/60 transition-all hover:bg-card hover:shadow-md">
@@ -143,10 +139,7 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
           </div>
         </div>
 
-        {/* SECONDARY COLUMN: Summary & Weekly Insights (Right on Desktop, Top on Mobile) */}
         <div className="lg:col-span-5 space-y-6 order-1 lg:order-2">
-          
-          {/* Summary Cards */}
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">
               Performance Totals
@@ -176,40 +169,33 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
             </div>
           </div>
 
-          {/* Focus Trend Chart */}
-          <Card className="border border-border/60 bg-card/40 backdrop-blur-md shadow-sm">
-            <CardHeader className="pb-2 pt-4">
-              <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp size={14} className="text-indigo-500" />
+          <Card className="mb-8 border border-border shadow-sm rounded-xl">
+            <CardHeader className="px-6 pt-5 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
+                <TrendingUp size={14} className="text-primary" />
                 Weekly Learning Analytics
               </CardTitle>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className="px-5 pb-2 pt-4">
               <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(156, 163, 175, 0.15)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "8px" }}
-                    labelStyle={{ fontWeight: 'bold', color: 'var(--foreground)' }}
-                    formatter={(value: number) => [`${value}%`, "Focus Level"]}
-                  />
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value: number) => [`${value}%`, "Focus Score"]} />
                   <Line
                     type="monotone"
                     dataKey="focus"
                     stroke="#6366f1"
                     strokeWidth={2.5}
-                    dot={{ fill: "#6366f1", r: 4 }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    dot={{ fill: "#6366f1", r: 5 }}
+                    activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          
         </div>
-
       </div>
     </div>
   )
