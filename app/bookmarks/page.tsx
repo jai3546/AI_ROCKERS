@@ -17,10 +17,15 @@ export default function BookmarksPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    const saved = localStorage.getItem("ai-bookmarks")
+    try {
+      const saved = localStorage.getItem("ai-bookmarks")
 
-    if (saved) {
-      setBookmarks(JSON.parse(saved))
+      if (saved) {
+        setBookmarks(JSON.parse(saved))
+      }
+    } catch (error) {
+      console.error("Failed to load bookmarks:", error)
+      localStorage.removeItem("ai-bookmarks")
     }
   }, [])
 const handleDelete = (id: string) => {
