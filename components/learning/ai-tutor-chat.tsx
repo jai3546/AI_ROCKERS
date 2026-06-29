@@ -130,12 +130,17 @@ export function AiTutorChat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
   useEffect(() => {
-  const savedBookmarks = localStorage.getItem("ai-bookmarks")
+    try {
+      const savedBookmarks = localStorage.getItem("ai-bookmarks")
 
-  if (savedBookmarks) {
-    setBookmarks(JSON.parse(savedBookmarks))
-  }
-}, [])
+      if (savedBookmarks) {
+        setBookmarks(JSON.parse(savedBookmarks))
+      }
+    } catch (error) {
+      console.error("Failed to load bookmarks:", error)
+      localStorage.removeItem("ai-bookmarks")
+    }
+  }, [])
 
   useEffect(() => {
     if (emotionState) setCurrentEmotionState(emotionState)
