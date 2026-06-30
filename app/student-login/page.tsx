@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { setSession } from "@/lib/auth/session"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 // Demo credentials for different classes
 const demoCredentials = {
@@ -140,6 +142,7 @@ export default function StudentLoginPage() {
 
     // Validate inputs
     if (!schoolCode.trim() || !studentId.trim()) {
+      captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "missing_fields", login_method: "credentials" })
       setLoginError("Please enter both School Code and Student ID")
       setIsLoggingIn(false)
       return
@@ -173,7 +176,7 @@ export default function StudentLoginPage() {
             schoolCode: foundStudent.schoolCode,
           })
 
-          // Navigate to student dashboard
+          captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: foundStudent.class, role: "student" })
           router.push("/student-dashboard")
         } else {
           // For demo purposes, allow login with any credentials
@@ -186,11 +189,12 @@ export default function StudentLoginPage() {
             isDemo: true,
           })
 
-          // Navigate to student dashboard
+          captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: "Class 10", role: "student" })
           router.push("/student-dashboard")
         }
       } catch (error) {
         console.error("Login error:", error)
+        captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "unexpected_error", login_method: "credentials" })
         setLoginError("An error occurred during login. Please try again.")
         setIsLoggingIn(false)
       }
@@ -228,10 +232,11 @@ export default function StudentLoginPage() {
         isDemo: true,
       })
 
-      // Navigate to student dashboard
+      captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", class: selectedClass, role: "student" })
       router.push("/student-dashboard")
     } catch (err) {
       console.error("Login error:", err)
+      captureEvent(POSTHOG_EVENTS.LOGIN_ERROR, { error_type: "demo_login_failed", login_method: "demo" })
       setLoginError("Failed to log in. Please try again.")
     } finally {
       setIsLoggingIn(false)

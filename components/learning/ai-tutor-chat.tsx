@@ -2,13 +2,15 @@
 
 import type React from "react"
 import { motion } from "framer-motion"
-import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users } from "lucide-react"
+import { ArrowUp, Bot, Lightbulb, Mic, Send, User, BookOpen, Brain, Atom, Eye, Headphones, Activity, Users, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChatbotIcon } from "@/components/chatbot-icon"
 import { MentorMatching } from "@/components/learning/mentor-matching"
 import { getGeminiResponse, type Subject, type EmotionState } from "@/services/gemini-api"
+import { LearnerStatusBadge } from "@/components/learning/learner-status-badge"
 import { LearningStyleProfile, initialLearningStyleProfile, updateLearningStyleProfile, type LearningStyle } from "@/services/learning-style-service"
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
@@ -19,6 +21,7 @@ interface Message {
   content: string
   sender: "user" | "bot"
   timestamp: Date
+  bookmarked?: boolean
 }
 
 interface AiTutorChatProps {
@@ -26,6 +29,7 @@ interface AiTutorChatProps {
   onClose?: () => void
   subject?: Subject
   emotionState?: EmotionState
+  emotionTrackingActive?: boolean
   learningStyle?: LearningStyleProfile
   onLearningStyleUpdate?: (profile: LearningStyleProfile) => void
   studentId?: string
@@ -75,6 +79,7 @@ export function AiTutorChat({
   onClose,
   subject = "general",
   emotionState,
+  emotionTrackingActive = false,
   learningStyle = initialLearningStyleProfile,
   onLearningStyleUpdate,
   studentId = "S001"
@@ -87,6 +92,8 @@ export function AiTutorChat({
       timestamp: new Date(),
     },
   ])
+  const [bookmarks, setBookmarks] = useState<Message[]>([])
+
   const [inputValue, setInputValue] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
@@ -122,6 +129,18 @@ export function AiTutorChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+  useEffect(() => {
+    try {
+      const savedBookmarks = localStorage.getItem("ai-bookmarks")
+
+      if (savedBookmarks) {
+        setBookmarks(JSON.parse(savedBookmarks))
+      }
+    } catch (error) {
+      console.error("Failed to load bookmarks:", error)
+      localStorage.removeItem("ai-bookmarks")
+    }
+  }, [])
 
   useEffect(() => {
     if (emotionState) setCurrentEmotionState(emotionState)
@@ -249,6 +268,32 @@ export function AiTutorChat({
     }
   }
 
+  const handleBookmark = (message: Message) => {
+  if (message.sender !== "bot") return
+
+  const alreadyBookmarked = bookmarks.some(
+    (bookmark) => bookmark.id === message.id
+  )
+
+  if (alreadyBookmarked) return
+
+  const updatedBookmarks = [...bookmarks, message]
+
+  setBookmarks(updatedBookmarks)
+
+localStorage.setItem(
+  "ai-bookmarks",
+  JSON.stringify(updatedBookmarks)
+)
+console.log("Bookmark clicked", updatedBookmarks)
+
+toast({
+  title: "Bookmarked",
+  description:
+    "AI response saved successfully. Visit the Bookmarks page to view your saved responses.",
+})
+}
+
   const handleSuggestionClick = (suggestion: string) => {
     setInputValue(suggestion)
     setTimeout(() => { handleSendMessage() }, 100)
@@ -304,14 +349,11 @@ export function AiTutorChat({
                       </div>
                     )}
 
-                    {currentEmotionState && (
-                      <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full text-[11px] font-medium">
-                        <span className="capitalize">{currentEmotionState.emotion}</span>
-                        {currentEmotionState.fatigueScore !== undefined && currentEmotionState.fatigueScore > 50 && (
-                          <span className="text-destructive font-semibold">• Fatigue</span>
-                        )}
-                      </div>
-                    )}
+                    <LearnerStatusBadge
+                      status={currentEmotionState}
+                      language={language}
+                      trackingActive={emotionTrackingActive}
+                    />
                   </div>
                 </div>
               </div>
@@ -428,14 +470,43 @@ export function AiTutorChat({
                     {message.sender === "user" ? <User size={16} className="text-secondary" /> : <Bot size={16} className="text-primary" />}
                   </div>
 
-                  <div className={`p-3 rounded-lg ${message.sender === "user" ? "bg-secondary text-secondary-foreground" : "bg-muted text-foreground"}`}>
-                    <MessageContent content={message.content} />
-                    <div className="text-[10px] opacity-60 mt-1 text-right">
-                      {new Intl.DateTimeFormat(language === "en" ? "en-US" : language === "hi" ? "hi-IN" : "te-IN", {
-                        hour: "2-digit", minute: "2-digit",
-                      }).format(message.timestamp)}
-                    </div>
-                  </div>
+                  <div
+  className={`p-3 rounded-lg ${
+    message.sender === "user"
+      ? "bg-secondary text-secondary-foreground"
+      : "bg-muted text-foreground"
+  }`}
+>
+  <MessageContent content={message.content} />
+
+  {/* Bookmark button (only for AI messages) */}
+  {message.sender === "bot" && (
+    <div className="flex justify-end mt-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => handleBookmark(message)}
+      >
+        <Bookmark size={16} />
+      </Button>
+    </div>
+  )}
+
+  <div className="text-[10px] opacity-60 mt-1 text-right">
+    {new Intl.DateTimeFormat(
+      language === "en"
+        ? "en-US"
+        : language === "hi"
+        ? "hi-IN"
+        : "te-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    ).format(message.timestamp)}
+  </div>
+</div>
                 </div>
               </div>
             ))}

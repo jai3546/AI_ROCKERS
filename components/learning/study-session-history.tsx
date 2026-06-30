@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Clock, Brain, Smile, TrendingUp, X } from "lucide-react"
+import { Clock, Brain, Smile, TrendingUp, X, BookOpen } from "lucide-react"
 
 interface SessionRecord {
   id: string
@@ -25,7 +25,15 @@ const EMOTION_COLORS: Record<string, string> = {
   excited:   "#8b5cf6",
   unknown:   "#d1d5db",
 }
-
+const EMOTION_EMOJIS: Record<string, string> = {
+  focused: "🎯",
+  happy: "😊",
+  confused: "😕",
+  bored: "😴",
+  sad: "😔",
+  excited: "🤩",
+  unknown: "😐",
+}
 const SAMPLE_SESSIONS: SessionRecord[] = [
   { id: "1", date: "Mon", duration: 45, dominantEmotion: "focused",  focusScore: 82, activitiesCompleted: 3 },
   { id: "2", date: "Tue", duration: 30, dominantEmotion: "happy",    focusScore: 75, activitiesCompleted: 2 },
@@ -45,12 +53,10 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
   const [sessions, setSessions] = useState<SessionRecord[]>([])
 
   useEffect(() => {
-    // Load from localStorage or use sample data
     try {
       const stored = localStorage.getItem("studySessions")
       if (stored) {
         const parsed = JSON.parse(stored)
-        // Validate the parsed data structure
         if (Array.isArray(parsed) && parsed.every(session => 
           session && 
           typeof session.id === 'string' &&
@@ -87,104 +93,109 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
   }))
 
   return (
-    <div className="bg-background p-4 rounded-xl max-h-[85vh] overflow-y-auto w-full max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <TrendingUp size={22} className="text-primary" />
-          Study Session History
-        </h2>
-        {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X size={18} />
-          </Button>
-        )}
+  
+  <div className="bg-background rounded-xl max-h-[85vh] overflow-y-auto w-full max-w-4xl px-8 py-6">
+      <div className="flex items-center justify-between mb-8">
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <Card className="border border-primary/20">
-          <CardContent className="pt-4 text-center">
-            <Clock size={20} className="mx-auto text-primary mb-1" />
-            <p className="text-2xl font-bold">{totalMinutes}</p>
-            <p className="text-xs text-muted-foreground">Total Minutes</p>
-          </CardContent>
-        </Card>
-        <Card className="border border-secondary/20">
-          <CardContent className="pt-4 text-center">
-            <Brain size={20} className="mx-auto text-secondary mb-1" />
-            <p className="text-2xl font-bold">{avgFocus}%</p>
-            <p className="text-xs text-muted-foreground">Avg Focus</p>
-          </CardContent>
-        </Card>
-        <Card className="border border-accent/20">
-          <CardContent className="pt-4 text-center">
-            <Smile size={20} className="mx-auto text-accent mb-1" />
-            <p className="text-2xl font-bold">{totalActivities}</p>
-            <p className="text-xs text-muted-foreground">Activities Done</p>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-7 space-y-4 order-2 lg:order-1">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
+              Recent Sessions Log
+            </h3>
+            <Badge variant="secondary" className="text-xs font-normal">
+              {sessions.length} recorded entries
+            </Badge>
+          </div>
 
-      {/* Focus Trend Chart */}
-      <Card className="mb-6 border border-border">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Weekly Focus Trend
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-              <Tooltip
-                formatter={(value: number) => [`${value}%`, "Focus Score"]}
-              />
-              <Line
-                type="monotone"
-                dataKey="focus"
-                stroke="#6366f1"
-                strokeWidth={2}
-                dot={{ fill: "#6366f1", r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            {sessions.map((session) => (
+              <Card key={session.id} className="border border-border/40 bg-card/60 transition-all hover:bg-card hover:shadow-md">
+                <CardContent className="py-4 px-5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-3 h-3 rounded-full shadow-sm animate-pulse"
+                      style={{ backgroundColor: EMOTION_COLORS[session.dominantEmotion] ?? "#d1d5db" }}
+                    />
+                    <div>
+                      <p className="font-semibold text-sm">{session.date} Session</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {session.duration} mins dedicated · {session.activitiesCompleted} interactive learning metrics
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="capitalize text-xs px-2.5 py-0.5 font-medium">
+                      {session.dominantEmotion}
+                    </Badge>
+                    <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded">
+                      {session.focusScore}%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
 
-      {/* Session List */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-          Recent Sessions
-        </h3>
-        {sessions.map((session) => (
-          <Card key={session.id} className="border border-border/50">
-            <CardContent className="py-3 px-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: EMOTION_COLORS[session.dominantEmotion] ?? "#d1d5db" }}
-                />
-                <div>
-                  <p className="font-medium text-sm">{session.date}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {session.duration} min · {session.activitiesCompleted} activities
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="capitalize text-xs">
-                  {session.dominantEmotion}
-                </Badge>
-                <span className="text-sm font-bold text-primary">
-                  {session.focusScore}%
-                </span>
-              </div>
+        <div className="lg:col-span-5 space-y-6 order-1 lg:order-2">
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">
+              Performance Totals
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              <Card className="border border-primary/20 bg-card/30">
+                <CardContent className="pt-4 pb-3 text-center px-1">
+                  <Clock size={20} className="mx-auto text-primary mb-1.5" />
+                  <p className="text-xl font-extrabold tracking-tight">{totalMinutes}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Total Mins</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-secondary/20 bg-card/30">
+                <CardContent className="pt-4 pb-3 text-center px-1">
+                  <Brain size={20} className="mx-auto text-secondary mb-1.5" />
+                  <p className="text-xl font-extrabold tracking-tight">{avgFocus}%</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Avg Focus</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-accent/20 bg-card/30">
+                <CardContent className="pt-4 pb-3 text-center px-1">
+                  <Smile size={20} className="mx-auto text-accent mb-1.5" />
+                  <p className="text-xl font-extrabold tracking-tight">{totalActivities}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Tasks Done</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          <Card className="mb-8 border border-border shadow-sm rounded-xl">
+            <CardHeader className="px-6 pt-5 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
+                <TrendingUp size={14} className="text-primary" />
+                Weekly Learning Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-2 pt-4">
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value: number) => [`${value}%`, "Focus Score"]} />
+                  <Line
+                    type="monotone"
+                    dataKey="focus"
+                    stroke="#6366f1"
+                    strokeWidth={2.5}
+                    dot={{ fill: "#6366f1", r: 5 }}
+                    activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
-        ))}
+        </div>
       </div>
     </div>
   )

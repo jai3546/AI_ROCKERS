@@ -11,6 +11,8 @@ import { VoiceCommand } from "@/components/voice-command"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { setSession } from "@/lib/auth/session"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 export default function SchoolLoginPage() {
   const router = useRouter()
@@ -73,6 +75,7 @@ export default function SchoolLoginPage() {
       isDemo: false,
       schoolCode: schoolCode.trim() || "ADMIN123",
     })
+    captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", role: "admin" })
     router.push("/admin-dashboard")
   }
 
@@ -88,6 +91,7 @@ export default function SchoolLoginPage() {
         isDemo: true,
         schoolCode: "ADMIN123",
       })
+      captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", role: "admin" })
       router.push("/admin-dashboard")
     }, 500)
   }

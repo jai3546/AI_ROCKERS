@@ -6,6 +6,7 @@ import { Smile, Frown, Meh, AlertTriangle, Eye, X, Maximize2, Minimize2 } from "
 import { Button } from "@/components/ui/button"
 import { EmotionData } from "./improved-emotion-detector"
 import { EmotionDisplay } from "./emotion-display"
+import { getLearnerStatusLabel } from "@/services/learner-status-service"
 
 interface FloatingEmotionTrackerProps {
   lastEmotionData: EmotionData | null
@@ -145,8 +146,8 @@ export function FloatingEmotionTracker({
           <div className="p-2 flex items-center gap-2 bg-card dark:bg-card">
             <div className={`w-3 h-3 rounded-full ${lastEmotionData?.faceDetected ? 'bg-green-500' : 'bg-amber-500'}`} />
             <span className="text-xs">
-              {lastEmotionData?.faceDetected ? 
-                `${lastEmotionData.emotion !== "unknown" ? lastEmotionData.emotion : translations.unknown[language]}: ${Math.round(lastEmotionData.confidence)}%` : 
+              {lastEmotionData?.faceDetected ?
+                (getLearnerStatusLabel(lastEmotionData, language) ?? translations.unknown[language]) :
                 translations.outOfFrame[language]
               }
             </span>

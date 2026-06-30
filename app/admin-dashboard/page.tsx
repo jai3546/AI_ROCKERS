@@ -30,6 +30,8 @@ import { SchoolDetailsDialog } from "@/components/school-details-dialog"
 import { useRouter } from "next/navigation"
 import { RouteGuard } from "@/components/auth/route-guard"
 import { useLogout } from "@/hooks/use-logout"
+import { captureEvent } from "@/lib/posthog/helpers"
+import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
 // Theme toggle component
 function ThemeToggle() {
@@ -190,10 +192,8 @@ function AdminDashboardContent({
       link.setAttribute("download", filename)
       document.body.appendChild(link)
 
-      // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_students" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting student reports:", error)
@@ -231,8 +231,7 @@ function AdminDashboardContent({
 
       // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_performance" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting performance data:", error)
@@ -270,8 +269,7 @@ function AdminDashboardContent({
 
       // Trigger download
       link.click()
-
-      // Clean up
+      captureEvent(POSTHOG_EVENTS.REPORT_EXPORTED, { export_format: "csv_attendance" })
       document.body.removeChild(link)
     } catch (error) {
       console.error("Error exporting attendance records:", error)
@@ -512,6 +510,7 @@ function AdminDashboardContent({
                     });
                     setDetailsType("emotional");
                     setShowDetailsDialog(true);
+                    captureEvent(POSTHOG_EVENTS.STUDENT_PROGRESS_VIEWED, { student_id: "s001", metric_type: "emotional" });
                   }}
                 >
                   {translations.viewDetails[language]}
@@ -588,6 +587,7 @@ function AdminDashboardContent({
                     });
                     setDetailsType("quiz");
                     setShowDetailsDialog(true);
+                    captureEvent(POSTHOG_EVENTS.STUDENT_PROGRESS_VIEWED, { student_id: "s001", metric_type: "quiz" });
                   }}
                 >
                   {translations.viewDetails[language]}
