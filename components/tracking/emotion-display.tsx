@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { getLearnerStatusLabel, getLearnerStatusTip } from "@/services/learner-status-service"
 import { motion, AnimatePresence } from "framer-motion"
-import { Smile, Frown, Meh, AlertTriangle, Eye, X, Brain, Sparkles } from "lucide-react"
+import { Smile, Frown, Meh, AlertTriangle, Eye, X, Activity, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -444,7 +444,7 @@ export function EmotionDisplay({
       {showHeader && (
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Brain size={20} className="text-primary" />
+            <Activity size={20} className="text-primary" />
             {translations.title[language]}
           </CardTitle>
           {showControls && onClose && (

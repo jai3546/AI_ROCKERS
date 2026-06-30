@@ -400,14 +400,17 @@ export default function StudentDashboardPage() {
     }
   }, [user?.id])
 
-  useEffect(() => {
-    const graph = LearningMemoryService.getConceptGraph(user?.id || "S001")
+ useEffect(() => {
+  const loadContinueLearningTopic = async () => {
+    const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+
     const lastStudiedConcept = graph
       .filter((concept) => concept.lastPracticed)
       .sort(
         (a, b) =>
-          new Date(b.lastPracticed).getTime() - new Date(a.lastPracticed).getTime()
-      )[0]
+          new Date(b.lastPracticed).getTime() -
+          new Date(a.lastPracticed).getTime()
+      )[0];
 
     if (lastStudiedConcept) {
       setContinueLearningTopic({
@@ -415,54 +418,67 @@ export default function StudentDashboardPage() {
         subject: lastStudiedConcept.subject,
         progress: lastStudiedConcept.mastery,
         lastPracticed: lastStudiedConcept.lastPracticed,
-      })
+      });
     }
-  }, [user?.id])
+  };
+
+  loadContinueLearningTopic();
+}, [user?.id]);
 
   // Check redirect actions from Learning Brain
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      const startQuiz = searchParams.get("startQuiz");
-      const startTutor = searchParams.get("startTutor");
-      const startFlashcards = searchParams.get("startFlashcards");
-      const conceptId = searchParams.get("conceptId");
-      const subject = searchParams.get("subject");
+  const handleRedirectActions = async () => {
+    if (typeof window === "undefined") return
 
-      if (startQuiz === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveQuizSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveQuizTopic(node.name);
-            setShowQuizAi(true);
-          }
-        }
-        setShowQuiz(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startTutor === "true") {
-        setShowAiTutor(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startFlashcards === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveFlashcardSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveFlashcardTopic(node.name);
-            setShowFlashcardAi(true);
-          }
-        }
-        setShowFlashcards(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
+    const searchParams = new URLSearchParams(window.location.search)
+    const startQuiz = searchParams.get("startQuiz")
+    const startTutor = searchParams.get("startTutor")
+    const startFlashcards = searchParams.get("startFlashcards")
+    const conceptId = searchParams.get("conceptId")
+    const subject = searchParams.get("subject")
+
+    if (startQuiz === "true") {
+      if (subject && subject !== "general" && subject !== "all") {
+        setActiveQuizSubject(subject)
       }
+
+      if (conceptId) {
+        const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001")
+        const node = graph.find((n) => n.id === conceptId)
+
+        if (node) {
+          setActiveQuizTopic(node.name)
+          setShowQuizAi(true)
+        }
+      }
+
+      setShowQuiz(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (startTutor === "true") {
+      setShowAiTutor(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (startFlashcards === "true") {
+      if (subject && subject !== "general" && subject !== "all") {
+        setActiveFlashcardSubject(subject)
+      }
+
+      if (conceptId) {
+        const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001")
+        const node = graph.find((n) => n.id === conceptId)
+
+        if (node) {
+          setActiveFlashcardTopic(node.name)
+          setShowFlashcardAi(true)
+        }
+      }
+
+      setShowFlashcards(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [user]);
+  }
+
+  handleRedirectActions()
+}, [user?.id])
 
   // Handle logout
   const handleLogout = () => {
