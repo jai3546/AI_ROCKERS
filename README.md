@@ -282,15 +282,19 @@ VidyAi uses a PostgreSQL database layer managed by Prisma ORM.
    * **Supabase**: Use the connection string from your Supabase Project Settings (Database tab). Ensure you use port `6543` for connection pooling (PgBouncer/Supavisor) in serverless environments, or port `5432` for direct connection in development.
    * **Vercel Postgres**: If deploying to Vercel, link your Vercel project to a Vercel Postgres database, and the environment variables (`POSTGRES_PRISMA_URL` / `POSTGRES_URL`) will automatically be loaded. You can set `DATABASE_URL` to point to it.
 
-2. **Run Database Migrations**:
+2. **Run Database Migrations**  
    Prisma migrations manage the database schema over time.
-   * **Development**: To apply migrations and generate client:
+
+   **Development**: Create and apply a new migration, then regenerate the Prisma Client.
      ```bash
      npx prisma migrate dev
+     npx prisma generate
      ```
-   * **Production / Deployment**: To apply pending migrations without resetting the database:
+
+   **Production / Deployment**: Apply all pending migrations without resetting the database, then generate the Prisma Client.
      ```bash
      npx prisma migrate deploy
+     npx prisma generate
      ```
 
 3. **Seed the Database**:
@@ -316,7 +320,7 @@ Now, open your web browser and go to **[http://localhost:3000](http://localhost:
 
 | Step | What to Check | Why it is Needed |
 |---|---|---|
-| 1 | Node.js version is `20.x` | Prevents setup errors |
+| 1 | Node.js version is `24.x` | Prevents setup errors |
 | 2 | `npm install` runs successfully | Installs all required libraries |
 | 3 | Models are in `public/models/` | Enables face/attention tracking |
 | 4 | `.env.local` contains Gemini key | Required to chat with the AI Tutor |
