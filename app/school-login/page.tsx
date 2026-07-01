@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { VoiceCommand } from "@/components/voice-command"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { setSession } from "@/lib/auth/session"
 import { captureEvent } from "@/lib/posthog/helpers"
 import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
@@ -66,6 +67,14 @@ export default function SchoolLoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
+    setSession({
+      id: "school-admin",
+      name: "School Admin",
+      role: "school",
+      avatar: "🏫",
+      isDemo: false,
+      schoolCode: schoolCode.trim() || "ADMIN123",
+    })
     captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", role: "admin" })
     router.push("/admin-dashboard")
   }
@@ -74,6 +83,14 @@ export default function SchoolLoginPage() {
     setSchoolCode("ADMIN123")
     setAdminPin("1234")
     setTimeout(() => {
+      setSession({
+        id: "school-admin",
+        name: "School Admin",
+        role: "school",
+        avatar: "🏫",
+        isDemo: true,
+        schoolCode: "ADMIN123",
+      })
       captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", role: "admin" })
       router.push("/admin-dashboard")
     }, 500)

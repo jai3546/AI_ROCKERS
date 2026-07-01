@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { setSession } from "@/lib/auth/session"
 
 // Demo credentials for different classes
 const demoCredentials = {
@@ -39,9 +40,9 @@ const demoCredentials = {
     { id: "demo-12-1", name: "Aryan Choudhury", role: "student", avatar: "👦🏽" },
     { id: "demo-12-2", name: "Riya Mehta", role: "student", avatar: "👧🏽" },
   ],
-  "Teacher": [
-    { id: "demo-t-1", name: "Mr. Rajesh Kumar", role: "teacher", avatar: "👨🏽‍🏫" },
-    { id: "demo-t-2", name: "Mrs. Sunita Sharma", role: "teacher", avatar: "👩🏽‍🏫" },
+  "Mentor": [
+    { id: "M001", name: "Dr. Rajesh Kumar", role: "mentor", avatar: "👨🏽‍🏫" },
+    { id: "M002", name: "Priya Venkatesh", role: "mentor", avatar: "👩🏽‍🏫" },
   ],
 }
 
@@ -74,18 +75,17 @@ export function DemoLogin() {
       }
 
       // Store user info in localStorage (in a real app, this would be handled by a proper auth system)
-      localStorage.setItem("demoUser", JSON.stringify({
+      setSession({
         id: user.id,
         name: user.name,
         class: selectedClass,
-        role: user.role,
+        role: user.role === "mentor" ? "mentor" : "student",
         avatar: user.avatar,
-        isDemo: true
-      }))
+        isDemo: true,
+      })
 
-      // Redirect based on role
-      if (user.role === "teacher") {
-        router.push("/teacher-dashboard")
+      if (user.role === "mentor") {
+        router.push("/mentor-dashboard")
       } else {
         router.push("/student-dashboard")
       }
