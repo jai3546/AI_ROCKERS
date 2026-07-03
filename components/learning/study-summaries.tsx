@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2, Brain, Upload } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -32,6 +32,7 @@ interface StudySummariesProps {
   onTriggerQuiz?: (subject: string, topic: string, sourceContent?: string) => void
   onTriggerFlashcards?: (subject: string, topic: string, sourceContent?: string) => void
   onAddSummary?: (summary: StudySummary) => void
+  initialSearchQuery?: string
 }
 
 const SUBJECTS_CONFIG = {
@@ -73,13 +74,14 @@ export function StudySummaries({
   subject = "all",
   onTriggerQuiz,
   onTriggerFlashcards,
-  onAddSummary
+  onAddSummary,
+  initialSearchQuery
 }: StudySummariesProps) {
   const [allSummariesList, setAllSummariesList] = useState<StudySummary[]>(summaries)
   const [filteredSummaries, setFilteredSummaries] = useState<StudySummary[]>([])
   const [activeSubject, setActiveSubject] = useState<string>(subject)
-  const [showSubjectSelect, setShowSubjectSelect] = useState<boolean>(subject === "all")
-  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [showSubjectSelect, setShowSubjectSelect] = useState<boolean>(subject === "all" && !initialSearchQuery)
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery || "")
   const [viewMode, setViewMode] = useState<"card" | "compact">("card")
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [activeMindMapSummary, setActiveMindMapSummary] = useState<StudySummary | null>(null)
@@ -417,15 +419,24 @@ export function StudySummaries({
     if (activeSummaryId && isPlaying) {
       speakCurrent(activeSummaryId)
     }
-  }  // Sync activeSubject when subject prop changes
+  }  // Sync activeSubject when subject or initialSearchQuery prop changes
   useEffect(() => {
     if (subject && subject !== "all") {
       setActiveSubject(subject)
       setShowSubjectSelect(false)
+    } else if (initialSearchQuery) {
+      setShowSubjectSelect(false)
     } else {
       setShowSubjectSelect(true)
     }
-  }, [subject])
+  }, [subject, initialSearchQuery])
+
+  // Sync searchQuery when initialSearchQuery prop changes
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery)
+    }
+  }, [initialSearchQuery])
 
   // Filter summaries based on syllabus and search query
   useEffect(() => {
@@ -1138,7 +1149,7 @@ ${summary.content}
                               className="flex-1 sm:flex-initial h-7 text-[10px] border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 flex items-center gap-1"
                               onClick={() => onTriggerQuiz && onTriggerQuiz(summary.subject, summary.title, summary.content)}
                             >
-                              <Brain size={12} />
+                              <BookOpen size={12} />
                               Generate Quiz
                             </Button>
                             <Button

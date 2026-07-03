@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Award, Star, Trophy, Medal, Target, Brain, BookOpen, CheckCircle } from "lucide-react"
+import { Award, Star, Trophy, Medal, Target, GraduationCap, BookOpen, CheckCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export type BadgeType =
@@ -79,7 +79,7 @@ export function AchievementBadge({
       case "streak":
         return <Target size={24} />
       case "tutor":
-        return <Brain size={24} />
+        return <GraduationCap size={24} />
       case "subject":
         return <Medal size={24} />
       default:

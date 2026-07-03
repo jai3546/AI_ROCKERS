@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
+import { Toaster } from "@/components/ui/toaster"
 import Footer from "@/components/footer" // 1. Imported the Footer here
 
 const inter = Inter({ subsets: ["latin"] })
@@ -33,6 +34,7 @@ export default function RootLayout({
           </main>
           
           <ServiceWorkerRegistration />
+          <Toaster />
           
           {/* 4. Placed the Footer component at the bottom */}
           <Footer />

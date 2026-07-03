@@ -126,7 +126,7 @@ export function LearningOptionsMenu({
             >
               <CardContent className="p-4 flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Brain size={24} className="text-primary" />
+                  <GraduationCap size={24} className="text-primary" />
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground dark:text-foreground">{translations.quizzes[language]}</h3>
