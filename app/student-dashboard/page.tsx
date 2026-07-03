@@ -1194,26 +1194,7 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
- HEAD
-       {/* Compact Pomodoro Study Timer */}
-       {/* Daily Challenge */}
 <Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
-  <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    
-    {/* Left Side: Full Title & High-Visibility Timer Badge */}
-    <div className="flex items-center gap-3">
-      <span className="text-sm font-semibold tracking-wide text-foreground flex items-center gap-1.5 whitespace-nowrap">
-        🍅 Pomodoro Timer:
-      </span>
-      <p className="text-2xl font-black tabular-nums tracking-tight bg-primary/10 text-primary dark:text-primary px-3 py-0.5 rounded-lg border border-primary/30 min-w-[85px] text-center shadow-inner">
-        {formatStudyTime()}
-      </p>
-    </div>
-
-
-
-{/* Daily Challenge / Pomodoro Timer */}
-       <Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
          <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
            
            {/* Left Side: Full Title & High-Visibility Timer Badge */}
@@ -1250,9 +1231,66 @@ export default function StudentDashboardPage() {
              </select>
            </div>
 
- HEAD
-  </CardContent>
-</Card>
+           {/* Right Side: Execution controls */}
+           <div className="flex items-center gap-2 sm:ml-auto">
+             {!isRunning ? (
+               <Button
+                 size="sm"
+                 className="h-8 text-xs font-semibold px-4 shadow-sm"
+                 onClick={() => setIsRunning(true)}
+               >
+                 Start
+               </Button>
+             ) : (
+               <Button
+                 variant="outline"
+                 size="sm"
+                 className="h-8 text-xs font-semibold px-4 bg-pink-500 hover:bg-pink-600 text-white border-none shadow-sm"
+                 onClick={() => setIsRunning(false)}
+               >
+                 Stop
+               </Button>
+             )}
+             <Button
+               variant="outline"
+               size="sm"
+               className="h-8 text-xs font-semibold px-3 text-muted-foreground hover:bg-accent"
+               onClick={() => {
+                 setIsRunning(false)
+                 setTimeLeft(sessionLength * 60)
+                 setStudyTime(0)
+                 setShowBreakSuggestion(false)
+               }}
+             >
+                 Reset
+             </Button>
+           </div>
+
+         </CardContent>
+       </Card>
+
+       {showBreakSuggestion && (
+         <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 mt-4">
+           <CardHeader>
+             <CardTitle className="flex items-center gap-2">
+               <AlertTriangle size={18} />
+               Smart Break Suggestion
+             </CardTitle>
+           </CardHeader>
+
+           <CardContent>
+             <p>{breakMessage}</p>
+
+             <Button
+               className="mt-3"
+               onClick={() => setShowBreakSuggestion(false)}
+             >
+               Got It
+             </Button>
+           </CardContent>
+         </Card>
+       )}
+        
         
         {/* Daily Challenge */}
         <Card className="border-red-300">
