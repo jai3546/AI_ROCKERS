@@ -320,7 +320,7 @@ export function QuizContainer({
       setAnswers(prev => ({
         ...prev,
         [currentQuestion.id]: isCorrect
-      })
+      }));
 
       setTimeout(() => {
         if (currentQuestionIndex < filteredQuestions.length - 1) {
