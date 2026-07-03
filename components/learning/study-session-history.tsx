@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Clock, Brain, Smile, TrendingUp, X, BookOpen } from "lucide-react"
+import { useTheme } from "@/components/theme-provider"
 
 interface SessionRecord {
   id: string
@@ -51,6 +52,8 @@ interface StudySessionHistoryProps {
 
 export function StudySessionHistory({ onClose, language = "en" }: StudySessionHistoryProps) {
   const [sessions, setSessions] = useState<SessionRecord[]>([])
+  const { resolvedTheme } = useTheme()
+  const tickColor = resolvedTheme === "dark" ? "#E5E7EB" : "#4B5563"
 
   useEffect(() => {
     try {
@@ -180,9 +183,21 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(156,163,175,0.15)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(value: number) => [`${value}%`, "Focus Score"]} />
+                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: tickColor }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: tickColor
+                   }} />
+                  <Tooltip contentStyle={{
+                      backgroundColor: resolvedTheme === "dark" ? "#1f2937" : "#ffffff",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      color: resolvedTheme === "dark" ? "#ffffff" : "#000000",
+                    }}
+                  labelStyle={{
+                      color: resolvedTheme === "dark" ? "#ffffff" : "#000000",
+                      fontWeight: 600,
+                    }}
+                  formatter={(value: number) => [`${value}%`, "Focus Score"]}
+                  />
                   <Line
                     type="monotone"
                     dataKey="focus"
