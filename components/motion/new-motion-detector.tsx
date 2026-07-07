@@ -227,7 +227,7 @@ export function NewMotionDetector({
           },
           audio: false
         });
-      } catch (initialError) {
+      } catch (initialError: any) {
         console.warn('Failed with ideal settings, trying fallback:', initialError);
         
         // Check for specific error types
@@ -245,7 +245,7 @@ export function NewMotionDetector({
             video: true,
             audio: false
           });
-        } catch (fallbackError) {
+        } catch (fallbackError: any) {
           console.error('Fallback camera access failed:', fallbackError);
           throw new Error('Could not access your camera. Please check your camera connection and browser permissions.');
         }

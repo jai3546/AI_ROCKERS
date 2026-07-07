@@ -183,6 +183,31 @@ export function StudentDetailsDialog({
       hi: "अनुशंसित कार्रवाई",
       te: "సిఫార్సు చేయబడిన చర్య",
     },
+    totalQuizzes: {
+      en: "Total Quizzes",
+      hi: "कुल क्विज़",
+      te: "మొత్తం క్విజ్‌లు",
+    },
+    averageScore: {
+      en: "Average Score",
+      hi: "औसत स्कोर",
+      te: "సగటు స్కోరు",
+    },
+    highestScore: {
+      en: "Highest Score",
+      hi: "उच्चतम स्कोर",
+      te: "అత్యధిక స్కోరు",
+    },
+    lowestScore: {
+      en: "Lowest Score",
+      hi: "न्यूनतम स्कोर",
+      te: "అతి తక్కువ స్కోరు",
+    },
+    completionRate: {
+      en: "Completion Rate",
+      hi: "पूरा होने की दर",
+      te: "పూర్తి రేటు",
+    },
   }
 
   // Mock emotional health data

@@ -29,8 +29,8 @@ interface StudySummariesProps {
   language?: "en" | "hi" | "te"
   syllabus?: "AP" | "Telangana" | "CBSE" | "General"
   subject?: string
-  onTriggerQuiz?: (subject: string, topic: string) => void
-  onTriggerFlashcards?: (subject: string, topic: string) => void
+  onTriggerQuiz?: (subject: string, topic: string, sourceContent?: string) => void
+  onTriggerFlashcards?: (subject: string, topic: string, sourceContent?: string) => void
   onAddSummary?: (summary: StudySummary) => void
   initialSearchQuery?: string
 }
@@ -1147,7 +1147,7 @@ ${summary.content}
                               variant="outline"
                               size="sm"
                               className="flex-1 sm:flex-initial h-7 text-[10px] border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 flex items-center gap-1"
-                              onClick={() => onTriggerQuiz && onTriggerQuiz(summary.subject, summary.title)}
+                              onClick={() => onTriggerQuiz && onTriggerQuiz(summary.subject, summary.title, summary.content)}
                             >
                               <BookOpen size={12} />
                               Generate Quiz
@@ -1156,7 +1156,7 @@ ${summary.content}
                               variant="outline"
                               size="sm"
                               className="flex-1 sm:flex-initial h-7 text-[10px] border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 flex items-center gap-1"
-                              onClick={() => onTriggerFlashcards && onTriggerFlashcards(summary.subject, summary.title)}
+                              onClick={() => onTriggerFlashcards && onTriggerFlashcards(summary.subject, summary.title, summary.content)}
                             >
                               <FileText size={12} />
                               Generate Flashcards

@@ -28,16 +28,17 @@ export default function RootLayout({
       {/* 2. Added flex, flex-col, and min-h-screen to the body layout */}
       <body className={`${inter.className} site-tint flex flex-col min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-  <div className="flex-grow">
-    {children}
-  </div>
-
-  <ServiceWorkerRegistration />
-
-  <Toaster />
-
-  <Footer />
-</ThemeProvider>
+          {/* Wrapped children in a main tag with flex-grow to push footer down */}
+          <main className="flex-grow">
+            {children}
+          </main>
+          
+          <ServiceWorkerRegistration />
+          <Toaster />
+          
+          {/* 4. Placed the Footer component at the bottom */}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   )

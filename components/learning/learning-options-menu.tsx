@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Workflow } from "lucide-react"
+import { BookOpen, FileText, Download, X, BookMarked, GraduationCap, Brain, Workflow, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -13,6 +13,7 @@ interface LearningOptionsMenuProps {
   onSelectSummaries: () => void
   onSelectTextbooks: () => void
   onSelectMindMap: () => void
+  onSelectCourses?: () => void
   language?: "en" | "hi" | "te"
 }
 
@@ -23,6 +24,7 @@ export function LearningOptionsMenu({
   onSelectSummaries,
   onSelectTextbooks,
   onSelectMindMap,
+  onSelectCourses,
   language = "en"
 }: LearningOptionsMenuProps) {
   const translations = {
@@ -80,6 +82,16 @@ export function LearningOptionsMenu({
       en: "Visualize concepts and connect topics interactively",
       hi: "अवधारणाओं की कल्पना करें और विषयों को परस्पर जोड़ें",
       te: "భావనలను దృశ్యమానం చేయండి మరియు అంశాలను ఇంటరాక్టివ్‌గా కనెక్ట్ చేయండి",
+    },
+    courses: {
+      en: "AI Courses",
+      hi: "AI कोर्स",
+      te: "AI కోర్సులు",
+    },
+    coursesDesc: {
+      en: "Turn any notes, PDF, or link into a structured guided course",
+      hi: "किसी भी नोट, PDF या लिंक को संरचित कोर्स में बदलें",
+      te: "ఏ నోట్స్, PDF లేదా లింక్‌నైనా నిర్మిత కోర్స్‌గా మార్చండి",
     },
   }
 
@@ -182,6 +194,23 @@ export function LearningOptionsMenu({
                 </div>
               </CardContent>
             </Card>
+
+            {onSelectCourses && (
+              <Card
+                className="cursor-pointer bg-card dark:bg-card hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors border-primary/20"
+                onClick={onSelectCourses}
+              >
+                <CardContent className="p-4 flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles size={24} className="text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground dark:text-foreground">{translations.courses[language]}</h3>
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">{translations.coursesDesc[language]}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </motion.div>
       </motion.div>
