@@ -114,7 +114,7 @@ export function useStudyTimer(options: UseStudyTimerOptions = {}): UseStudyTimer
 
   const [sessionMinutes, setSessionMinutes] = useState(sessionLengthMinutes)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const [secondsLeft, setSecondsLeft] = useState(sessionLengthMinutes * 60)
+  const [secondsLeft, setSecondsLeft] = useState(sessionMinutes * 60)
   const [status, setStatus] = useState<StudyTimerStatus>("idle")
 
   // Store the latest callback in a ref so the ticking effect below can
