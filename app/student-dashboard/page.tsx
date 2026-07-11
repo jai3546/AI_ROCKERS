@@ -30,6 +30,7 @@ import {
   Camera,
   RefreshCw,
   TrendingUp,
+  Bookmark,
   ArrowRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -55,6 +56,7 @@ import { QuizContainer } from "@/components/learning/quiz-container"
 import { FlashcardDeck } from "@/components/learning/flashcard-deck"
 import { StudySummaries } from "@/components/learning/study-summaries"
 import { LearningOptionsMenu } from "@/components/learning/learning-options-menu"
+import { ContinueLearning, type ContinueLearningTopic } from "@/components/learning/continue-learning"
 import { Textbooks } from "@/components/learning/textbooks"
 import { MindMap } from "@/components/learning/mind-map"
 import { getMindMapData } from "@/data/mind-map-data"
@@ -146,6 +148,12 @@ export default function StudentDashboardPage() {
     quizzesCompleted: 0,
     flashcardsReviewed: 0,
     xpEarned: 0,
+  })
+  const [continueLearningTopic, setContinueLearningTopic] = useState<ContinueLearningTopic>({
+    title: "Photosynthesis",
+    subject: "Science",
+    progress: 65,
+    lastPracticed: new Date().toISOString(),
   })
   const [emotionState, setEmotionState] = useState<EmotionState | undefined>(undefined)
   const [autoEmotionTracking, setAutoEmotionTracking] = useState(true)
@@ -392,50 +400,85 @@ export default function StudentDashboardPage() {
     }
   }, [user?.id])
 
+ useEffect(() => {
+  const loadContinueLearningTopic = async () => {
+    const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001");
+
+    const lastStudiedConcept = graph
+      .filter((concept) => concept.lastPracticed)
+      .sort(
+        (a, b) =>
+          new Date(b.lastPracticed).getTime() -
+          new Date(a.lastPracticed).getTime()
+      )[0];
+
+    if (lastStudiedConcept) {
+      setContinueLearningTopic({
+        title: lastStudiedConcept.name,
+        subject: lastStudiedConcept.subject,
+        progress: lastStudiedConcept.mastery,
+        lastPracticed: lastStudiedConcept.lastPracticed,
+      });
+    }
+  };
+
+  loadContinueLearningTopic();
+}, [user?.id]);
+
   // Check redirect actions from Learning Brain
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      const startQuiz = searchParams.get("startQuiz");
-      const startTutor = searchParams.get("startTutor");
-      const startFlashcards = searchParams.get("startFlashcards");
-      const conceptId = searchParams.get("conceptId");
-      const subject = searchParams.get("subject");
+  const handleRedirectActions = async () => {
+    if (typeof window === "undefined") return
 
-      if (startQuiz === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveQuizSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveQuizTopic(node.name);
-            setShowQuizAi(true);
-          }
-        }
-        setShowQuiz(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startTutor === "true") {
-        setShowAiTutor(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (startFlashcards === "true") {
-        if (subject && subject !== "general" && subject !== "all") {
-          setActiveFlashcardSubject(subject);
-        }
-        if (conceptId) {
-          const graph = LearningMemoryService.getConceptGraph(user?.id || "S001");
-          const node = graph.find(n => n.id === conceptId);
-          if (node) {
-            setActiveFlashcardTopic(node.name);
-            setShowFlashcardAi(true);
-          }
-        }
-        setShowFlashcards(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
+    const searchParams = new URLSearchParams(window.location.search)
+    const startQuiz = searchParams.get("startQuiz")
+    const startTutor = searchParams.get("startTutor")
+    const startFlashcards = searchParams.get("startFlashcards")
+    const conceptId = searchParams.get("conceptId")
+    const subject = searchParams.get("subject")
+
+    if (startQuiz === "true") {
+      if (subject && subject !== "general" && subject !== "all") {
+        setActiveQuizSubject(subject)
       }
+
+      if (conceptId) {
+        const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001")
+        const node = graph.find((n) => n.id === conceptId)
+
+        if (node) {
+          setActiveQuizTopic(node.name)
+          setShowQuizAi(true)
+        }
+      }
+
+      setShowQuiz(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (startTutor === "true") {
+      setShowAiTutor(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (startFlashcards === "true") {
+      if (subject && subject !== "general" && subject !== "all") {
+        setActiveFlashcardSubject(subject)
+      }
+
+      if (conceptId) {
+        const graph = await LearningMemoryService.getConceptGraph(user?.id || "S001")
+        const node = graph.find((n) => n.id === conceptId)
+
+        if (node) {
+          setActiveFlashcardTopic(node.name)
+          setShowFlashcardAi(true)
+        }
+      }
+
+      setShowFlashcards(true)
+      window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [user]);
+  }
+
+  handleRedirectActions()
+}, [user?.id])
 
   // Handle logout
   const handleLogout = () => {
@@ -992,6 +1035,12 @@ export default function StudentDashboardPage() {
   const flashcardDetails = getFlashcardDetails()
   const summaryDetails = getSummaryDetails()
 
+  const handleContinueLearning = () => {
+    setActiveMindMapTopic(continueLearningTopic.title)
+    setActiveMindMapSubject(continueLearningTopic.subject)
+    setShowMindMap(true)
+  }
+
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -1132,6 +1181,19 @@ export default function StudentDashboardPage() {
               Achievements
             </div>
           </Button>
+          <Button
+  variant="ghost"
+  size="icon"
+  className="relative group"
+  onClick={() => router.push("/bookmarks")}
+>
+  <Bookmark size={20} />
+  <span className="sr-only">Bookmarks</span>
+
+  <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
+    Bookmarks
+  </div>
+</Button>
         </div>
 
         <Button
@@ -1154,6 +1216,7 @@ export default function StudentDashboardPage() {
         <div id="dashboard-section" className="space-y-3">
           <LevelProgress level={studentLevel} currentXP={currentXP} requiredXP={requiredXP} language={language} />
           <TodayProgress stats={todayProgress} language={language} />
+          <ContinueLearning topic={continueLearningTopic} onContinue={handleContinueLearning} />
         </div>
 
         {/* Next Suggested Action Banner */}
