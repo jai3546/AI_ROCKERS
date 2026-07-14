@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Download, FileText, X, Sparkles, Filter, BookOpen, ArrowLeft, Globe, Compass, Layers, BookMarked } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, FileText, FileImage, Printer, ChevronDown, X, Sparkles, BookOpen, ArrowLeft, Globe, Compass, Layers, BookMarked } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -12,6 +12,21 @@ import { AIFlashcardGenerator } from "./ai-flashcard-generator"
 import { updateSchoolPortal } from "@/services/school-portal-service"
 import { captureEvent } from "@/lib/posthog/helpers"
 import { POSTHOG_EVENTS } from "@/lib/posthog/events"
+import { FlashcardExport } from "./flashcard-export";
+import {
+  downloadTXT,
+  downloadPNGZip,
+  downloadJPGZip,
+  downloadPDF,
+  printFlashcards,
+} from "../../services/flashcard-export";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 export interface Flashcard {
   id: string
@@ -240,35 +255,6 @@ export function FlashcardDeck({
 
   const handleFlip = () => {
     setFlipped(!flipped)
-  }
-
-  const handleDownloadCards = () => {
-    // Create a summary of the flashcards
-    const summary = `
-Flashcards - ${syllabus} Syllabus
-=======================
-Date: ${new Date().toLocaleDateString()}
-
-${filteredCards.map((card, index) => {
-  return `
-Card ${index + 1}:
-Front: ${card.front}
-Back: ${card.back}
-Subject: ${card.subject}
-`
-}).join('')}
-    `.trim()
-
-    // Create a blob and download link
-    const blob = new Blob([summary], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'flashcards.txt'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   if (showSubjectSelect) {
@@ -504,16 +490,36 @@ Subject: ${card.subject}
             </Button>
 
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1 text-xs sm:text-sm"
-                onClick={handleDownloadCards}
-              >
-                <Download size={14} />
-                <span className="hidden sm:inline">{translations.downloadCards[language]}</span>
-                <span className="sm:hidden">{translations.download[language]}</span>
-              </Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button
+                          variant="outline"
+                          size="sm"
+                      >
+                          <Download className="mr-2 h-4 w-4"/>
+                          Export
+                          <ChevronDown className="ml-2 h-4 w-4"/>
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => downloadTXT(filteredCards)}>
+                          <FileText className="mr-2 h-4 w-4"/>
+                          TXT
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadPNGZip(filteredCards)}>
+                          <FileImage className="mr-2 h-4 w-4"/>
+                          PNG Images(ZIP)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadJPGZip(filteredCards)}>
+                          <FileImage className="mr-2 h-4 w-4"/>
+                          JPG Images(ZIP)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadPDF(filteredCards)}>
+                          <FileText className="mr-2 h-4 w-4"/>
+                          PDF
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <Button
@@ -539,6 +545,9 @@ Subject: ${card.subject}
           </Button>
         </div>
       )}
+      <FlashcardExport
+        cards={filteredCards}
+    />
     </div>
   )
 }
