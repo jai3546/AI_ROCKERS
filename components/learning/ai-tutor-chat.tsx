@@ -20,6 +20,7 @@ import {
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
 import { useState, useRef, useEffect } from "react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip"
 import {
   Download,
   FileImage,
@@ -348,7 +349,12 @@ export function AiTutorChat({
       te: ["కిరణజన్య సంయోగక్రియను వివరించండి", "గణిత సమస్యతో సహాయం చేయండి", "గురుత్వాకర్షణ అంటే ఏమిటి?", "ఇంగ్లీషులోకి అనువదించండి"],
     },
   }
-
+  
+  const learningModeDescriptions = {
+    visual: "Learn using diagrams, flowcharts, and visual explanations.",
+    auditory: "Learn through spoken explanations and narration.",
+    kinesthetic: "Learn through activities, examples, and hands-on learning.",
+  }
   function getWelcomeMessage(lang: string) {
     switch (lang) {
       case "hi":
@@ -643,10 +649,67 @@ toast({
               </div>
             </div>
 
+            {/* Right Side Stack: Manual Learning Mode Trigger Controls */}
+            <TooltipProvider>
             <div className="flex flex-col gap-1 pl-3 border-l border-primary/20">
               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5 text-center block">
                 Learning Mode
               </span>
+              
+            <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                     variant={currentLearningStyle.primaryStyle === "visual" ? "default" : "outline"}
+                     size="sm"
+                     className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                     onClick={() => handleManualStyleOverride("visual")}
+                    >
+                <Eye size={12} />
+                    Visual
+                </Button>
+              </TooltipTrigger>
+
+              <TooltipContent side="left">
+                 <p>{learningModeDescriptions.visual}</p>
+                 </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                  <Button
+                     variant={currentLearningStyle.primaryStyle === "auditory" ? "default" : "outline"}
+                     size="sm"
+                     className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                     onClick={() => handleManualStyleOverride("auditory")}
+                    >
+                  <Headphones size={12} />
+                     Auditory
+                  </Button>
+              </TooltipTrigger>
+
+              <TooltipContent side="left">
+                    <p>{learningModeDescriptions.auditory}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                   variant={currentLearningStyle.primaryStyle === "kinesthetic" ? "default" : "outline"}
+                   size="sm"
+                   className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                   onClick={() => handleManualStyleOverride("kinesthetic")}
+                  >
+                  <Activity size={12} />
+                      Kinesthetic
+                  </Button>
+                </TooltipTrigger>
+
+                <TooltipContent side="left">
+                      <p>{learningModeDescriptions.kinesthetic}</p>
+                </TooltipContent>
+            </Tooltip>
+
 
               <Button
                 variant={currentLearningStyle.primaryStyle === "visual" ? "default" : "outline"}
@@ -678,7 +741,8 @@ toast({
                 Kinesthetic
               </Button>
             </div>
-          </div>
+            </TooltipProvider>
+        </div>
 
           {showLearningStyleInfo && (
             <>
