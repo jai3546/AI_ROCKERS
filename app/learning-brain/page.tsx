@@ -177,49 +177,28 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { LearningBrainDashboard } from "../../components/learning/learning-brain-dashboard";
 import { AppSidebar, AppBottomNav } from "@/components/layout/app-nav";
+import { RouteGuard } from "@/components/auth/route-guard";
+import { useLogout } from "@/hooks/use-logout";
 
 export default function LearningBrainPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<{ id: string; name: string; class: string; role: string; avatar: string; isDemo: boolean } | null>(null);
-
-  useEffect(() => {
-    try {
-      const userData = localStorage.getItem("demoUser");
-      if (userData) {
-        setUser(JSON.parse(userData));
-      } else {
-        router.push("/student-login");
-      }
-    } catch (e) {
-      console.error("Error loading user in learning brain:", e);
-      router.push("/student-login");
-    }
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("demoUser");
-    router.push("/");
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-      </div>
-    );
-  }
+  const { requestLogout, LogoutConfirmDialog } = useLogout();
 
   return (
-    <main className="min-h-screen bg-background pb-20">
-      <AppSidebar user={user} onLogout={handleLogout} />
-      <div className="page-container py-6 pb-20 md:pl-20">
-        <LearningBrainDashboard studentId={user.id} studentName={user.name} />
-      </div>
-      <AppBottomNav />
-    </main>
+    <>
+      <RouteGuard allowedRoles={["student"]}>
+        {(user) => (
+          <main className="min-h-screen bg-background pb-20">
+            <AppSidebar user={user} onLogout={requestLogout} />
+            <div className="page-container py-6 pb-20 md:pl-20">
+              <LearningBrainDashboard studentId={user.id} studentName={user.name} />
+            </div>
+            <AppBottomNav />
+          </main>
+        )}
+      </RouteGuard>
+      <LogoutConfirmDialog />
+    </>
   );
 }

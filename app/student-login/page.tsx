@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { setSession } from "@/lib/auth/session"
 import { captureEvent } from "@/lib/posthog/helpers"
 import { POSTHOG_EVENTS } from "@/lib/posthog/events"
 
@@ -165,27 +166,28 @@ export default function StudentLoginPage() {
 
         // If we found a matching student, log them in
         if (foundStudent) {
-          localStorage.setItem("demoUser", JSON.stringify({
+          setSession({
             id: foundStudent.id,
             name: foundStudent.name,
             class: foundStudent.class,
             role: "student",
             avatar: "👨‍🎓",
-            isDemo: false
-          }))
+            isDemo: false,
+            schoolCode: foundStudent.schoolCode,
+          })
 
           captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: foundStudent.class, role: "student" })
           router.push("/student-dashboard")
         } else {
           // For demo purposes, allow login with any credentials
-          localStorage.setItem("demoUser", JSON.stringify({
+          setSession({
             id: studentId,
             name: "Student User",
             class: "Class 10",
             role: "student",
             avatar: "👨‍🎓",
-            isDemo: true
-          }))
+            isDemo: true,
+          })
 
           captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "credentials", class: "Class 10", role: "student" })
           router.push("/student-dashboard")
@@ -221,14 +223,14 @@ export default function StudentLoginPage() {
       }
 
       // Store user info in localStorage
-      localStorage.setItem("demoUser", JSON.stringify({
+      setSession({
         id: user.id,
         name: user.name,
         class: selectedClass,
-        role: user.role,
+        role: "student",
         avatar: user.avatar,
-        isDemo: true
-      }))
+        isDemo: true,
+      })
 
       captureEvent(POSTHOG_EVENTS.USER_LOGGED_IN, { login_method: "demo", class: selectedClass, role: "student" })
       router.push("/student-dashboard")
