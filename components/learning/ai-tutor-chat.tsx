@@ -351,10 +351,10 @@ export function AiTutorChat({
   }
   
   const learningModeDescriptions = {
-  visual: "Learn using diagrams, flowcharts, and visual explanations.",
-  auditory: "Learn through spoken explanations and narration.",
-  kinesthetic: "Learn through activities, examples, and hands-on learning.",
-}
+    visual: "Learn using diagrams, flowcharts, and visual explanations.",
+    auditory: "Learn through spoken explanations and narration.",
+    kinesthetic: "Learn through activities, examples, and hands-on learning.",
+  }
   function getWelcomeMessage(lang: string) {
     switch (lang) {
       case "hi":
