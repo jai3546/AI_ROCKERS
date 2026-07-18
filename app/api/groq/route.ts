@@ -1,7 +1,7 @@
 export async function POST(req: Request) {
   try {
     const requestBody = await req.json();
-    const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
       return Response.json({ error: "Groq API key not configured" }, { status: 500 });

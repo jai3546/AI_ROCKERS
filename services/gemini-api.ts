@@ -212,14 +212,14 @@ export interface AiSummaryResult {
   mindMapData: { id: string; label: string; color?: string; children?: any[]; };
 }
 
+/**
+ * @deprecated SECURITY: Do not use client-side API keys. All Gemini requests must go through /api/gemini server route.
+ * The server-side route uses the GEMINI_API_KEY environment variable, which is never exposed to the client.
+ * Client-side API keys expose your credentials to attackers.
+ */
 export function getApiKey(): string | null {
-  const rawKey = typeof window !== 'undefined'
-    ? localStorage.getItem("gemini_api_key") || process.env.NEXT_PUBLIC_GEMINI_API_KEY
-    : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-  if (!rawKey) return null;
-  const trimmed = rawKey.trim();
-  if (["", "undefined", "null", "your-api-key-here", "your_actual_gemini_api_key_here"].includes(trimmed)) return null;
-  return trimmed;
+  console.warn('⚠️ SECURITY WARNING: getApiKey() is deprecated. Do not use client-side API keys. Use /api/gemini server route instead.');
+  return null;
 }
 
 export async function generateAiSummaryAndMindmap(
