@@ -20,6 +20,23 @@ import {
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
 import { useState, useRef, useEffect } from "react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip"
+import {
+  Download,
+  FileImage,
+  FileType,
+  FileText,
+  Clipboard,
+  ChevronDown,
+} from "lucide-react"
+import { toPng, toJpeg } from "html-to-image"
+import jsPDF from "jspdf"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Message {
   id: string
@@ -43,6 +60,7 @@ interface AiTutorChatProps {
 
 function MessageContent({ content }: { content: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const mermaidRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   useEffect(() => {
     const el = containerRef.current
@@ -68,6 +86,120 @@ function MessageContent({ content }: { content: string }) {
     })
   }, [content])
 
+  const getSvgElement = (index: number) => {
+    const container = mermaidRefs.current.get(index)
+    if (!container) return null
+
+    return container.querySelector("svg")
+  }
+
+  const downloadSVG = (index: number) => {
+    const svg = getSvgElement(index)
+
+    if (!svg) return
+
+    const serializer = new XMLSerializer()
+    const source = serializer.serializeToString(svg)
+
+    const blob = new Blob([source], {
+      type: "image/svg+xml;charset=utf-8",
+    })
+
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "mindmap.svg"
+    link.click()
+
+    URL.revokeObjectURL(url)
+  }
+
+  const downloadPNG = async (index: number) => {
+    const container = mermaidRefs.current.get(index)
+    if (!container) return
+
+    const dataUrl = await toPng(container, {
+      pixelRatio: 3,
+      cacheBust: true,
+      backgroundColor: "#fff",
+    })
+
+    const link = document.createElement("a")
+    link.href = dataUrl
+    link.download = "mindmap.png"
+    link.click()
+  }
+
+  const downloadJPG = async (index: number) => {
+    const container = mermaidRefs.current.get(index)
+    if (!container) return
+
+    const dataUrl = await toJpeg(container, {
+      pixelRatio: 3,
+      quality: 1,
+      backgroundColor: "#fff",
+    })
+
+    const link = document.createElement("a")
+    link.href = dataUrl
+    link.download = "mindmap.jpg"
+    link.click()
+  }
+
+  const downloadPDF = async (index: number) => {
+    const container = mermaidRefs.current.get(index)
+    if (!container) return
+
+    const dataUrl = await toPng(container, {
+      pixelRatio: 3,
+      backgroundColor: "#fff",
+    })
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+    })
+
+    const img = new Image()
+
+    img.onload = () => {
+      const pageWidth = pdf.internal.pageSize.getWidth()
+
+      const pageHeight =
+        (img.height * pageWidth) / img.width
+
+      pdf.addImage(
+        dataUrl,
+        "PNG",
+        0,
+        0,
+        pageWidth,
+        pageHeight
+      )
+
+      pdf.save("mindmap.pdf")
+    }
+
+    img.src = dataUrl
+  }
+
+  const copySVG = async (index: number) => {
+    const svg = getSvgElement(index)
+
+    if (!svg) return
+
+    const serializer = new XMLSerializer()
+
+    await navigator.clipboard.writeText(
+      serializer.serializeToString(svg)
+    )
+
+    toast({
+      title: "Copied",
+      description: "SVG copied to clipboard.",
+    })
+  }
+
   const parts = content.split(/(```mermaid[\s\S]*?```)/g)
 
   return (
@@ -77,11 +209,76 @@ function MessageContent({ content }: { content: string }) {
           const code = part.replace(/```mermaid\n?/, "").replace(/```$/, "").trim()
 
           return (
-            <div
-              key={index}
-              className="mermaid-block w-full overflow-x-auto"
-              data-code={code}
-            />
+            <div key={index} className="space-y-2">
+              <div
+                ref={(el) => {
+                  if (el) mermaidRefs.current.set(index, el)
+                }}
+                className="mermaid-block w-full overflow-x-auto rounded-md border p-2 bg-background"
+                data-code={code}
+              />
+
+              <div className="flex justify-end mt-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+
+                      Export
+
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end">
+
+                    <DropdownMenuItem
+                      onClick={() => downloadPNG(index)}
+                    >
+                      <FileImage className="mr-2 h-4 w-4" />
+
+                      PNG
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => downloadSVG(index)}
+                    >
+                      <FileType className="mr-2 h-4 w-4" />
+
+                      SVG
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => downloadJPG(index)}
+                    >
+                      <FileImage className="mr-2 h-4 w-4" />
+
+                      JPG
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => downloadPDF(index)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+
+                      PDF
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => copySVG(index)}
+                    >
+                      <Clipboard className="mr-2 h-4 w-4" />
+
+                      Copy SVG
+                    </DropdownMenuItem>
+
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           )
         }
 
@@ -152,7 +349,12 @@ export function AiTutorChat({
       te: ["కిరణజన్య సంయోగక్రియను వివరించండి", "గణిత సమస్యతో సహాయం చేయండి", "గురుత్వాకర్షణ అంటే ఏమిటి?", "ఇంగ్లీషులోకి అనువదించండి"],
     },
   }
-
+  
+  const learningModeDescriptions = {
+    visual: "Learn using diagrams, flowcharts, and visual explanations.",
+    auditory: "Learn through spoken explanations and narration.",
+    kinesthetic: "Learn through activities, examples, and hands-on learning.",
+  }
   function getWelcomeMessage(lang: string) {
     switch (lang) {
       case "hi":
@@ -447,10 +649,67 @@ toast({
               </div>
             </div>
 
+            {/* Right Side Stack: Manual Learning Mode Trigger Controls */}
+            <TooltipProvider>
             <div className="flex flex-col gap-1 pl-3 border-l border-primary/20">
               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5 text-center block">
                 Learning Mode
               </span>
+              
+            <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                     variant={currentLearningStyle.primaryStyle === "visual" ? "default" : "outline"}
+                     size="sm"
+                     className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                     onClick={() => handleManualStyleOverride("visual")}
+                    >
+                <Eye size={12} />
+                    Visual
+                </Button>
+              </TooltipTrigger>
+
+              <TooltipContent side="left">
+                 <p>{learningModeDescriptions.visual}</p>
+                 </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                  <Button
+                     variant={currentLearningStyle.primaryStyle === "auditory" ? "default" : "outline"}
+                     size="sm"
+                     className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                     onClick={() => handleManualStyleOverride("auditory")}
+                    >
+                  <Headphones size={12} />
+                     Auditory
+                  </Button>
+              </TooltipTrigger>
+
+              <TooltipContent side="left">
+                    <p>{learningModeDescriptions.auditory}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                   variant={currentLearningStyle.primaryStyle === "kinesthetic" ? "default" : "outline"}
+                   size="sm"
+                   className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
+                   onClick={() => handleManualStyleOverride("kinesthetic")}
+                  >
+                  <Activity size={12} />
+                      Kinesthetic
+                  </Button>
+                </TooltipTrigger>
+
+                <TooltipContent side="left">
+                      <p>{learningModeDescriptions.kinesthetic}</p>
+                </TooltipContent>
+            </Tooltip>
+
 
               <Button
                 variant={currentLearningStyle.primaryStyle === "visual" ? "default" : "outline"}
@@ -482,7 +741,8 @@ toast({
                 Kinesthetic
               </Button>
             </div>
-          </div>
+            </TooltipProvider>
+        </div>
 
           {showLearningStyleInfo && (
             <>
