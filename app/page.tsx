@@ -268,17 +268,16 @@ export default function LandingPage() {
       },
       stats: {
         en: [
-          { label: "3 languages", value: "English, Hindi, Telugu" },
+          { label: "languages", value: "English, Hindi, Telugu" },
           { label: "Adaptive study", value: "AI tutor + flashcards" },
           { label: "School ready", value: "Student and educator views" },
         ],
         hi: [
-          { label: "3 भाषाएँ", value: "अंग्रेज़ी, हिंदी, तेलुगु" },
+          { label: "भाषाएँ", value: "अंग्रेज़ी, हिंदी, तेलुगु" },
           { label: "अनुकूली अध्ययन", value: "AI ट्यूटर + फ्लैशकार्ड्स" },
           { label: "स्कूल-तैयार", value: "छात्र और शिक्षक दृश्य" },
         ],
         te: [
-          { label: "3 భాషలు", value: "ఇంగ్లీష్, హిందీ, తెలుగు" },
           { label: "అడాప్టివ్ స్టడీ", value: "AI ట్యూటర్ + ఫ్లాష్‌కార్డ్స్" },
           { label: "స్కూల్ రెడీ", value: "విద్యార్థి మరియు ఉపాధ్యాయ దృశ్యాలు" },
         ],
