@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Clock, Brain, Smile, TrendingUp, X, BookOpen } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
+import { Progress } from "@/components/ui/progress"
 
 interface SessionRecord {
   id: string
@@ -46,11 +47,10 @@ const SAMPLE_SESSIONS: SessionRecord[] = [
 ]
 
 interface StudySessionHistoryProps {
-  onClose?: () => void
   language?: "en" | "hi" | "te"
 }
 
-export function StudySessionHistory({ onClose, language = "en" }: StudySessionHistoryProps) {
+export function StudySessionHistory({ language = "en" }: StudySessionHistoryProps) {
   const [sessions, setSessions] = useState<SessionRecord[]>([])
   const { resolvedTheme } = useTheme()
   const tickColor = resolvedTheme === "dark" ? "#E5E7EB" : "#4B5563"
@@ -98,8 +98,6 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
   return (
   
   <div className="bg-background rounded-xl max-h-[85vh] overflow-y-auto w-full max-w-4xl px-8 py-6">
-      <div className="flex items-center justify-between mb-8">
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 space-y-4 order-2 lg:order-1">
@@ -132,9 +130,12 @@ export function StudySessionHistory({ onClose, language = "en" }: StudySessionHi
                     <Badge variant="outline" className="capitalize text-xs px-2.5 py-0.5 font-medium">
                       {session.dominantEmotion}
                     </Badge>
-                    <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded">
-                      {session.focusScore}%
-                    </span>
+                    <div className="w-24 space-y-1">
+                      <Progress value={session.focusScore} />
+                        <p className="text-xs text-right font-semibold">
+                           {session.focusScore}%
+                        </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

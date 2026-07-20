@@ -112,7 +112,7 @@ export default function SessionHistoryPage() {
           </p>
         </div>
 
-        <StudySessionHistory onClose={() => router.push("/student-dashboard")} language="en" />
+        <StudySessionHistory language="en" />
       </div>
       <AppBottomNav />
     </main>
