@@ -66,13 +66,12 @@ export function updateLearningStyleProfile(
   // Update kinesthetic score (practical interactions)
   kinestheticScore = Math.min(100, kinestheticScore + (practicalInteractions * 0.9));
 
-  // Normalize scores to ensure they sum to a reasonable amount
+  // Normalize scores to ensure they represent each style as a percentage of the total (summing to ~100)
   const total = visualScore + auditoryScore + kinestheticScore;
   if (total > 0) {
-    const normalizer = 100 / (total / 3);
-    visualScore = Math.round(visualScore * normalizer) / 100;
-    auditoryScore = Math.round(auditoryScore * normalizer) / 100;
-    kinestheticScore = Math.round(kinestheticScore * normalizer) / 100;
+    visualScore = Math.round((visualScore / total) * 100);
+    auditoryScore = Math.round((auditoryScore / total) * 100);
+    kinestheticScore = Math.round((kinestheticScore / total) * 100);
   }
 
   // Determine primary and secondary styles
@@ -82,9 +81,13 @@ export function updateLearningStyleProfile(
     { style: 'kinesthetic' as LearningStyle, score: kinestheticScore }
   ].sort((a, b) => b.score - a.score);
 
+  const isPrimaryValid = scores[0].score > 40 && scores[0].score > scores[1].score;
+  const primaryStyle: LearningStyle = isPrimaryValid ? scores[0].style : 'unknown';
+  const secondaryStyle: LearningStyle = (isPrimaryValid && scores[1].score > 30) ? scores[1].style : 'unknown';
+
   return {
-    primaryStyle: scores[0].score > 40 ? scores[0].style : 'unknown',
-    secondaryStyle: scores[1].score > 30 ? scores[1].style : 'unknown',
+    primaryStyle,
+    secondaryStyle,
     visualScore,
     auditoryScore,
     kinestheticScore,
