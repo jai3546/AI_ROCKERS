@@ -709,37 +709,6 @@ toast({
                       <p>{learningModeDescriptions.kinesthetic}</p>
                 </TooltipContent>
             </Tooltip>
-
-
-              <Button
-                variant={currentLearningStyle.primaryStyle === "visual" ? "default" : "outline"}
-                size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
-                onClick={() => handleManualStyleOverride("visual")}
-              >
-                <Eye size={12} />
-                Visual
-              </Button>
-
-              <Button
-                variant={currentLearningStyle.primaryStyle === "auditory" ? "default" : "outline"}
-                size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
-                onClick={() => handleManualStyleOverride("auditory")}
-              >
-                <Headphones size={12} />
-                Auditory
-              </Button>
-
-              <Button
-                variant={currentLearningStyle.primaryStyle === "kinesthetic" ? "default" : "outline"}
-                size="sm"
-                className="h-7 text-xs w-28 justify-start gap-1.5 px-2"
-                onClick={() => handleManualStyleOverride("kinesthetic")}
-              >
-                <Activity size={12} />
-                Kinesthetic
-              </Button>
             </div>
             </TooltipProvider>
         </div>
