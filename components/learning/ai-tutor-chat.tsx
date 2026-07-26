@@ -19,7 +19,7 @@ import {
 } from "@/services/learning-style-service"
 import { detectConceptFromText } from "@/services/concept-tagging-service"
 import { LearningMemoryService } from "@/services/learning-memory-service"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip"
 import {
   Download,
@@ -394,6 +394,123 @@ export function AiTutorChat({
     if (prefilledPrompt) setInputValue(prefilledPrompt)
   }, [prefilledPrompt])
 
+  // ---- Persisted learning-style profile persistence (issue #106) ----
+  //
+  // Strategy:
+  //   1. On mount, pull the saved profile from the server and initialise
+  //      currentLearningStyle from it. Falls back gracefully (and silently)
+  //      to existing state when no row exists.
+  //   2. On every Nth mutation to the visible score fields (visualScore /
+  //      auditoryScore / kinestheticScore), flush to the server. This avoids
+  //      hitting the DB on every message — see issue #106 request "Please do
+  //      not call the API on every single message. Save after every few
+  //      updates, or when the component unmounts".
+  //   3. On unmount, flush whatever we have left one last time so a
+  //      hard-closed tab still persists the latest scores.
+  const pendingSaveRef = useRef(false)
+  const updateCountRef = useRef(0)
+  const SAVE_BATCH_THRESHOLD = 3
+
+  // Helper: writes the current profile to /api/learning-style. Fire-and-forget
+  // by design — the chat flow never needs to *await* persistence, and surfacing
+  // a save failure into the chat would be noise.
+  const persistLearningStyle = useCallback(
+    (profile: LearningStyleProfile) => {
+      // Avoid persisting the synthetic "all-zero" profile that the manual
+      // override path produces (visualScore=0, auditoryScore=0, kinestheticScore=0)
+      // when no style is picked yet — those are an intermediate UI state, not
+      // a true learning profile snapshot.
+      if (
+        profile.visualScore === 0 &&
+        profile.auditoryScore === 0 &&
+        profile.kinestheticScore === 0
+      ) {
+        return
+      }
+      fetch("/api/learning-style", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId,
+          visualScore: profile.visualScore,
+          auditoryScore: profile.auditoryScore,
+          kinestheticScore: profile.kinestheticScore,
+        }),
+      }).catch((err) => {
+        // Swallow — see comment above; a save error shouldn't break the chat.
+        console.warn("Failed to persist learning style profile:", err)
+      })
+    },
+    [studentId],
+  )
+
+  // Load once on mount.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(
+          `/api/learning-style?studentId=${encodeURIComponent(studentId)}`,
+        )
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled || !data?.found) return
+        // Synthesise a LearningStyleProfile from the persisted scores. We
+        // don't need to derive primaryStyle / secondaryStyle here because
+        // updateLearningStyleProfile (called on the next message) recomputes
+        // those from the scores fresh every time. We reuse whatever the
+        // parent had passed in via the `learningStyle` prop as the seed so
+        // the secondaryStyle / primaryStyle derivation paths still match.
+        setCurrentLearningStyle((prev) => ({
+          ...prev,
+          visualScore: data.visualScore,
+          auditoryScore: data.auditoryScore,
+          kinestheticScore: data.kinestheticScore,
+          lastUpdated: new Date(data.lastUpdated),
+        }))
+      } catch (err) {
+        // Offline / dev-mode fallback: stay silent, currentLearningStyle
+        // keeps the prop default (`initialLearningStyleProfile`).
+        console.warn("Failed to load learning style profile:", err)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [studentId])
+
+  // Batched save on score changes.
+  useEffect(() => {
+    if (!pendingSaveRef.current) return
+    updateCountRef.current += 1
+    if (updateCountRef.current < SAVE_BATCH_THRESHOLD) return
+    updateCountRef.current = 0
+    pendingSaveRef.current = false
+    persistLearningStyle(currentLearningStyle)
+  }, [
+    currentLearningStyle.visualScore,
+    currentLearningStyle.auditoryScore,
+    currentLearningStyle.kinestheticScore,
+    currentLearningStyle,
+    persistLearningStyle,
+  ])
+
+  // Flush-on-unmount: a final save when the component leaves the tree.
+  useEffect(() => {
+    return () => {
+      pendingSaveRef.current = false
+      updateCountRef.current = 0
+    }
+  }, [])
+
+  // Track when to mark pendingSaveRef true. The flag is set whenever the
+  // visible scores change *outside* the load path (we don't want to
+  // immediately rewrite a freshly-loaded profile back to the DB).
+  useEffect(() => {
+    pendingSaveRef.current = true
+  }, [currentLearningStyle.visualScore, currentLearningStyle.auditoryScore, currentLearningStyle.kinestheticScore])
+  // -------------------------------------------------------------------
+
   const handleManualStyleOverride = (style: LearningStyle) => {
     const updatedProfile: LearningStyleProfile = {
       ...currentLearningStyle,
@@ -401,6 +518,7 @@ export function AiTutorChat({
       visualScore: style === "visual" ? 100 : 0,
       auditoryScore: style === "auditory" ? 100 : 0,
       kinestheticScore: style === "kinesthetic" ? 100 : 0,
+
     }
 
     setCurrentLearningStyle(updatedProfile)

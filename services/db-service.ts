@@ -403,3 +403,98 @@ async function addXpToStudent(studentId: string, xpAmount: number) {
     }
   });
 }
+
+/**
+ * Returns the persisted learning-style scores for a given student + domain,
+ * or `null` when no row exists yet. The caller is expected to fall back to
+ * `initialLearningStyleProfile` from `services/learning-style-service.ts`
+ * in that case (see usage in `ai-tutor-chat.tsx`).
+ *
+ * @param userId   the student's user id
+ * @param domainType the `LearningProfile.domainType` value (defaults to
+ *                   `"default"` for the single-profile case)
+ */
+export async function getLearningStyleProfile(
+  userId: string,
+  domainType = "default",
+): Promise<
+  | {
+      visualScore: number;
+      auditoryScore: number;
+      kinestheticScore: number;
+      lastUpdated: Date;
+    }
+  | null
+> {
+  const profile = await prisma.learningProfile.findUnique({
+    where: {
+      userId_domainType: { userId, domainType },
+    },
+    select: {
+      visualScore: true,
+      auditoryScore: true,
+      kinestheticScore: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!profile) return null;
+  return {
+    visualScore: profile.visualScore,
+    auditoryScore: profile.auditoryScore,
+    kinestheticScore: profile.kinestheticScore,
+    lastUpdated: profile.updatedAt,
+  };
+}
+
+/**
+ * Persists the three learning-style scores for the given student + domain.
+ *
+ * Uses `upsert` on the `(userId, domainType)` unique key so the first save
+ * creates a row with defaults inherited from the Prisma schema
+ * (`currentLevel=1`, `currentXP=0`, etc.) — keeping the
+ * `LearningProfile` schema's other fields intact for callers that already use
+ * the row for level/xp tracking.
+ *
+ * The caller is expected to pass validated, already-normalised scores
+ * (the `updateLearningStyleProfile` helper in
+ * `services/learning-style-service.ts` normalises them); this function does
+ * not re-clamp or re-normalise.
+ *
+ * @param userId    the student's user id
+ * @param scores    the three style scores (clamped to [0, 100] before write)
+ * @param domainType the `LearningProfile.domainType` value (defaults to
+ *                   `"default"` for the single-profile case)
+ */
+export async function saveLearningStyleProfile(
+  userId: string,
+  scores: { visualScore: number; auditoryScore: number; kinestheticScore: number },
+  domainType = "default",
+): Promise<{ lastUpdated: Date }> {
+  const visualScore = Math.max(0, Math.min(100, Math.round(scores.visualScore)));
+  const auditoryScore = Math.max(0, Math.min(100, Math.round(scores.auditoryScore)));
+  const kinestheticScore = Math.max(0, Math.min(100, Math.round(scores.kinestheticScore)));
+
+  // `upsert` works around the case where the unique row has not been created
+  // yet (the very first time a student saves a learning-style profile). In
+  // that case the `create` branch inherits the schema defaults for
+  // currentLevel / currentXP / etc.
+  const profile = await prisma.learningProfile.upsert({
+    where: { userId_domainType: { userId, domainType } },
+    update: {
+      visualScore,
+      auditoryScore,
+      kinestheticScore,
+    },
+    create: {
+      userId,
+      domainType,
+      visualScore,
+      auditoryScore,
+      kinestheticScore,
+    },
+    select: { updatedAt: true },
+  });
+
+  return { lastUpdated: profile.updatedAt };
+}
