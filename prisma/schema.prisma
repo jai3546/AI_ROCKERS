@@ -198,6 +198,9 @@ model LearningProfile {
   lastLoginDate      DateTime?
   syllabusPreference String    @default("General")
   targetGoal         String?
+  visualScore        Int       @default(33)
+  auditoryScore      Int       @default(33)
+  kinestheticScore   Int       @default(33)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
