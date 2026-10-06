@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2 } from "lucide-react"
+import { BookOpen, Download, X, Printer, Share2, Copy, FileText, Search, Workflow, Volume2, Play, Pause, Square, LayoutGrid, ArrowLeft, Globe, Compass, Layers, BookMarked, ChevronRight, Sparkles, Loader2,Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
