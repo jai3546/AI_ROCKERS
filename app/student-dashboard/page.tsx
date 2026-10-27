@@ -167,6 +167,7 @@ export default function StudentDashboardPage() {
   const [sessionLength, setSessionLength] = useState(25)
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
   const formatStudyTime = () => {
     const minutes = Math.floor(timeLeft / 60)
     const seconds = timeLeft % 60
@@ -1042,7 +1043,7 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background pb-20">
+    <main className="h-[calc(100vh-4rem)] overflow-y-auto bg-background pb-32">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-white shadow-sm dark:border-border dark:bg-card">
         <div className="page-container flex h-16 items-center justify-between md:pl-20">
@@ -1256,336 +1257,422 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Daily Challenge */}
-        <Card className="border-red-300">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2">
-              🍅 Pomodoro Study Timer
-            </CardTitle>
-          </CardHeader>
 
-          <CardContent className="p-4 pt-2">
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(25)
-                  setTimeLeft(25 * 60)
-                }}
-              >
-                25 Min
-              </Button>
+{/* Daily Challenge / Pomodoro Timer */}
+       <Card className="border-red-300/30 bg-card/50 backdrop-blur-sm shadow-sm text-foreground">
+         <CardContent className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+           
+           {/* Left Side: Full Title & High-Visibility Timer Badge */}
+           <div className="flex items-center gap-3">
+             <span className="text-sm font-semibold tracking-wide text-foreground flex items-center gap-1.5 whitespace-nowrap">
+               🍅 Pomodoro Timer:
+             </span>
+             <p className="text-2xl font-black tabular-nums tracking-tight bg-primary/10 text-primary dark:text-primary px-3 py-0.5 rounded-lg border border-primary/30 min-w-[85px] text-center shadow-inner">
+               {formatStudyTime()}
+             </p>
+           </div>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(30)
-                  setTimeLeft(30 * 60)
-                }}
-              >
-                30 Min
-              </Button>
+           {/* Center: Dropdown Selector Menu styled for Light and Dark visibility */}
+           <div className="flex items-center gap-2">
+             <label htmlFor="time-select" className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+               Duration:
+             </label>
+             <select
+               id="time-select"
+               disabled={isRunning}
+               value={sessionLength}
+               onChange={(e) => {
+                 const mins = Number(e.target.value);
+                 setIsRunning(false);
+                 setSessionLength(mins);
+                 setTimeLeft(mins * 60);
+               }}
+               className="h-8 text-xs rounded-md border border-input bg-background px-2.5 py-1 font-medium text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-900 dark:text-zinc-100"
+             >
+               <option value={25} className="bg-background text-foreground">25 Minutes</option>
+               <option value={30} className="bg-background text-foreground">30 Minutes</option>
+               <option value={45} className="bg-background text-foreground">45 Minutes</option>
+               <option value={60} className="bg-background text-foreground">60 Minutes</option>
+             </select>
+           </div>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsRunning(false)
-                  setSessionLength(45)
-                  setTimeLeft(45 * 60)
-                }}
-              >
-                45 Min
-              </Button>
-            </div>
+           {/* Right Side: Execution controls */}
+           <div className="flex items-center gap-2 sm:ml-auto">
+             {!isRunning ? (
+               <Button
+                 size="sm"
+                 className="h-8 text-xs font-semibold px-4 shadow-sm"
+                 onClick={() => setIsRunning(true)}
+               >
+                 Start
+               </Button>
+             ) : (
+               <Button
+                 variant="outline"
+                 size="sm"
+                 className="h-8 text-xs font-semibold px-4 bg-pink-500 hover:bg-pink-600 text-white border-none shadow-sm"
+                 onClick={() => setIsRunning(false)}
+               >
+                 Stop
+               </Button>
+             )}
+             <Button
+               variant="outline"
+               size="sm"
+               className="h-8 text-xs font-semibold px-3 text-muted-foreground hover:bg-accent"
+               onClick={() => {
+                 setIsRunning(false)
+                 setTimeLeft(sessionLength * 60)
+                 setStudyTime(0)
+                 setShowBreakSuggestion(false)
+               }}
+             >
+                 Reset
+             </Button>
+           </div>
 
-            <p className="text-3xl font-bold">{formatStudyTime()}</p>
+         </CardContent>
+       </Card>
 
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Button onClick={() => setIsRunning(true)}>
-                Start Session
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-pink-500 hover:bg-pink-600 text-white"
-                onClick={() => setIsRunning(false)}
-              >
-                Stop Session
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-pink-500 hover:bg-pink-600 text-white"
-                onClick={() => {
-                  setIsRunning(false)
-                  setTimeLeft(sessionLength * 60)
-                  setStudyTime(0)
-                  setShowBreakSuggestion(false)
-                }}
-              >
-                Reset Session
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+       {showBreakSuggestion && (
+         <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 mt-4">
+           <CardHeader>
+             <CardTitle className="flex items-center gap-2">
+               <AlertTriangle size={18} />
+               Smart Break Suggestion
+             </CardTitle>
+           </CardHeader>
 
-        {
-          showBreakSuggestion && (
-            <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle size={18} />
-                  Smart Break Suggestion
-                </CardTitle>
-              </CardHeader>
+           <CardContent>
+             <p>{breakMessage}</p>
 
-              <CardContent>
-                <p>{breakMessage}</p>
+             <Button
+               className="mt-3"
+               onClick={() => setShowBreakSuggestion(false)}
+             >
+               Got It
+             </Button>
+           </CardContent>
+         </Card>
+       )}
 
-                <Button
-                  className="mt-3"
-                  onClick={() => setShowBreakSuggestion(false)}
-                >
-                  Got It
-                </Button>
-              </CardContent>
-            </Card>
-          )
-        }
-        <DailyChallenge
-          title="Science Challenge"
-          description="Complete a quiz about photosynthesis and earn bonus XP!"
-          xpReward={50}
-          timeLeft="8h 45m"
-          progress={0}
-          language={language}
-          onStart={() => {
-            setActiveQuizSubject("Science")
-            setShowQuiz(true)
-          }}
-        />
+       <DailyChallenge
+         title="Science Challenge"
+         description="Complete a quiz about photosynthesis and earn bonus XP!"
+         xpReward={50}
+         timeLeft="8h 45m"
+         progress={0}
+         language={language}
+         onStart={() => {
+           setActiveQuizSubject("Science")
+           setShowQuiz(true)
+         }}
+       />
 
-        {/* Learning Filters Card */}
-        <Card className="border border-border/50 shadow-sm bg-card p-4 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            {/* Syllabus Selection */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <BookOpen size={14} className="text-primary" />
-                Syllabus
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(["General", "CBSE", "AP", "Telangana"] as const).map((syll) => (
-                  <Button
-                    key={syll}
-                    variant={selectedSyllabus === syll ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSyllabus(syll)}
-                    className="rounded-full px-4 h-9 text-xs font-medium transition-all"
-                  >
-                    {syll}
-                  </Button>
-                ))}
-              </div>
-            </div>
+       {/* Learning Filters Card */}
+       <Card className="border border-border/50 shadow-sm bg-card p-4 mb-6 mt-6">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+           {/* Syllabus Selection */}
+           <div className="space-y-2">
+             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+               <BookOpen size={14} className="text-primary" />
+               Syllabus
+             </h3>
+             <div className="flex flex-wrap gap-2">
+               {(["General", "CBSE", "AP", "Telangana"] as const).map((syll) => (
+                 <Button
+                   key={syll}
+                   variant={selectedSyllabus === syll ? "default" : "outline"}
+                   size="sm"
+                   onClick={() => setSelectedSyllabus(syll)}
+                   className="rounded-full px-4 h-9 text-xs font-medium transition-all"
+                 >
+                   {syll}
+                 </Button>
+               ))}
+             </div>
+           </div>
 
-            {/* Subject Selection */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Brain size={14} className="text-secondary" />
-                Subject Selection
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {["all", "Science", "Math", "English", "Social Studies"].map((subj) => (
-                  <Button
-                    key={subj}
-                    variant={dashboardSubject === subj ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDashboardSubject(subj)}
-                    className={`rounded-full px-4 h-9 text-xs font-medium transition-all ${dashboardSubject === subj
-                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                      : ""
-                      }`}
-                  >
-                    {subj === "all" ? "All Subjects" : subj}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
+           {/* Subject Selection */}
+           <div className="space-y-2">
+             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+               <Brain size={14} className="text-secondary" />
+               Subject Selection
+             </h3>
+             <div className="flex flex-wrap gap-2">
+               {["all", "Science", "Math", "English", "Social Studies"].map((subj) => (
+                 <Button
+                   key={subj}
+                   variant={dashboardSubject === subj ? "default" : "outline"}
+                   size="sm"
+                   onClick={() => setDashboardSubject(subj)}
+                   className={`rounded-full px-4 h-9 text-xs font-medium transition-all ${dashboardSubject === subj
+                     ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                     : ""
+                   }`}
+                 >
+                   {subj === "all" ? "All Subjects" : subj}
+                 </Button>
+               ))}
+             </div>
+           </div>
+         </div>
+       </Card>
 
-        {/* Learning Section */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Brain size={20} className="text-secondary" />
-            {translations.startLearning[language]}
-          </h2>
+       {/* Learning Section */}
+       <section className="mb-6">
+         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+           <Brain size={20} className="text-secondary" />
+           {translations.startLearning[language]}
+         </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* AI Tutor Card */}
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-primary/50 dark:border-primary/40 shadow-md h-full bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
-                <CardHeader className="bg-primary/10 dark:bg-primary/20 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <MessageSquare size={18} />
-                    {translations.aiTutor[language]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <ChatbotIcon className="w-12 h-12" />
-                    <p className="text-sm text-foreground/70 dark:text-foreground/80">Ask questions and get instant help</p>
-                  </div>
-                  <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => setShowAiTutor(true)}>
-                    {translations.askQuestion[language]}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           {/* AI Tutor Card */}
+           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+             <Card className="overflow-y-auto border-2 border-primary/50 dark:border-primary/40 shadow-md h-full bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
+               <CardHeader className="bg-primary/10 dark:bg-primary/20 pb-2">
+                 <CardTitle className="flex items-center gap-2 text-primary">
+                   <MessageSquare size={18} />
+                   {translations.aiTutor[language]}
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="pt-4">
+                 <div className="flex items-center gap-3 mb-4">
+                   <ChatbotIcon className="w-12 h-12" />
+                   <p className="text-sm text-foreground/70 dark:text-foreground/80">Ask questions and get instant help</p>
+                 </div>
+                 <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => setShowAiTutor(true)}>
+                   {translations.askQuestion[language]}
+                 </Button>
+               </CardContent>
+             </Card>
+           </motion.div>
 
-            {/* Quizzes Card */}
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-secondary/50 shadow-md h-full">
-                <CardHeader className="bg-secondary/10 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-secondary">
-                    <Goal size={18} />
-                    {translations.quizzes[language]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                        <Star size={16} className="text-secondary" />
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium">{quizDetails.title}</p>
-                        <p className="text-foreground/70">{quizDetails.countText}</p>
-                      </div>
-                    </div>
-                    <div className="text-xs font-medium text-foreground/50">
-                      <Clock size={14} className="inline mr-1" />
-                      {quizDetails.timeText}
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full bg-secondary hover:bg-secondary/90"
-                    onClick={() => {
-                      setActiveQuizSubject(quizDetails.subject)
-                      setShowQuiz(true)
-                    }}
-                  >
-                    {translations.startQuiz[language]}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+           {/* Quizzes Card */}
+           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+             <Card className="overflow-y-auto border-2 border-secondary/50 shadow-md h-full">
+               <CardHeader className="bg-secondary/10 pb-2">
+                 <CardTitle className="flex items-center gap-2 text-secondary">
+                   <Goal size={18} />
+                   {translations.quizzes[language]}
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="pt-4">
+                 <div className="flex items-center justify-between mb-4">
+                   <div className="flex items-center gap-2">
+                     <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                       <Star size={16} className="text-secondary" />
+                     </div>
+                     <div className="text-sm">
+                       <p className="font-medium">{quizDetails.title}</p>
+                       <p className="text-foreground/70">{quizDetails.countText}</p>
+                     </div>
+                   </div>
+                   <div className="text-xs font-medium text-foreground/50">
+                     <Clock size={14} className="inline mr-1" />
+                     {quizDetails.timeText}
+                   </div>
+                 </div>
+                 <Button
+                   className="w-full bg-secondary hover:bg-secondary/90"
+                   onClick={() => {
+                     setActiveQuizSubject(quizDetails.subject)
+                     setShowQuiz(true)
+                   }}
+                 >
+                   {translations.startQuiz[language]}
+                 </Button>
+               </CardContent>
+             </Card>
+           </motion.div>
 
-            {/* Flashcards Card */}
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-accent/50 shadow-md h-full">
-                <CardHeader className="bg-accent/10 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-accent">
-                    <FileText size={18} />
-                    {translations.flashcards[language]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                        <Star size={16} className="text-accent" />
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium">{flashcardDetails.title}</p>
-                        <p className="text-foreground/70">{flashcardDetails.countText}</p>
-                      </div>
-                    </div>
-                    <div className="text-xs font-medium text-foreground/50">
-                      <Clock size={14} className="inline mr-1" />
-                      {flashcardDetails.timeText}
-                    </div>
-                  </div>
-                  <Button className="w-full bg-accent hover:bg-accent/90" onClick={() => setShowFlashcards(true)}>
-                    {translations.practice[language]}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+           {/* Flashcards Card */}
+           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+             <Card className="overflow-y-auto border-2 border-accent/50 shadow-md h-full">
+               <CardHeader className="bg-accent/10 pb-2">
+                 <CardTitle className="flex items-center gap-2 text-accent">
+                   <FileText size={18} />
+                   {translations.flashcards[language]}
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="pt-4">
+                 <div className="flex items-center justify-between mb-4">
+                   <div className="flex items-center gap-2">
+                     <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                       <Star size={16} className="text-accent" />
+                     </div>
+                     <div className="text-sm">
+                       <p className="font-medium">{flashcardDetails.title}</p>
+                       <p className="text-foreground/70">{flashcardDetails.countText}</p>
+                     </div>
+                   </div>
+                   <div className="text-xs font-medium text-foreground/50">
+                     <Clock size={14} className="inline mr-1" />
+                     {flashcardDetails.timeText}
+                   </div>
+                 </div>
+                 <Button className="w-full bg-accent hover:bg-accent/90" onClick={() => setShowFlashcards(true)}>
+                   {translations.practice[language]}
+                 </Button>
+               </CardContent>
+             </Card>
+           </motion.div>
 
-            {/* Summaries Card */}
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Card className="overflow-hidden border-2 border-highlight/50 shadow-md h-full">
-                <CardHeader className="bg-highlight/10 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-highlight">
-                    <BookOpen size={18} />
-                    {translations.summaries[language]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-highlight/20 flex items-center justify-center">
-                        <Star size={16} className="text-highlight" />
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium">{summaryDetails.title}</p>
-                        <p className="text-foreground/70">{summaryDetails.countText}</p>
-                      </div>
-                    </div>
-                    <div className="text-xs font-medium text-foreground/50">
-                      <Clock size={14} className="inline mr-1" />
-                      {summaryDetails.timeText}
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full bg-highlight hover:bg-highlight/90"
-                    onClick={() => setShowSummaries(true)}
-                  >
-                    {translations.viewSummaries[language]}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Motion Detection Button */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Activity size={20} className="text-primary" />
-              {translations.motionTracking ? translations.motionTracking[language] : "Motion Detection"}
-            </h2>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setShowMotionTracker(true)}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-            >
-              <Camera size={16} />
-              {(translations as any).openCamera ? (translations as any).openCamera[language] : "Start Camera"}
-            </Button>
-          </div>
-
-          {/* Status display - always visible */}
-          <Card className="bg-card dark:bg-card p-3 border border-primary/20">
+           {/* Summaries Card */}
+           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+             <Card className="overflow-y-auto border-2 border-highlight/50 shadow-md h-full">
+               <CardHeader className="bg-highlight/10 pb-2">
+                 <CardTitle className="flex items-center gap-2 text-highlight">
+                   <BookOpen size={18} />
+                   {translations.summaries[language]}
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="pt-4">
+                 <div className="flex items-center justify-between mb-4">
+                   <div className="flex items-center gap-2">
+                     <div className="w-8 h-8 rounded-full bg-highlight/20 flex items-center justify-center">
+                       <Star size={16} className="text-highlight" />
+                     </div>
+                     <div className="text-sm">
+                       <p className="font-medium">{summaryDetails.title}</p>
+                       <p className="text-foreground/70">{summaryDetails.countText}</p>
+                     </div>
+                   </div>
+                   <div className="text-xs font-medium text-foreground/50">
+                     <Clock size={14} className="inline mr-1" />
+                     {summaryDetails.timeText}
+                   </div>
+                 </div>
+                 <Button
+                   className="w-full bg-highlight hover:bg-highlight/90"
+                   onClick={() => setShowSummaries(true)}
+                 >
+                   {translations.viewSummaries[language]}
+                 </Button>
+               </CardContent>
+             </Card>
+           </motion.div>
+         </div>
+       </section>
+          
+       {/* Collapsible Advanced Learning Tools Section */}
+        <section className="space-y-4 mt-8">
+          <button
+            type="button"
+            onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+            className="flex items-center justify-between w-full p-4 bg-secondary/10 dark:bg-secondary/20 rounded-xl border border-secondary/30 hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-all group shadow-sm"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>
-              <div>
-                <p className="font-medium">
-                  Motion Tracking {showMotionTracker ? "Active" : "Ready"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {showMotionTracker ?
-                    "Camera is currently monitoring your presence" :
-                    "Click 'Start Camera' to begin motion tracking"}
-                </p>
+              <Activity size={22} className="text-secondary animate-pulse" />
+              <div className="text-left">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  Advanced Learning Tools
+                </h2>
+                <p className="text-xs text-muted-foreground">Click to toggle Emotion Detection & Motion Tracking systems</p>
               </div>
             </div>
-          </Card>
+            <span className={`transform transition-transform duration-200 text-muted-foreground group-hover:text-foreground font-mono ${showAdvancedTools ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
+
+          {showAdvancedTools && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-3 duration-200 mt-4">
+
+              {/* 1. Face Emotion Card */}
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Card className="overflow-hidden border-2 border-secondary/50 dark:border-secondary/40 shadow-md h-full cursor-pointer bg-card dark:bg-card text-card-foreground dark:text-card-foreground">
+                  <CardHeader className="bg-secondary/10 dark:bg-secondary/20 pb-2">
+                    <CardTitle className="flex items-center gap-2 text-secondary">
+                      <Smile size={18} />
+                      Emotion Detection
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-foreground/70 dark:text-foreground/80">
+                        Analyze facial expressions to adapt learning content to your emotional state.
+                      </p>
+                      {lastEmotionData && lastEmotionData.emotion !== "unknown" && (
+                        <Badge variant="outline" className="capitalize">
+                          {lastEmotionData.emotion}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        className="w-full bg-secondary hover:bg-secondary/90"
+                        onClick={() => setShowEmotionDisplay(true)}
+                      >
+                        View Emotions
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setUserDismissedEmotionTracker(false);
+                            setAutoEmotionTracking(true);
+                          }}
+                        >
+                          Start Tracking
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setUserDismissedEmotionTracker(false);
+                            setShowFloatingEmotionTracker(true);
+                          }}
+                        >
+                          Show Tracker
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* 2. Motion Tracking Card */}
+              <Card className="bg-card dark:bg-card p-4 border-2 border-primary/20 flex flex-col justify-between shadow-md rounded-xl">
+                <CardContent className="p-0 flex flex-col gap-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold flex items-center gap-2 text-primary">
+                      <Camera size={18} />
+                      {translations.motionTracking ? translations.motionTracking[language] : "Motion Detection"}
+                    </h3>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setShowMotionTracker(true)}
+                      className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+                    >
+                      <Camera size={16} />
+                      {(translations as any).openCamera ? (translations as any).openCamera[language] : "Start Camera"}
+                    </Button>
+                  </div>
+                  
+                 {/* Status display element */}
+                  <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border">
+                    <div className={`w-3 h-3 rounded-full ${showMotionTracker ? "bg-green-500 animate-pulse" : "bg-amber-500"}`}></div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        Motion Tracking {showMotionTracker ? "Active" : "Ready"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {showMotionTracker ?
+                          "Camera is currently monitoring your presence" :
+                          "Click 'Start Camera' to begin motion tracking"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+           </div>
+          )}
         </section>
+
 
         {/* Interactive Learning Tools Section */}
         <section className="space-y-4 mt-8">
@@ -1632,7 +1719,6 @@ export default function StudentDashboardPage() {
                         onClick={() => {
                           setUserDismissedEmotionTracker(false);
                           setAutoEmotionTracking(true);
-                          // Force immediate emotion detection
                           setTimeout(() => {
                             const emotionData: EmotionData = {
                               timestamp: new Date(),
@@ -1642,7 +1728,9 @@ export default function StudentDashboardPage() {
                               fatigueScore: 20,
                               attentionScore: 80
                             };
-                            handleEmotionDetectedRef.current(emotionData);
+                            if ((handleEmotionDetectedRef as any).current) {
+                              (handleEmotionDetectedRef as any).current(emotionData);
+                            }
                           }, 100);
                         }}
                       >
@@ -1663,97 +1751,96 @@ export default function StudentDashboardPage() {
                 </CardContent>
               </Card>
             </motion.div>
+
           </div>
         </section>
-
         {/* Achievements and Leaderboard Section */}
-        <div id="achievements-section" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Achievements */}
-          <div className="md:col-span-2 space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Trophy size={20} className="text-secondary" />
-              {translations.achievements[language]}
-            </h2>
+      <div id="achievements-section" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Achievements */}
+        <div className="md:col-span-2 space-y-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Trophy size={20} className="text-secondary" />
+            {translations.achievements[language]}
+          </h2>
 
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Achievements</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={() => setShowBadges(!showBadges)}
-              >
-                <Award size={14} />
-                {showBadges ? "Hide Badges" : "View Badges"}
-              </Button>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Achievements</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => setShowBadges(!showBadges)}
+            >
+              <Award size={14} />
+              {showBadges ? "Hide Badges" : "View Badges"}
+            </Button>
+          </div>
 
-            {showBadges ? (
-              <BadgeCollection
-                badges={badges}
-                onBadgeClick={(badge) => {
-                  setSelectedBadge(badge);
+          {showBadges ? (
+            <BadgeCollection
+              badges={badges}
+              onBadgeClick={(badge) => {
+                setSelectedBadge(badge);
+                setShowReward(true);
+              }}
+              language={language}
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <AchievementCard
+                title="Quiz Master"
+                description="Complete 5 quizzes with a score of 80% or higher"
+                icon={<CheckCircle size={18} />}
+                isUnlocked={badges.find(b => b.id === "quiz-gold")?.isUnlocked || false}
+                progress={badges.filter(b => b.category === "quiz" && b.isUnlocked).length}
+                maxProgress={5}
+                xpReward={100}
+                onClick={() => {
+                  setSelectedBadge(badges.find(b => b.id === "quiz-gold"));
                   setShowReward(true);
                 }}
-                language={language}
               />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <AchievementCard
-                  title="Quiz Master"
-                  description="Complete 5 quizzes with a score of 80% or higher"
-                  icon={<CheckCircle size={18} />}
-                  isUnlocked={badges.find(b => b.id === "quiz-gold")?.isUnlocked || false}
-                  progress={badges.filter(b => b.category === "quiz" && b.isUnlocked).length}
-                  maxProgress={5}
-                  xpReward={100}
-                  onClick={() => {
-                    setSelectedBadge(badges.find(b => b.id === "quiz-gold"));
-                    setShowReward(true);
-                  }}
-                />
 
-                <AchievementCard
-                  title="Knowledge Seeker"
-                  description="Use the AI tutor 10 times to learn new concepts"
-                  icon={<MessageSquare size={18} />}
-                  isUnlocked={false}
-                  progress={7}
-                  maxProgress={10}
-                  xpReward={150}
-                />
+              <AchievementCard
+                title="Knowledge Seeker"
+                description="Use the AI tutor 10 times to learn new concepts"
+                icon={<MessageSquare size={18} />}
+                isUnlocked={false}
+                progress={7}
+                maxProgress={10}
+                xpReward={150}
+              />
 
-                <AchievementCard
-                  title="Flashcard Pro"
-                  description="Review 50 flashcards"
-                  icon={<FileText size={18} />}
-                  isUnlocked={badges.find(b => b.id === "flashcard-silver")?.isUnlocked || false}
-                  progress={badges.filter(b => b.category === "flashcard" && b.isUnlocked).length * 10}
-                  maxProgress={50}
-                  xpReward={75}
-                />
+              <AchievementCard
+                title="Flashcard Pro"
+                description="Review 50 flashcards"
+                icon={<FileText size={18} />}
+                isUnlocked={badges.find(b => b.id === "flashcard-silver")?.isUnlocked || false}
+                progress={badges.filter(b => b.category === "flashcard" && b.isUnlocked).length * 10}
+                maxProgress={50}
+                xpReward={75}
+              />
 
-                <AchievementCard
-                  title="Consistent Learner"
-                  description="Maintain a 7-day learning streak"
-                  icon={<Clock size={18} />}
-                  isUnlocked={badges.find(b => b.id === "streak-silver")?.isUnlocked || false}
-                  progress={7}
-                  maxProgress={7}
-                  xpReward={50}
-                  onClick={() => {
-                    setSelectedBadge(badges.find(b => b.id === "streak-silver"));
-                    setShowReward(true);
-                  }}
-                />
-              </div>
-            )}
-          </div>
+              <AchievementCard
+                title="Consistent Learner"
+                description="Maintain a 7-day learning streak"
+                icon={<Clock size={18} />}
+                isUnlocked={badges.find(b => b.id === "streak-silver")?.isUnlocked || false}
+                progress={7}
+                maxProgress={7}
+                xpReward={50}
+                onClick={() => {
+                  setSelectedBadge(badges.find(b => b.id === "streak-silver"));
+                  setShowReward(true);
+                }}
+              />
+            </div>
+          )}
+        </div>
 
-          {/* Leaderboard */}
-          <div>
-            <Leaderboard entries={leaderboardEntries} currentUserId="current" language={language} />
-          </div>
+        {/* Leaderboard */}
+        <div>
+          <Leaderboard entries={leaderboardEntries} currentUserId="current" language={language} />
         </div>
       </div>
 
@@ -1946,7 +2033,6 @@ export default function StudentDashboardPage() {
                     setActiveFlashcardSubject(undefined)
                     setActiveFlashcardTopic(undefined)
                     setShowFlashcardAi(false)
-                    // Log flashcard activity to Personalized Learning Memory
                     try {
                       const subj = activeFlashcardSubject || flashcardDetails.subject;
                       if (subj && subj !== "all") {
@@ -2203,6 +2289,9 @@ export default function StudentDashboardPage() {
         )}
       </AnimatePresence>
 
+
+
+
       {/* Emotion Display Modal */}
       <AnimatePresence mode="wait">
         {showEmotionDisplay && (
@@ -2321,17 +2410,13 @@ export default function StudentDashboardPage() {
       </AnimatePresence>
 
       {/* Reward Popup */}
-      {showReward && (() => {
-        const Component = RewardPopup as any;
-        return (
-          <Component
-            onOpenChange={setShowReward}
-            xpEarned={quizScore.earned * 5}
-            badgeUnlocked={selectedBadge}
-          />
-        );
-      })()}
-
+{showReward && (
+  <RewardPopup
+    onOpenChange={setShowReward}
+    xpEarned={quizScore.earned * 5}
+    badgeUnlocked={selectedBadge}
+  />
+)}
       {/* Mobile Sticky Tab Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-border shadow-lg flex justify-around items-center h-16 md:hidden z-30 px-2">
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
@@ -2350,10 +2435,6 @@ export default function StudentDashboardPage() {
           <MessageSquare size={20} />
           <span className="text-xs">Chat</span>
         </Button>
-        {/* <Button variant="ghost" className="flex flex-col items-center gap-1 h-auto py-2 flex-1" onClick={() => router.push("/session-history")}>
-          <TrendingUp size={20} />
-          <span className="text-xs">History</span>
-        </Button> */}
         <Button
           variant="ghost"
           className="flex flex-col items-center gap-1 h-auto py-2"
